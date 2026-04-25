@@ -18,7 +18,7 @@ No terminal, navegue até a pasta onde deseja salvar o projeto e execute:
 git clone https://github.com/PatrikiGss/Projeto_Acapra.git
 ```
 
-Depois entre na pasta do projeto:
+Depois, entre na pasta do projeto:
 
 ```bash
 cd Projeto_Acapra
@@ -75,9 +75,17 @@ Copie a chave gerada.
 
 ---
 
-### 7. Configure o `.env`
+### 7. Configure o arquivo `.env`
 
-Cole a chave gerada apos o =
+Cole a chave gerada após o sinal de `=` no campo correspondente.
+
+Exemplo:
+
+```env
+SECRET_KEY=sua_secret_key_aqui
+DEBUG=True
+ALLOWED_HOSTS=127.0.0.1,localhost
+```
 
 ---
 
@@ -99,7 +107,7 @@ python manage.py runserver
 
 ## Acesso local
 
-Após iniciar, acesse:
+Após iniciar o servidor, acesse:
 
 ```text
 http://127.0.0.1:8000/
@@ -110,3 +118,64 @@ Admin Django:
 ```text
 http://127.0.0.1:8000/admin/
 ```
+
+---
+
+## Criação da sua branch
+
+Após tudo configurado, para criar sua branch de desenvolvimento, rode os seguintes comandos:
+
+### 1. Carregar as branches do repositório
+
+```bash
+git fetch
+```
+
+---
+
+### 2. Mudar para a branch `develop`
+
+```bash
+git checkout develop
+```
+
+---
+
+### 3. Atualizar a branch `develop`
+
+```bash
+git pull origin develop
+```
+
+---
+
+### 4. Criar sua própria branch
+
+```bash
+git checkout -b seunome
+```
+
+Substitua `seunome` pelo seu nome ou identificador da feature.
+
+Exemplo:
+
+```bash
+git checkout -b patriki
+```
+
+---
+
+### 5. Enviar sua branch para o GitHub
+
+```bash
+git push -u origin seunome
+```
+
+Exemplo:
+
+```bash
+git push -u origin patriki
+```
+
+---
+

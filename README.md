@@ -64,7 +64,13 @@ Na raiz do projeto, crie um arquivo chamado:
 
 ### 6. Gere uma nova SECRET_KEY
 
-Execute no terminal Python:
+Abra o terminal interativo do Python com:
+
+```bash
+python
+```
+
+Depois execute:
 
 ```python
 from django.core.management.utils import get_random_secret_key
@@ -72,6 +78,12 @@ print(get_random_secret_key())
 ```
 
 Copie a chave gerada.
+
+Para sair do terminal Python:
+
+```python
+exit()
+```
 
 ---
 
@@ -95,9 +107,36 @@ ALLOWED_HOSTS=127.0.0.1,localhost
 python manage.py migrate
 ```
 
+Sempre que houver alteração em models, rode também:
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
 ---
 
-### 9. Inicie o servidor
+### 9. Criar superusuário 
+
+```bash
+python manage.py createsuperuser
+```
+
+Depois siga as instruções para definir:
+
+* username
+* email
+* senha
+
+Isso permitirá acessar o painel administrativo do Django em:
+
+```text
+http://127.0.0.1:8000/admin/
+```
+
+---
+
+### 10. Inicie o servidor
 
 ```bash
 python manage.py runserver
@@ -125,6 +164,8 @@ http://127.0.0.1:8000/admin/
 
 Após tudo configurado, para criar sua branch de desenvolvimento, rode os seguintes comandos:
 
+---
+
 ### 1. Carregar as branches do repositório
 
 ```bash
@@ -151,16 +192,10 @@ git pull origin develop
 
 ### 4. Criar sua própria branch
 
+Utilize o seguinte padrão:
+
 ```bash
 git checkout -b seunome
-```
-
-Substitua `seunome` pelo seu nome ou identificador da feature.
-
-Exemplo:
-
-```bash
-git checkout -b patriki
 ```
 
 ---
@@ -168,14 +203,51 @@ git checkout -b patriki
 ### 5. Enviar sua branch para o GitHub
 
 ```bash
-git push -u origin seunome
-```
-
-Exemplo:
-
-```bash
-git push -u origin patriki
+git push -u origin feature/seunome-funcionalidade
 ```
 
 ---
 
+## Fluxo recomendado de trabalho
+
+* Nunca trabalhar diretamente na `main`
+* Utilizar sempre a branch `develop` como base
+* Criar sua própria branch 
+* Após finalizar, abrir Pull Request para revisão
+
+---
+
+## Estrutura do projeto
+
+Cada módulo principal foi separado em sua própria app Django:
+
+* adocao
+* denuncias
+* doacoes
+* gerenciamento
+* resgates
+* transparencia
+* vendas
+* core
+
+Cada app possui sua própria organização de:
+
+* models
+* views
+* serializers
+* urls
+
+---
+
+## Observação final
+
+Se algo não funcionar:
+
+1. Verifique se a venv está ativada
+2. Confirme se o `.env` foi criado corretamente
+3. Rode novamente as migrations
+4. Confira se está na branch correta
+
+(Em caso de dúvidas, não me chame.
+
+Att., Patriki)

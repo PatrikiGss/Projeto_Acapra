@@ -195,7 +195,7 @@ git pull origin develop
 Utilize o seguinte padrão:
 
 ```bash
-git checkout -b seunome
+git checkout -b <seunome>
 ```
 
 ---
@@ -203,7 +203,7 @@ git checkout -b seunome
 ### 5. Enviar sua branch para o GitHub
 
 ```bash
-git push -u origin feature/seunome-funcionalidade
+git push -u origin <seunome>
 ```
 
 ---

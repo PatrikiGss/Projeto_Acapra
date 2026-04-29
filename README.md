@@ -1,253 +1,194 @@
-# Configuração inicial do projeto ACAPRA
+# Projeto Acapra
 
-## Pré-requisitos
+Sistema web da Acapra, organizado em uma API backend com Django e uma interface frontend com React.
 
-* Python na versão mais recente estável
-* Git instalado
-* VS Code (recomendado)
+## Tecnologias
 
----
+### Backend
 
-## Passo a passo para rodar o projeto
+- Python
+- Django
+- Django REST Framework
+- Django CORS Headers
+- Simple JWT
+- SQLite em ambiente local
 
-### 1. Clone o repositório
+### Frontend
 
-No terminal, navegue até a pasta onde deseja salvar o projeto e execute:
+- React
+- React Router DOM
+- React Scripts
+- Testing Library
 
-```bash
-git clone https://github.com/PatrikiGss/Projeto_Acapra.git
+## Estrutura do projeto
+
+```text
+Projeto_Acapra/
++-- backend/                 # API Django e apps do sistema
+|   +-- Acapra/              # Configuracoes principais do Django
+|   +-- adocao/
+|   +-- core/
+|   +-- denuncias/
+|   +-- doacoes/
+|   +-- gerenciamento/
+|   +-- resgates/
+|   +-- transparencia/
+|   +-- vendas/
+|   +-- manage.py
+|   +-- .env.example
++-- frontend/                # Interface React
+|   +-- public/
+|   +-- src/
+|   +-- package.json
++-- requirements.txt         # Dependencias Python
++-- README.md
 ```
 
-Depois, entre na pasta do projeto:
+## Pre-requisitos
 
-```bash
-cd Projeto_Acapra
-```
+- Python instalado
+- Node.js e npm instalados
+- Git instalado
 
----
+## Configuracao do backend
 
-### 2. Crie o ambiente virtual (venv)
+Entre na pasta do projeto e crie o ambiente virtual:
 
 ```bash
 python -m venv venv
 ```
 
----
-
-### 3. Ative a venv
-
-### Windows
+Ative o ambiente virtual no Windows:
 
 ```bash
 venv\Scripts\activate
 ```
 
----
-
-### 4. Instale as dependências do projeto
+Instale as dependencias Python:
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
-
-### 5. Crie o arquivo `.env`
-
-Na raiz do projeto, crie um arquivo chamado:
-
-```text
-.env
-```
-
----
-
-### 6. Gere uma nova SECRET_KEY
-
-Abra o terminal interativo do Python com:
-
-```bash
-python
-```
-
-Depois execute:
-
-```python
-from django.core.management.utils import get_random_secret_key
-print(get_random_secret_key())
-```
-
-Copie a chave gerada.
-
-Para sair do terminal Python:
-
-```python
-exit()
-```
-
----
-
-### 7. Configure o arquivo `.env`
-
-Cole a chave gerada após o sinal de `=` no campo correspondente.
-
-Exemplo:
+Crie o arquivo `.env` na raiz do projeto ou na pasta usada pela configuracao local. Use `backend/.env.example` como referencia:
 
 ```env
 SECRET_KEY=sua_secret_key_aqui
 DEBUG=True
 ALLOWED_HOSTS=127.0.0.1,localhost
+CORS_ALLOWED_ORIGINS=http://localhost:3000
+DB_ENGINE=django.db.backends.sqlite3
+DB_NAME=db.sqlite3
 ```
 
----
-
-### 8. Rode as migrations
+Para gerar uma `SECRET_KEY`, execute:
 
 ```bash
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+```
+
+Rode as migrations:
+
+```bash
+cd backend
 python manage.py migrate
 ```
 
-Sempre que houver alteração em models, rode também:
-
-```bash
-python manage.py makemigrations
-python manage.py migrate
-```
-
----
-
-### 9. Criar superusuário 
-
-```bash
-python manage.py createsuperuser
-```
-
-Depois siga as instruções para definir:
-
-* username
-* email
-* senha
-
-Isso permitirá acessar o painel administrativo do Django em:
-
-```text
-http://127.0.0.1:8000/admin/
-```
-
----
-
-### 10. Inicie o servidor
+Inicie o backend:
 
 ```bash
 python manage.py runserver
 ```
 
----
-
-## Acesso local
-
-Após iniciar o servidor, acesse:
+O backend ficara disponivel em:
 
 ```text
 http://127.0.0.1:8000/
 ```
 
-Admin Django:
+O painel administrativo ficara disponivel em:
 
 ```text
 http://127.0.0.1:8000/admin/
 ```
 
----
-
-## Criação da sua branch
-
-Após tudo configurado, para criar sua branch de desenvolvimento, rode os seguintes comandos:
-
----
-
-### 1. Carregar as branches do repositório
+Para criar um superusuario:
 
 ```bash
-git fetch
+python manage.py createsuperuser
 ```
 
----
+## Configuracao do frontend
 
-### 2. Mudar para a branch `develop`
+Em outro terminal, entre na pasta do frontend:
 
 ```bash
-git checkout develop
+cd frontend
 ```
 
----
-
-### 3. Atualizar a branch `develop`
+Instale as dependencias:
 
 ```bash
-git pull origin develop
+npm install
 ```
 
----
-
-### 4. Criar sua própria branch
-
-Utilize o seguinte padrão:
+Inicie a aplicacao React:
 
 ```bash
-git checkout -b <seunome>
+npm start
 ```
 
----
+O frontend ficara disponivel em:
 
-### 5. Enviar sua branch para o GitHub
+```text
+http://localhost:3000
+```
+
+## Rodando o projeto completo
+
+Para testar a aplicacao completa, mantenha dois terminais abertos:
+
+1. Backend rodando em `http://127.0.0.1:8000/`
+2. Frontend rodando em `http://localhost:3000`
+
+O frontend consome a API local do backend, entao os dois servicos precisam estar ativos durante o desenvolvimento.
+
+## Scripts e comandos uteis
+
+### Backend
 
 ```bash
-git push -u origin <seunome>
+python manage.py runserver
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
 ```
 
----
+### Frontend
+
+```bash
+npm start
+npm test
+npm run build
+```
 
 ## Fluxo recomendado de trabalho
 
-* Nunca trabalhar diretamente na `main`
-* Utilizar sempre a branch `develop` como base
-* Criar sua própria branch 
-* Após finalizar, abrir Pull Request para revisão
+- Use a branch `develop` como base para novas tarefas.
+- Crie uma branch propria para cada alteracao.
+- Evite trabalhar diretamente na `main`.
+- Abra um Pull Request ao finalizar uma entrega.
 
----
+Exemplo:
 
-## Estrutura do projeto
+```bash
+git fetch
+git checkout develop
+git pull origin develop
+git checkout -b seu-nome-ou-feature
+```
 
-Cada módulo principal foi separado em sua própria app Django:
+## Documentacao por modulo
 
-* adocao
-* denuncias
-* doacoes
-* gerenciamento
-* resgates
-* transparencia
-* vendas
-* core
-
-Cada app possui sua própria organização de:
-
-* models
-* views
-* serializers
-* urls
-
----
-
-## Observação final
-
-Se algo não funcionar:
-
-1. Verifique se a venv está ativada
-2. Confirme se o `.env` foi criado corretamente
-3. Rode novamente as migrations
-4. Confira se está na branch correta
-
-(Em caso de dúvidas, não me chame.
-
-Att., Patriki)
+- Backend: `backend/README.md`
+- Frontend: `frontend/README.md`

@@ -1,70 +1,98 @@
-# Getting Started with Create React App
+# Frontend - Projeto Acapra
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Interface web do Projeto Acapra, desenvolvida com React e Create React App. A aplicacao usa React Router para organizar as rotas e consome a API local do backend em `http://localhost:8000/`.
 
-## Available Scripts
+## Tecnologias
 
-In the project directory, you can run:
+- React
+- React DOM
+- React Router DOM
+- React Scripts
+- Testing Library
 
-### `npm start`
+## Estrutura
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```text
+frontend/
++-- public/                  # Arquivos publicos da aplicacao
++-- src/
+|   +-- components/          # Componentes reutilizaveis
+|   |   +-- footer/
+|   |   +-- header/
+|   +-- layouts/             # Layout base das paginas
+|   +-- pages/               # Telas da aplicacao
+|   |   +-- HomeView/
+|   +-- App.js               # Definicao das rotas
+|   +-- index.js             # Ponto de entrada do React
++-- package.json
++-- package-lock.json
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Como executar
 
-### `npm test`
+Entre na pasta do frontend:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+cd frontend
+```
 
-### `npm run build`
+Instale as dependencias:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+npm install
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Inicie o servidor de desenvolvimento:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+npm start
+```
 
-### `npm run eject`
+A aplicacao ficara disponivel em:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```text
+http://localhost:3000
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Integracao com o backend
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+A pagina inicial faz uma requisicao para:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```text
+http://localhost:8000/
+```
 
-## Learn More
+Antes de testar a integracao completa, mantenha o backend rodando nessa porta.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Scripts disponiveis
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+npm start
+```
 
-### Code Splitting
+Executa o app em modo de desenvolvimento.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```bash
+npm test
+```
 
-### Analyzing the Bundle Size
+Executa os testes em modo interativo.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```bash
+npm run build
+```
 
-### Making a Progressive Web App
+Gera a versao de producao na pasta `build/`.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```bash
+npm run eject
+```
 
-### Advanced Configuration
+Expoe as configuracoes internas do Create React App. Use apenas se for realmente necessario, pois essa acao nao pode ser desfeita automaticamente.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## Padrao de desenvolvimento
 
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Crie novas telas em `src/pages/`.
+- Crie componentes reutilizaveis em `src/components/`.
+- Mantenha estilos junto ao componente ou pagina correspondente.
+- Adicione novas rotas em `src/App.js`.

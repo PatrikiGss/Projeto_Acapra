@@ -29,7 +29,7 @@ urlpatterns = [
     path('adocao/', include('adocao.urls', namespace='adocao')),
     path('denuncias/', include('denuncias.urls', namespace='denuncias')),
     path('doacoes/', include('doacoes.urls', namespace='doacoes')),
-    path('gerenciamento/', include('gerenciamento.urls', namespace='gerenciamento')),
+    path('api/gerenciamento/', include('gerenciamento.urls')),
     path('resgates/', include('resgates.urls', namespace='resgates')),
     path('transparencia/', include('transparencia.urls', namespace='transparencia')),
     path('vendas/', include('vendas.urls', namespace='vendas')),

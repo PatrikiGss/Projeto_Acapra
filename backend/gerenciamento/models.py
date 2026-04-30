@@ -1,99 +1,119 @@
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import BaseUserManager
 from django.db import models
-from django.contrib.auth.models import User
+"""
+Pequenos ajustes posteriores
+
+criar signal para auto criar PerfilAdministrativo
+index no email
+validação de telefone 
+"""
+
+class UsuarioManager(BaseUserManager):
+    """
+    Manager customizado para autenticação via email.
+    Substitui o comportamento padrão baseado em username.
+    """
+
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError("O email é obrigatório")
+
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        """
+        Criação de superusuário com permissões totais no sistema.
+        """
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser precisa de is_staff=True")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser precisa de is_superuser=True")
+
+        return self.create_user(email, password, **extra_fields)
+
+
+class Usuario(AbstractUser):
+    """
+    Modelo de usuário customizado usando email como login.
+    """
+
+    nome = models.CharField(max_length=255)
+    email = models.EmailField(unique=True)
+    telefone = models.CharField(max_length=15, blank=True, null=True)
+
+    # Remove o username padrão
+    username = None
+
+    # Define o email como identificador de login
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+    # Define o manager customizado
+    objects = UsuarioManager()
+
+    def __str__(self):
+        return self.nome
 
 
 class PerfilAdministrativo(models.Model):
     """
-    Model complementar ao User padrão do Django.
-
-    ====================================================
-    CAMPOS NATIVOS DO DJANGO (model User)
-    ====================================================
-
-    Esses campos JÁ EXISTEM no Django e podem ser usados
-    pelo frontend normalmente através do relacionamento `user`.
-
-    Principais campos disponíveis:
-
-    - username -> nome de login do usuário
-    - first_name -> primeiro nome
-    - last_name -> sobrenome
-    - email -> email do usuário
-    - password -> senha criptografada
-    - is_active -> usuário ativo/inativo
-    - is_staff -> acesso ao painel admin
-    - is_superuser -> super usuário (acesso total)
-    - groups -> grupos de permissão (Usuário, Admin, Admin Master)
-    - user_permissions -> permissões específicas
-    - last_login -> último login
-    - date_joined -> data de criação da conta
-
-    NÃO recriamos esses campos aqui porque o Django já fornece.
-
-    ====================================================
-    CAMPOS DESTA MODEL (PerfilAdministrativo)
-    ====================================================
-
-    Aqui ficam apenas informações complementares para gestão:
-
-    - cargo
-    - setor
-    - ativo
-    - data_promocao
-    - promovido_por
-    - observacoes
+    Perfil que define o nível hierárquico e dados administrativos do usuário.
     """
 
-    user = models.OneToOneField(
-        User,
+    class Nivel(models.TextChoices):
+        USUARIO = "usuario", "Usuário Comum"
+        ADMIN = "admin", "Administrador"
+        MASTER = "master", "Administrador Master"
+
+    # Relacionamento 1:1 com usuário
+    usuario = models.OneToOneField(
+        Usuario,
         on_delete=models.CASCADE,
-        related_name="perfil_administrativo",
-        verbose_name="Usuário"
+        related_name="perfil_admin"
     )
 
-    cargo = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True,
-        verbose_name="Cargo"
+    # Define o nível hierárquico do usuário
+    nivel = models.CharField(
+        max_length=20,
+        choices=Nivel.choices,
+        default=Nivel.USUARIO
     )
 
-    setor = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True,
-        verbose_name="Setor"
-    )
+    # Informações administrativas opcionais
+    cargo = models.CharField(max_length=100, blank=True, null=True)
+    setor = models.CharField(max_length=100, blank=True, null=True)
 
-    ativo = models.BooleanField(
-        default=True,
-        verbose_name="Administrador ativo"
-    )
+    # Controle de status
+    ativo = models.BooleanField(default=True)
 
-    data_promocao = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="Data de promoção"
-    )
+    # Registro de promoção
+    data_promocao = models.DateTimeField(auto_now_add=True)
 
+    # Quem promoveu esse usuário
     promovido_por = models.ForeignKey(
-        User,
+        Usuario,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="admins_promovidos",
-        verbose_name="Promovido por"
+        related_name="admins_promovidos"
     )
 
-    observacoes = models.TextField(
-        blank=True,
-        null=True,
-        verbose_name="Observações internas"
-    )
+    # Observações internas
+    observacoes = models.TextField(blank=True, null=True)
 
     class Meta:
-        verbose_name = "Perfil Administrativo"
-        verbose_name_plural = "Perfis Administrativos"
-
+        """
+        Permissões customizadas do Django.
+        Usadas em conjunto com o nível para controle de acesso.
+        """
         permissions = [
             ("pode_validar_denuncia", "Pode validar denúncia"),
             ("pode_publicar_denuncia", "Pode publicar denúncia"),
@@ -103,4 +123,4 @@ class PerfilAdministrativo(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.user.username} - {self.cargo or 'Sem cargo'}"
+        return f"{self.usuario.nome} - {self.nivel}"

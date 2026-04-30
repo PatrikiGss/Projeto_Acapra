@@ -25,7 +25,7 @@ ALLOWED_HOSTS = config(
     default="127.0.0.1,localhost",
     cast=Csv()
 )
-
+AUTH_USER_MODEL = 'gerenciamento.Usuario'
 
 # =========================================================
 # APPLICATIONS

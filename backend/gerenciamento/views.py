@@ -2,11 +2,13 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from django.contrib.auth import update_session_auth_hash
 from .serializers import (UsuarioSerializer,UpdateUsuarioSerializer,GetUsuarioSerializer,ChangePasswordSerializer)
 
 
 class RegisterView(APIView):
+    permission_classes = [AllowAny]
     """
     Endpoint público para registro de novos usuários.
 

@@ -47,7 +47,8 @@ class Usuario(AbstractUser):
 
     nome = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
-    telefone = models.CharField(max_length=15, blank=True, null=True)
+    telefone = models.CharField(max_length=15, blank=True, null=True) 
+   #password_changed_at = models.DateTimeField(null=True, blank=True)
 
     # Remove o username padrão
     username = None

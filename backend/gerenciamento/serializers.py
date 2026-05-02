@@ -16,6 +16,10 @@ class UsuarioSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'password': {'write_only': True}
         }
+    def validate_password(self, value):
+        # Aplica validações do Django (tamanho, comum, numérica, etc)
+        validate_password(value)
+        return value
 
     def create(self, validated_data):
         """
@@ -48,7 +52,7 @@ class UpdateUsuarioSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Usuario
-        fields = ['nome', 'telefone', 'email']
+        fields = ['nome', 'telefone']
 
 
 class GetUsuarioSerializer(serializers.ModelSerializer):
@@ -87,7 +91,8 @@ class ChangePasswordSerializer(serializers.Serializer):
         """
         Aplica validações de segurança do Django.
         """
-        validate_password(value)
+        user = self.context['request'].user
+        validate_password(value, user)
         return value
 
     def validate(self, attrs):

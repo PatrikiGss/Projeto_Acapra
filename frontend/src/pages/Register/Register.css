@@ -1,0 +1,172 @@
+.register-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: stretch;
+  background-color: #fff;
+}
+
+/* ---- LADO DA IMAGEM ---- */
+.register-imagem {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .register-imagem {
+    display: block;
+  }
+}
+
+.register-imagem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.register-imagem-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2rem;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+}
+
+.register-imagem-overlay h2 {
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* ---- LADO DO FORMULÁRIO ---- */
+.register-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem 3.5rem;
+  max-width: 520px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.register-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.register-logo {
+  font-size: 2.5rem;
+}
+
+.register-header h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin: 0.5rem 0 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.register-header p {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.register-header p strong {
+  color: #e87722;
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.register-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.register-field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.register-field input {
+  padding: 0.75rem 1rem;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #1a1a1a;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.register-field input:focus {
+  border-color: #e87722;
+}
+
+.register-field input::placeholder {
+  color: #bbb;
+}
+
+.register-erro {
+  background-color: #fff3f0;
+  border: 1px solid #e87722;
+  color: #c0392b;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.register-btn {
+  background-color: #e87722;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 0.85rem;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 0.5rem;
+}
+
+.register-btn:hover {
+  background-color: #cf6510;
+}
+
+.register-btn:disabled {
+  background-color: #f0b07a;
+  cursor: not-allowed;
+}
+
+.register-login {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.register-login a {
+  color: #e87722;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.register-login a:hover {
+  text-decoration: underline;
+}

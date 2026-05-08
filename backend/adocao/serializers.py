@@ -1,0 +1,17 @@
+from rest_framework import serializers
+from .models import Animal
+
+class AnimalSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Animal
+        fields = "__all__"
+
+class GetAnimalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Animal
+        fields = ['nome_doador','especie','sexo','foto','descricao']
+
+class UpdateAnimalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Animal
+        fields = ['nome_doador','especie','sexo','foto','descricao']

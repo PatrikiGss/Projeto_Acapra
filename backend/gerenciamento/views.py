@@ -2,11 +2,14 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from django.contrib.auth import update_session_auth_hash
 from .serializers import (UsuarioSerializer,UpdateUsuarioSerializer,GetUsuarioSerializer,ChangePasswordSerializer)
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 
 
 class RegisterView(APIView):
+    permission_classes = [AllowAny]
     """
     Endpoint público para registro de novos usuários.
 
@@ -106,9 +109,11 @@ class ChangePasswordView(APIView):
 
         # Atualiza senha com hash seguro (NUNCA salvar senha pura)
         user.set_password(serializer.validated_data['new_password'])
+        user.save()
 
-        # Mantém o usuário logado após troca de senha
-        update_session_auth_hash(request, user)
+        # Invalida TODOS os tokens do usuário
+        for token in OutstandingToken.objects.filter(user=user):
+            BlacklistedToken.objects.get_or_create(token=token)
 
         user.save()
 

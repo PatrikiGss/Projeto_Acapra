@@ -1,5 +1,8 @@
 .site-header {
-  z-index: 10;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
   height: 75px;
 
   display: flex;
@@ -7,7 +10,7 @@
   justify-content: space-between;
 
   gap: 1.5rem;
-  padding: 0  clamp(1rem, 4vw, 3.5rem);
+  padding: 0 clamp(1rem, 4vw, 3.5rem);
 
   background-color: rgba(255, 255, 255, 0.9);
   border-bottom: 1.5px solid rgba(224, 224, 224, 0.85);
@@ -17,96 +20,221 @@
   -webkit-backdrop-filter: blur(14px);
 }
 
+/* LOGO */
+
 .site-brand {
   display: inline-flex;
   align-items: center;
   gap: 0.65rem;
+
   margin: 0;
+
   color: #1a1a1a;
+  text-decoration: none;
 }
 
 .site-brand-name {
   margin: 0;
+
   font-family: 'Compacta', 'Bebas Neue', sans-serif;
+  font-size: 1.7rem;
   font-weight: 800;
-  letter-spacing: 1PX;
+  letter-spacing: 1px;
+
   color: #e87722;
 }
 
 .logo-nav {
-  display: flex;
   height: 4rem;
+  width: auto;
+  object-fit: contain;
+}
+
+/* NAV */
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.site-nav-link {
+  position: relative;
+
+  font-family: 'Compacta', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1;
+
+  color: #e87722;
+
+  text-decoration: none;
+  text-transform: uppercase;
+
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.site-nav-link:hover,
+.site-nav-link:focus-visible {
+  color: #cf6510;
+  transform: translateY(-1px);
 }
 
 .site-nav-link:focus-visible {
   outline: 2px solid #e87722;
   outline-offset: 4px;
+  border-radius: 4px;
 }
 
-.site-nav {
-  display: flex;
-  align-items: center;
-  gap: 3rem;
+/* LINHA ANIMADA */
+
+.site-nav-link::after {
+  content: "";
+
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+
+  width: 0;
+  height: 2px;
+
+  background-color: #e87722;
+
+  transition: width 0.25s ease;
 }
 
-.site-nav-link {
-  font-family: 'Compacta', sans-serif;                  
-  color: #e87722;
+.site-nav-link:hover::after {
+  width: 100%;
+}
+
+/* BOTÃO HAMBÚRGUER */
+
+.menu-toggle {
+  display: none;
+
+  background: none;
   border: none;
-  font-size: 0.9rem;
-  font-weight: 700;
-  line-height: 1;
-  border-radius: 2px;
-  text-decoration: none;
-  text-transform: uppercase;
-  transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s;
+
+  font-size: 2rem;
+  color: #e87722;
+
+  cursor: pointer;
+  z-index: 200;
+
+  transition: transform 0.2s ease;
 }
 
-.site-nav-link:hover,
-.site-nav-link:active {
-  background-color: #cf6510;
-  box-shadow: 0 12px 26px rgba(207, 101, 16, 0.22);
-  transform: translateY(-1px);
+.menu-toggle:hover {
+  transform: scale(1.05);
 }
 
-@media (max-width: 640px) {
+/* TABLET */
+
+@media (max-width: 1024px) {
+  .site-nav {
+    gap: 1.2rem;
+  }
+
+  .site-nav-link {
+    font-size: 0.85rem;
+  }
+}
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+
   .site-header {
-    gap: 1rem;
-    padding: 0.75rem 1rem;
+    height: 75px;
   }
 
-  .site-brand {
-    gap: 0.5rem;
-    min-width: 0;
+  .menu-toggle {
+    display: block;
   }
 
-  .site-brand-icon {
-    width: 2rem;
-    height: 2rem;
-    font-size: 1.1rem;
+  .site-nav {
+    position: absolute;
+
+    top: 75px;
+    left: 0;
+
+    width: 100%;
+
+    background: rgba(255, 255, 255, 0.97);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+
+    padding: 2rem 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 1.8rem;
+
+    transform: translateY(-120%);
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition:
+      transform 0.3s ease,
+      opacity 0.3s ease;
+  }
+
+  .site-nav.active {
+    transform: translateY(0);
+    opacity: 1;
+
+    pointer-events: all;
+  }
+
+  .site-nav-link {
+    font-size: 1rem;
+  }
+
+  .site-nav-link::after {
+    bottom: -4px;
+  }
+
+  .logo-nav {
+    height: 3.3rem;
   }
 
   .site-brand-name {
-    font-size: 1.1rem;
-    letter-spacing: 0.8px;
-  }
-
-  .site-nav-link {
-    min-height: 2.25rem;
-    padding: 0.6rem 0.5rem;
-    font-size: 0.8rem;
-    letter-spacing: 0.8px;
+    font-size: 1.4rem;
   }
 }
 
-@media (max-width: 360px) {
+/* CELULARES PEQUENOS */
+
+@media (max-width: 420px) {
+
   .site-header {
-    align-items: stretch;
-    flex-direction: column;
+    padding: 0 1rem;
   }
 
-  .site-nav,
+  .site-brand {
+    gap: 0.45rem;
+  }
+
+  .logo-nav {
+    height: 3rem;
+  }
+
+  .site-brand-name {
+    font-size: 1.2rem;
+  }
+
   .site-nav-link {
-    width: 100%;
+    font-size: 0.95rem;
   }
 }

@@ -90,7 +90,7 @@ function Register() {
               id="telefone"
               name="telefone"
               type="text"
-              placeholder="(00) 00000-0000"
+              placeholder="+5501234567890"
               value={form.telefone}
               onChange={handleChange}
               required

@@ -14,7 +14,6 @@ function Home() {
     <div className="main">
       <section className="hero">
         <img className="hero-img" src="/hero.jpg" alt="" />
-
         <div className="hero-content">
           <h1 className="hero-text">
             Associação Joaquinense de Proteção aos Animais

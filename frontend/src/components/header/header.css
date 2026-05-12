@@ -1,6 +1,6 @@
 .site-header {
   z-index: 10;
-  height: 80px;
+  height: 75px;
 
   display: flex;
   align-items: center;
@@ -46,25 +46,19 @@
 .site-nav {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 3rem;
 }
 
 .site-nav-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 2.5rem;
-  padding: 0.3rem 1rem;
-  background-color: #e87722;
-  color: #fff;
+  font-family: 'Compacta', sans-serif;                  
+  color: #e87722;
   border: none;
   font-size: 0.9rem;
   font-weight: 700;
-  letter-spacing: 1px;
   line-height: 1;
+  border-radius: 2px;
   text-decoration: none;
   text-transform: uppercase;
-  box-shadow: 0 10px 22px rgba(232, 119, 34, 0.18);
   transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 

@@ -1,19 +1,16 @@
 import { useEffect, useState } from "react";
-import "./Home.css"
+import "./Home.css";
 
 function Home() {
-  const [msg, setMsg] = useState("");
-
-  useEffect(() => {
-    fetch("http://localhost:8000/")
-      .then(res => res.json())
-      .then(data => setMsg(data.message));
-  }, []);
-
   return (
     <div className="main">
       <section className="hero">
-        <img className="hero-img" src="/hero.jpg" alt="" />
+        <img
+          className="hero-img"
+          src="/hero-animals.png"
+          alt="Cães da associação"
+        />
+
         <div className="hero-content">
           <h1 className="hero-text">
             Associação Joaquinense de Proteção aos Animais

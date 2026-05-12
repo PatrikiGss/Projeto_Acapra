@@ -1,13 +1,30 @@
+import { useState } from "react";
 import "./header.css";
 
 function Header() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <header className="site-header">
       <h1 className="site-brand">
-          <img className="logo-nav" src="/logo.png" alt="Logo" />
-          <p className="site-brand-name">ACAPRA</p>
+        <img className="logo-nav" src="/logo.png" alt="Logo" />
+        <p className="site-brand-name">ACAPRA</p>
       </h1>
-      <nav className="site-nav" aria-label="Navegacao principal">
+
+      {/* BOTÃO MOBILE */}
+      <button
+        className="menu-toggle"
+        onClick={() => setMenuOpen(!menuOpen)}
+        aria-label="Abrir menu"
+      >
+        ☰
+      </button>
+
+      {/* NAV */}
+      <nav
+        className={`site-nav ${menuOpen ? "active" : ""}`}
+        aria-label="Navegacao principal"
+      >
         <a className="site-nav-link" href="/">Inicio</a>
         <a className="site-nav-link" href="/">Adotar</a>
         <a className="site-nav-link" href="/">Faça Parte</a>

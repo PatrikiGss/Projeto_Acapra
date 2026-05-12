@@ -55,7 +55,7 @@ class AnimaisView(APIView):
         Cria novo animal.
         """
 
-        serializer = AnimalSerializer(data=request.data)
+        serializer = AnimalSerializers(data=request.data)
 
         serializer.is_valid(raise_exception=True)
 

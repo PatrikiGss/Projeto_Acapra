@@ -46,7 +46,7 @@ function Login() {
 
       <div className="login-card">
         <div className="login-header">
-          <span className="login-logo">🐾</span>
+          <span className="login-logo"><img src="/logo.png" alt="logo" className="login-logo" /></span>
           <h1>Entrar</h1>
           <p>Acesse sua conta na <strong>Acapra</strong></p>
         </div>

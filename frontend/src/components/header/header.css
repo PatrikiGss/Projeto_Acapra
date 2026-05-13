@@ -1,25 +1,240 @@
-header {
-    background-color: #f8f8f8;
-    padding: 1rem;
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  height: 75px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 0.5rem;
+  padding: 0 clamp(1rem, 4vw, 3.5rem);
+
+  background-color: rgba(255, 255, 255, 0.9);
+  border-bottom: 1.5px solid rgba(224, 224, 224, 0.85);
+  box-shadow: 0 12px 28px rgba(26, 26, 26, 0.06);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* LOGO */
+
+.site-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+
+  margin: 0;
+
+  color: #1a1a1a;
+  text-decoration: none;
+}
+
+.site-brand-name {
+  margin: 0;
+
+  font-family: 'Compacta', 'Bebas Neue', sans-serif;
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+
+  color: #e87722;
+}
+
+.logo-nav {
+  height: 4rem;
+  width: auto;
+  object-fit: contain;
+}
+
+/* NAV */
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin-right: auto;
+}
+
+.site-nav-link {
+  position: relative;
+
+  font-family: 'Compacta', sans-serif;
+  font-size: 0.90rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  line-height: 1;
+
+  color: #e87722;
+
+  text-decoration: none;
+
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.site-nav-link:hover,
+.site-nav-link:focus-visible {
+  color: #cf6510;
+  transform: translateY(-1px);
+}
+
+.site-nav-link:focus-visible {
+  outline: 2px solid #e87722;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+/* LINHA ANIMADA */
+
+.site-nav-link::after {
+  content: "";
+
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+
+  width: 0;
+  height: 2px;
+
+  background-color: #e87722;
+
+  transition: width 0.25s ease;
+}
+
+.site-nav-link:hover::after {
+  width: 100%;
+}
+
+/* BOTÃO HAMBÚRGUER */
+
+.menu-toggle {
+  display: none;
+
+  background: none;
+  border: none;
+
+  font-size: 2rem;
+  color: #e87722;
+
+  cursor: pointer;
+  z-index: 200;
+
+  transition: transform 0.2s ease;
+}
+
+.menu-toggle:hover {
+  transform: scale(1.05);
+}
+
+/* TABLET */
+
+@media (max-width: 1024px) {
+  .site-nav {
+    gap: 1.2rem;
+  }
+
+  .site-nav-link {
+    font-size: 0.85rem;
+  }
+}
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+
+  .site-header {
+    height: 75px;
+  }
+
+  .menu-toggle {
+    display: block;
+  }
+
+  .site-nav {
+    position: absolute;
+
+    top: 75px;
+    left: 0;
+
+    width: 100%;
+
+    background: rgba(255, 255, 255, 0.97);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+
+    padding: 2rem 0;
+
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
+
+    gap: 1.8rem;
+
+    transform: translateY(-120%);
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition:
+      transform 0.3s ease,
+      opacity 0.3s ease;
+  }
+
+  .site-nav.active {
+    transform: translateY(0);
+    opacity: 1;
+
+    pointer-events: all;
+  }
+
+  .site-nav-link {
+    font-size: 1rem;
+  }
+
+  .site-nav-link::after {
+    bottom: -4px;
+  }
+
+  .logo-nav {
+    height: 3.3rem;
+  }
+
+  .site-brand-name {
+    font-size: 1.4rem;
+  }
 }
 
-h1 {
-    margin: 0;
-    font-size: 1.5rem;
-}
+/* CELULARES PEQUENOS */
 
-nav {
-    display: flex;
-    gap: 1rem;
-}
+@media (max-width: 420px) {
 
-nav a {
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
+  .site-header {
+    padding: 0 1rem;
+  }
 
+  .site-brand {
+    gap: 0.45rem;
+  }
+
+  .logo-nav {
+    height: 3rem;
+  }
+
+  .site-brand-name {
+    font-size: 1.2rem;
+  }
+
+  .site-nav-link {
+    font-size: 0.95rem;
+  }
+}

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Animal
 
-class AnimalSerializers(serializers.ModelSerializer):
+class AnimalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Animal
         fields = "__all__"
@@ -9,7 +9,7 @@ class AnimalSerializers(serializers.ModelSerializer):
 class GetAnimalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Animal
-        fields = ['nome_doador','especie','sexo','foto','descricao']
+        fields = ['id','nome_doador','especie','sexo','foto','descricao','created_at']
 
 class UpdateAnimalSerializer(serializers.ModelSerializer):
     class Meta:

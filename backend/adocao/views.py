@@ -9,7 +9,7 @@ from rest_framework.permissions import (
 from django.shortcuts import get_object_or_404
 
 from .models import Animal
-from .serializers import (AnimalSerializers,GetAnimalSerializer,UpdateAnimalSerializer)
+from .serializers import (AnimalSerializer,GetAnimalSerializer,UpdateAnimalSerializer)
 
 
 class AnimaisView(APIView):
@@ -51,19 +51,12 @@ class AnimaisView(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        """
-        Cria novo animal.
-        """
-
-        serializer = AnimalSerializers(data=request.data)
-
+        serializer = AnimalSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        serializer.save()
-
+        animal = serializer.save()
         return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED
+            GetAnimalSerializer(animal).data,
+            status=status.HTTP_201_CREATED,
         )
 
 
@@ -110,7 +103,7 @@ class AnimalDetailView(APIView):
 
         return Response(serializer.data)
 
-    def put(self, request, pk):
+    def patch(self, request, pk):
         """
         Atualiza dados do animal.
         """

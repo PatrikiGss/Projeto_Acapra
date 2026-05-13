@@ -9,7 +9,7 @@ class AnimalSerializer(serializers.ModelSerializer):
 class GetAnimalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Animal
-        fields = ['nome_doador','especie','sexo','foto','descricao']
+        fields = ['nome_doador','especie','sexo','foto','descricao','created_at']
 
 class UpdateAnimalSerializer(serializers.ModelSerializer):
     class Meta:

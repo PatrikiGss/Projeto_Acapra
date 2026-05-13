@@ -45,7 +45,8 @@ class AnimaisView(APIView):
 
         serializer = GetAnimalSerializer(
             animais,
-            many=True
+            many=True,
+            context={'request':request}
         )
 
         return Response(serializer.data)
@@ -55,7 +56,7 @@ class AnimaisView(APIView):
         serializer.is_valid(raise_exception=True)
         animal = serializer.save()
         return Response(
-            GetAnimalSerializer(animal).data,
+            GetAnimalSerializer(animal, context={'request': request}).data,
             status=status.HTTP_201_CREATED,
         )
 
@@ -99,7 +100,7 @@ class AnimalDetailView(APIView):
 
         animal = self.get_object(pk)
 
-        serializer = GetAnimalSerializer(animal)
+        serializer = GetAnimalSerializer(animal, context={'request': request})
 
         return Response(serializer.data)
 

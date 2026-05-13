@@ -14,7 +14,7 @@ class SexoAnimal(models.TextChoices):
 
 
 class Animal(models.Model):
-    nome_doador = models.CharField(max_length=30)
+    nome_doador = models.CharField(max_length=100)
     telefone = PhoneNumberField(unique=True)
 
     especie = models.CharField(

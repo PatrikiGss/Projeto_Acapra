@@ -16,6 +16,7 @@ urlpatterns = [
     path('api/resgates/',      include('resgates.urls',      namespace='resgates')),
     path('api/transparencia/', include('transparencia.urls', namespace='transparencia')),
     path('api/vendas/',        include('vendas.urls',        namespace='vendas')),
+    path('api/voluntariado/',  include('voluntariado.urls',  namespace='voluntariado')),
 ]
 
 if settings.DEBUG:

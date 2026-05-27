@@ -26,7 +26,7 @@ function Header() {
         aria-label="Navegacao principal"
       >
         <a className="site-nav-link" href="/">Inicio</a>
-        <a className="site-nav-link" href="/">Adotar</a>
+        <a className="site-nav-link" href="/adocao">Adotar</a>
         <a className="site-nav-link" href="/">Faça Parte</a>
         <a className="site-nav-link" href="/">Resgates</a>
         <a className="site-nav-link" href="/">Produtos</a>

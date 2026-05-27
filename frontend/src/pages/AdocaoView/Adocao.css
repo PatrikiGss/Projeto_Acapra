@@ -1,0 +1,192 @@
+/* General Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f8ff; /* Ice background */
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+h1, h2, h3 {
+    color: #ff8c00; /* Orange for headings */
+}
+
+a {
+    color: #ff8c00; /* Orange for links */
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Navbar Styles */
+.navbar {
+    background-color: #ff8c00; /* Orange navbar */
+    color: white; /* White text on navbar */
+    padding: 10px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.site-title {
+    margin: 0;
+    font-size: 2em;
+    color: white; /* White title on orange background */
+}
+
+.navbar nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+.navbar nav ul li {
+    margin-left: 20px;
+}
+
+.navbar nav ul li a {
+    color: white; /* White links in navbar */
+    font-weight: bold;
+}
+
+.navbar nav ul li a:hover {
+    color: #ffe5b4; /* Lighter orange on hover */
+    text-decoration: none;
+}
+
+/* Pet Listings Section */
+.pet-listings {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.pet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.pet-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease-in-out;
+}
+
+.pet-card:hover {
+    transform: translateY(-5px);
+}
+
+.pet-card .image-slider {
+    position: relative;
+    width: 100%;
+    height: 250px; /* Fixed height for image slider */
+    overflow: hidden;
+}
+
+.pet-card .image-slider img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensure images cover the area */
+    display: none; /* Hide all images initially */
+}
+
+.pet-card .image-slider img.active {
+    display: block; /* Show active image */
+}
+
+.pet-card .slider-controls {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.pet-card:hover .slider-controls {
+    opacity: 1;
+}
+
+.pet-card .slider-controls button {
+    background-color: rgba(255, 255, 255, 0.7);
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    font-size: 1.2em;
+    border-radius: 4px;
+    margin: 0 10px;
+    color: #333;
+}
+
+.pet-card .card-content {
+    padding: 15px;
+    flex-grow: 1; /* Allow content to take available space */
+}
+
+.pet-card h3 {
+    margin-top: 0;
+    color: #ff8c00; /* Orange for pet name */
+}
+
+.pet-card p {
+    margin-bottom: 5px;
+    font-size: 0.95em;
+}
+
+.pet-card p strong {
+    color: #555;
+}
+
+.pet-card .description {
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #666;
+}
+
+/* About and Contact Section Styles */
+.about-section,
+.contact-section {
+    margin-top: 40px;
+    padding: 30px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.about-section h2,
+.contact-section h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Footer Styles */
+.footer {
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 40px;
+    background-color: #ff8c00; /* Orange footer */
+    color: white;
+    font-size: 0.9em;
+}

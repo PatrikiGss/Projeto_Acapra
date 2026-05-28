@@ -1,0 +1,146 @@
+.animal-detail-page {
+    min-height: 100vh;
+    padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 5vw, 4rem);
+    background: #fff7ed;
+    color: #1a1a1a;
+    font-family: Arial, sans-serif;
+}
+
+.animal-detail {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+    gap: clamp(1.5rem, 4vw, 3rem);
+    width: min(100%, 1120px);
+    margin: 0 auto;
+    align-items: center;
+}
+
+.animal-detail-image {
+    overflow: hidden;
+    border-radius: 8px;
+    background: #f2f2f2;
+    box-shadow: 0 16px 32px rgba(26, 26, 26, 0.12);
+}
+
+.animal-detail-image img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+}
+
+.animal-detail-info {
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border: 1px solid rgba(224, 224, 224, 0.85);
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 12px 28px rgba(26, 26, 26, 0.08);
+}
+
+.back-link {
+    display: inline-flex;
+    margin-bottom: 1.25rem;
+    color: #cf6510;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.back-link:hover,
+.back-link:focus-visible {
+    color: #e87722;
+}
+
+.detail-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0.35rem 0.75rem;
+    margin-bottom: 0.8rem;
+    border-radius: 8px;
+    background: rgba(232, 119, 34, 0.12);
+    color: #cf6510;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.animal-detail-info h1 {
+    margin: 0 0 1rem;
+    font-family: 'Compacta', 'Bebas Neue', sans-serif;
+    font-size: clamp(2.4rem, 6vw, 4.6rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.detail-tags {
+    display: flex;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+}
+
+.detail-tags span {
+    min-width: 5rem;
+    padding: 0.5rem 0.8rem;
+    border-radius: 8px;
+    background: #ffd19b;
+    color: #1f2c45;
+    text-align: center;
+}
+
+.detail-tags span:nth-child(2) {
+    background: #e6e6e6;
+}
+
+.detail-description {
+    margin: 0 0 1.4rem;
+    color: #545454;
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+.detail-contact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(224, 224, 224, 0.85);
+    color: #545454;
+}
+
+.detail-contact strong {
+    color: #cf6510;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.78rem;
+}
+
+.animal-detail-message {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: min(100%, 560px);
+    margin: 0 auto;
+    padding: 2rem;
+    border-radius: 8px;
+    background: #fff;
+    color: #545454;
+    text-align: center;
+    box-shadow: 0 12px 28px rgba(26, 26, 26, 0.08);
+}
+
+.animal-detail-message a {
+    color: #cf6510;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+@media (max-width: 860px) {
+    .animal-detail {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+    }
+}

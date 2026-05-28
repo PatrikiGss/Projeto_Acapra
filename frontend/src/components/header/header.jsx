@@ -11,7 +11,6 @@ function Header() {
         <p className="site-brand-name">ACAPRA</p>
       </h1>
 
-      {/* BOTÃO MOBILE */}
       <button
         className="menu-toggle"
         onClick={() => setMenuOpen(!menuOpen)}
@@ -20,17 +19,16 @@ function Header() {
         ☰
       </button>
 
-      {/* NAV */}
       <nav
         className={`site-nav ${menuOpen ? "active" : ""}`}
-        aria-label="Navegacao principal"
+        aria-label="Navegação principal"
       >
-        <a className="site-nav-link" href="/">Inicio</a>
-        <a className="site-nav-link" href="/">Adotar</a>
-        <a className="site-nav-link" href="/">Faça Parte</a>
+        <a className="site-nav-link" href="/">Início</a>
+        <a className="site-nav-link" href="/adocao">Adotar</a>
+        <a className="site-nav-link" href="/voluntariado">Faça Parte</a>
         <a className="site-nav-link" href="/">Resgates</a>
-        <a className="site-nav-link" href="/">Produtos</a>
-        <a className="site-nav-link" href="/">Doe</a>
+        <a className="site-nav-link" href="/produtos">Produtos</a>
+        <a className="site-nav-link" href="/doe">Doe</a>
         <a className="site-nav-link" href="/">Transparência</a>
       </nav>
     </header>

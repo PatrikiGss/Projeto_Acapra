@@ -8,8 +8,19 @@ class DadosPixSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = DadosPix
-        fields = ['id', 'chave_pix', 'qr_code', 'descricao', 'ativo']
-        read_only_fields = ['id', 'qr_code', 'descricao', 'ativo']
+        fields = [
+            'id',
+            'chave_pix',
+            'qr_code',
+            'descricao',
+            'banco',
+            'agencia',
+            'conta',
+            'tipo_conta',
+            'cnpj',
+            'favorecido',
+            'ativo',
+        ]
 
 
 class GetDadosPixSerializer(serializers.ModelSerializer):
@@ -18,5 +29,16 @@ class GetDadosPixSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = DadosPix
-        fields = ['id', 'chave_pix', 'qr_code', 'descricao']
-        read_only_fields = ['id', 'chave_pix', 'qr_code', 'descricao']
+        fields = [
+            'id',
+            'chave_pix',
+            'qr_code',
+            'descricao',
+            'banco',
+            'agencia',
+            'conta',
+            'tipo_conta',
+            'cnpj',
+            'favorecido',
+        ]
+        read_only_fields = fields

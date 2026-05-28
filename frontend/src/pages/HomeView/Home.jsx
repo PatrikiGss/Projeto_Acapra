@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import "./Home.css";
 
 function Home() {
@@ -21,9 +21,18 @@ function Home() {
           </p>
 
           <div className="hero-links">
-            <a href="#" className="link">Adotar</a>
-            <a href="#" className="link">Doar</a>
+            <Link to="/adocao" className="link">Adotar</Link>
+            <Link to="/doe" className="link">Doar</Link>
           </div>
+        </div>
+      </section>
+
+      <section className="about-section" id="sobre">
+        <div className="about-content">
+          <h2>Sobre Nós</h2>
+          <p>
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Molestiae architecto veniam, voluptatibus quis doloribus asperiores esse deleniti debitis optio magni neque iure, accusamus nobis recusandae ut autem tempore soluta iusto?
+          </p>
         </div>
       </section>
     </div>

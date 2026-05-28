@@ -52,6 +52,7 @@
   max-width: 520px;
   width: 100%;
   margin: 0 auto;
+  font-family: 'Compacta', 'Bebas Neue', sans-serif;
 }
 
 .register-header {
@@ -60,7 +61,7 @@
 }
 
 .register-logo {
-  font-size: 2.5rem;
+  height: 10rem;
 }
 
 .register-header h1 {

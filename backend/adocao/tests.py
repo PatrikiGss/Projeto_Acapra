@@ -22,6 +22,7 @@ class AnimalModelTests(APITestCase):
 
     def setUp(self):
         self.animal = Animal.objects.create(
+            nome_animal="Thor",
             nome_doador="João Silva",
             telefone="+5511999999999",
             especie=EspecieAnimal.CACHORRO,
@@ -43,6 +44,7 @@ class AnimalModelTests(APITestCase):
     def test_campos_opcionais_aceitam_nulo(self):
         """foto e descricao podem ser nulos."""
         animal = Animal.objects.create(
+            nome_animal="Mia",
             nome_doador="Maria",
             telefone="+5511988888888",
             especie=EspecieAnimal.GATO,
@@ -73,6 +75,7 @@ class AnimalSerializerTests(APITestCase):
 
     def setUp(self):
         self.dados_validos = {
+            "nome_animal": "Bob",
             "nome_doador": "Carlos",
             "telefone": "+5511977777777",
             "especie": EspecieAnimal.CACHORRO,
@@ -140,6 +143,7 @@ class AnimaisViewTests(APITestCase):
         )
         self.url = reverse("adocao:animais")
         self.dados = {
+            "nome_animal": "Luna",
             "nome_doador": "Fernanda",
             "telefone": "+5511955555555",
             "especie": EspecieAnimal.GATO,
@@ -166,12 +170,14 @@ class AnimaisViewTests(APITestCase):
 
     def test_get_lista_ordenada_por_id_desc(self):
         Animal.objects.create(
+            nome_animal="Animal A",
             nome_doador="A",
             telefone="+5511944444444",
             especie=EspecieAnimal.CACHORRO,
             sexo=SexoAnimal.MACHO,
         )
         Animal.objects.create(
+            nome_animal="Animal B",
             nome_doador="B",
             telefone="+5511933333333",
             especie=EspecieAnimal.GATO,
@@ -223,6 +229,7 @@ class AnimalDetailViewTests(APITestCase):
             telefone="+5511922222222",
         )
         self.animal = Animal.objects.create(
+            nome_animal="Max",
             nome_doador="Pedro",
             telefone="+5511911111111",
             especie=EspecieAnimal.CACHORRO,

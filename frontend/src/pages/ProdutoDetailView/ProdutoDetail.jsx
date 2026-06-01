@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import api from "../../services/api";
 import "./ProdutoDetail.css";
 
@@ -10,7 +10,6 @@ function ProdutoDetail() {
     const [error, setError] = useState(false);
 
     useEffect(() => {
-        setLoading(true);
         api.get(`/api/vendas/produtos/${id}/`)
             .then((response) => {
                 setProduto(response.data);

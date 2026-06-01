@@ -1,15 +1,17 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import "./header.css";
 
 function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = () => setMenuOpen(false);
 
   return (
     <header className="site-header">
-      <h1 className="site-brand">
+      <Link className="site-brand" to="/" onClick={closeMenu}>
         <img className="logo-nav" src="/logo.png" alt="Logo" />
         <p className="site-brand-name">ACAPRA</p>
-      </h1>
+      </Link>
 
       <button
         className="menu-toggle"
@@ -24,13 +26,12 @@ function Header() {
         className={`site-nav ${menuOpen ? "active" : ""}`}
         aria-label="Navegacao principal"
       >
-        <a className="site-nav-link" href="/">Inicio</a>
-        <a className="site-nav-link" href="/">Adotar</a>
-        <a className="site-nav-link" href="/">Faça Parte</a>
-        <a className="site-nav-link" href="/">Resgates</a>
-        <a className="site-nav-link" href="/">Produtos</a>
-        <a className="site-nav-link" href="/">Doe</a>
-        <a className="site-nav-link" href="/">Transparência</a>
+        <Link className="site-nav-link" to="/" onClick={closeMenu}>Inicio</Link>
+        <Link className="site-nav-link" to="/adocao" onClick={closeMenu}>Adotar</Link>
+        <Link className="site-nav-link" to="/voluntariado" onClick={closeMenu}>Faça Parte</Link>
+        <Link className="site-nav-link" to="/produtos" onClick={closeMenu}>Produtos</Link>
+        <Link className="site-nav-link" to="/doe" onClick={closeMenu}>Doe</Link>
+        <Link className="site-nav-link" to="/login" onClick={closeMenu}>Entrar</Link>
       </nav>
     </header>
   );

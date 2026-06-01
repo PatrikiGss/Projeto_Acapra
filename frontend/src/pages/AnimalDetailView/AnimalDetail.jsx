@@ -10,7 +10,6 @@ function AnimalDetail() {
     const [error, setError] = useState(false);
 
     useEffect(() => {
-        setLoading(true);
         api.get(`/api/adocao/animais/${id}/`)
             .then((response) => {
                 setAnimal(response.data);

@@ -60,7 +60,7 @@ class MeuPerfilView(APIView):
         serializer = GetUsuarioSerializer(request.user)
         return Response(serializer.data)
 
-    def put(self, request):
+    def patch(self, request):
         """
         Atualiza parcialmente os dados do usuário logado.
 

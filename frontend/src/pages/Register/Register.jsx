@@ -52,7 +52,7 @@ function Register() {
 
       <div className="register-card">
         <div className="register-header">
-          <span className="register-logo">🐾</span>
+          <span className="register-logo"><img src="/logo.png" alt="logo" className="register-logo" /></span>
           <h1>Criar Conta</h1>
           <p>Faça parte da <strong>Acapra</strong> e ajude a proteger os animais</p>
         </div>
@@ -90,7 +90,7 @@ function Register() {
               id="telefone"
               name="telefone"
               type="text"
-              placeholder="(00) 00000-0000"
+              placeholder="+5501234567890"
               value={form.telefone}
               onChange={handleChange}
               required

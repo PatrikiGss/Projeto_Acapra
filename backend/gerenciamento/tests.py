@@ -15,7 +15,8 @@ class UsuarioAPITestCase(APITestCase):
         self.user = Usuario.objects.create_user(
             email="teste@email.com",
             password="SenhaForte123!",
-            nome="Teste"
+            nome="Teste",
+            telefone="+5511999999999"
         )
 
         # Endpoints principais da aplicação
@@ -29,7 +30,7 @@ class UsuarioAPITestCase(APITestCase):
             "email": "novo@email.com",
             "password": "SenhaForte123!",
             "nome": "Novo Usuario",
-            "telefone": "999999999"
+            "telefone": "+5511977777777"
         }
 
         response = self.client.post(self.register_url, data)
@@ -160,7 +161,8 @@ class UsuarioAPITestCase(APITestCase):
             user = Usuario.objects.create_user(
                  email="novo2@email.com",
                  password="SenhaForte123!",
-                 nome="Outro"
+                 nome="Outro",
+                 telefone="+5511966666666"
         )
 
             self.assertTrue(hasattr(user, "perfil_admin"))
@@ -175,7 +177,7 @@ class UsuarioAPITestCase(APITestCase):
         token = login_response.data['access']
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
 
-        response = self.client.put(self.me_url, {
+        response = self.client.patch(self.me_url, {
             "email": "hack@email.com"
         })
 

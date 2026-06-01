@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "resgates.apps.ResgatesConfig",
     "transparencia.apps.TransparenciaConfig",
     "vendas.apps.VendasConfig",
+    "voluntariado.apps.VoluntariadoConfig",
 ]
 
 
@@ -177,13 +178,15 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
+        "rest_framework.permissions.AllowAny",
     ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE":20,
 }
 
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 
     "ROTATE_REFRESH_TOKENS": False,
@@ -204,7 +207,7 @@ SIMPLE_JWT = {
 
 CORS_ALLOWED_ORIGINS = config(
     "CORS_ALLOWED_ORIGINS",
-    default="http://localhost:3000",
+    default="http://localhost:5173,http://127.0.0.1:5173",
     cast=Csv()
 )
 

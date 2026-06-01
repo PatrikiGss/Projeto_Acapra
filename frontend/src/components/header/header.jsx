@@ -11,7 +11,6 @@ function Header() {
         <p className="site-brand-name">ACAPRA</p>
       </h1>
 
-      {/* BOTÃO MOBILE */}
       <button
         className="menu-toggle"
         onClick={() => setMenuOpen(!menuOpen)}

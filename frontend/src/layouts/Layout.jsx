@@ -9,6 +9,7 @@ function Layout() {
       <div className="layout">
         <Header />
         <main>
+          
           <Outlet />
         </main>
         <Footer />

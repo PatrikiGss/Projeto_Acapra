@@ -1,5 +1,6 @@
 import { useState } from "react";
 import api from "../../services/api";
+import { formatBrazilianPhone, toBrazilianPhoneE164 } from "../../utils/phone";
 import "./Voluntariado.css";
 
 const initialForm = {
@@ -20,7 +21,7 @@ function Voluntariado() {
         const { name, value } = event.target;
         setForm((current) => ({
             ...current,
-            [name]: value,
+            [name]: name === "telefone" ? formatBrazilianPhone(value) : value,
         }));
     };
 
@@ -32,6 +33,7 @@ function Voluntariado() {
 
         const payload = {
             ...form,
+            telefone: toBrazilianPhoneE164(form.telefone),
             idade: Number(form.idade),
             email: form.email || null,
         };
@@ -82,7 +84,10 @@ function Voluntariado() {
                                     value={form.telefone}
                                     onChange={handleChange}
                                     required
-                                    placeholder="+5549999999999"
+                                    inputMode="tel"
+                                    autoComplete="tel-national"
+                                    placeholder="(49) 99999-9999"
+                                    maxLength="15"
                                 />
                             </label>
 

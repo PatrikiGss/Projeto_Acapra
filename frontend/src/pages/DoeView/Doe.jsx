@@ -34,10 +34,9 @@ function Doe() {
   return (
     <div className="doe-page">
       <section className="doe-header">
-        <span className="doe-eyebrow">Doe para a ACAPRA</span>
-        <h1>Ajude a manter nossos animais seguros</h1>
+        <h1>Ajude a ACAPRA</h1>
         <p>
-          {dadosDoacao?.descricao || "Use o PIX ou os dados bancários cadastrados para fazer a sua doação."}
+          {dadosDoacao?.descricao || "Use o PIX ou os dados bancários para fazer a sua doação."}
         </p>
       </section>
 

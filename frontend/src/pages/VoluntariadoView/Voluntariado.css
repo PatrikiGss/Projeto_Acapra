@@ -1,8 +1,7 @@
 .voluntariado-page {
     min-height: 100vh;
-    background: #fff7ed;
+    background: #fbfaf8;
     color: #1a1a1a;
-    font-family: Arial, sans-serif;
 }
 
 .voluntariado-content {
@@ -20,12 +19,6 @@
 
 .voluntariado-heading h1 {
     margin: 0 0 0.6rem;
-    font-family: 'Compacta', 'Bebas Neue', sans-serif;
-    font-size: clamp(2.2rem, 4vw, 3rem);
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: 0;
-    text-transform: uppercase;
 }
 
 .voluntariado-heading p {
@@ -37,48 +30,11 @@
 }
 
 
-.voluntariado-info,
 .voluntariado-form {
     border: 1px solid rgba(224, 224, 224, 0.85);
     border-radius: 8px;
     background: #fff;
     box-shadow: 0 12px 28px rgba(26, 26, 26, 0.08);
-}
-
-.voluntariado-info {
-    padding: clamp(1.25rem, 3vw, 2rem);
-}
-
-.voluntariado-info span {
-    display: inline-flex;
-    align-items: center;
-    min-height: 2rem;
-    padding: 0.35rem 0.75rem;
-    margin-bottom: 0.9rem;
-    border-radius: 8px;
-    background: rgba(232, 119, 34, 0.12);
-    color: #cf6510;
-    font-size: 0.78rem;
-    font-weight: 800;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-
-.voluntariado-info h2 {
-    margin: 0 0 0.85rem;
-    font-family: 'Compacta', 'Bebas Neue', sans-serif;
-    font-size: clamp(1.8rem, 4vw, 3rem);
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: 0;
-    text-transform: uppercase;
-}
-
-.voluntariado-info p {
-    margin: 0;
-    color: #545454;
-    font-size: 1rem;
-    line-height: 1.7;
 }
 
 .voluntariado-form {
@@ -105,7 +61,7 @@
     padding: 0.75rem 0.85rem;
     border: 1px solid rgba(232, 119, 34, 0.28);
     border-radius: 8px;
-    background: #fff7ed;
+    background: #fbfaf8;
     color: #1a1a1a;
     font: inherit;
     font-size: 0.95rem;

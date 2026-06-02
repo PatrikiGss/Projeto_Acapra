@@ -1,8 +1,7 @@
 .vendas-page {
     min-height: 100vh;
-    background: #fff7ed;
+    background: #fbfaf8;
     color: #1a1a1a;
-    font-family: Arial, sans-serif;
 }
 
 .vendas-content {
@@ -19,12 +18,6 @@
 
 .vendas-heading h1 {
     margin: 0 0 0.6rem;
-    font-family: 'Compacta', 'Bebas Neue', sans-serif;
-    font-size: clamp(2.2rem, 4vw, 3rem);
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: 0;
-    text-transform: uppercase;
 }
 
 .vendas-heading p {
@@ -160,7 +153,6 @@
     border-radius: 8px;
     background: #ffe5c7;
     color: #cf6510;
-    font-family: 'Compacta', 'Bebas Neue', sans-serif;
     font-size: 2rem;
     font-weight: 800;
     letter-spacing: 0;

@@ -27,8 +27,8 @@ function Adocao() {
         <div className="adocao-page">
             <section className="adocao-content">
                 <div className="adocao-heading">
-                    <h1>Encontre seu novo amigo</h1>
-                    <p>Conheça os cães e gatos que estão esperando por uma família.</p>
+                    <h1>Encontre seu novo amigo!</h1>
+                    <p>Conheça nossos animais disponíveis para adoção.</p>
                 </div>
 
                 <div className="adocao-toolbar" aria-label="Filtros de animais">

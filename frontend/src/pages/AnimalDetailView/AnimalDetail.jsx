@@ -57,7 +57,7 @@ function AnimalDetail() {
                 </div>
 
                 <div className="animal-detail-info">
-                    <Link className="back-link" to="/adocao">Voltar para adoção</Link>
+                    
 
                     <span className="detail-eyebrow">Animal para adoção</span>
                     <h1>{animal.nome_animal}</h1>

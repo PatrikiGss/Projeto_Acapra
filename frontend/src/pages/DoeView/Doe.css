@@ -1,40 +1,31 @@
 .doe-page {
     min-height: calc(100vh - 125px);
     padding: clamp(1.2rem, 3vw, 2rem) clamp(1rem, 4vw, 3rem);
-    background: #fff7ed;
+    background: #fbfaf8;
     color: #1a1a1a;
-    font-family: Arial, sans-serif;
 }
 
 .doe-header {
-    max-width: 780px;
+    max-width: 900px;
     margin: 0 auto clamp(1rem, 2.5vw, 1.6rem);
     text-align: center;
 }
 
-.doe-eyebrow,
 .card-label {
     display: inline-flex;
     align-items: center;
     min-height: 1.9rem;
     padding: 0.35rem 0.75rem;
     border-radius: 8px;
-    background: rgba(232, 119, 34, 0.12);
+    background: fbfaf8;
     color: #cf6510;
     font-size: 0.78rem;
-    font-weight: 800;
+    font-weight: 600;
     letter-spacing: 1px;
-    text-transform: uppercase;
 }
 
 .doe-header h1 {
     margin: 0.75rem 0 0.55rem;
-    font-family: 'Compacta', 'Bebas Neue', sans-serif;
-    font-size: clamp(2rem, 5vw, 4rem);
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: 0;
-    text-transform: uppercase;
 }
 
 .doe-header p {
@@ -66,12 +57,10 @@
 
 .donation-card h2 {
     margin: 0.7rem 0 0;
-    font-family: 'Compacta', 'Bebas Neue', sans-serif;
     font-size: clamp(1.7rem, 4vw, 2.8rem);
-    font-weight: 800;
+    font-weight: 700;
     line-height: 1;
     letter-spacing: 0;
-    text-transform: uppercase;
 }
 
 .pix-card {
@@ -104,7 +93,7 @@
     width: 100%;
     padding: 0.9rem 1rem;
     border-radius: 8px;
-    background: #fff7ed;
+    background: #fbfaf8;
     color: #545454;
 }
 
@@ -114,13 +103,12 @@
     color: #cf6510;
     font-size: 0.78rem;
     letter-spacing: 1px;
-    text-transform: uppercase;
 }
 
 .pix-key-box span {
     overflow-wrap: anywhere;
     color: #1a1a1a;
-    font-weight: 800;
+    font-weight: 700;
 }
 
 .bank-data {
@@ -134,22 +122,21 @@
     min-height: 4.2rem;
     padding: 0.85rem;
     border-radius: 8px;
-    background: #fff7ed;
+    background: #fbfaf8;
 }
 
 .bank-data dt {
     margin-bottom: 0.25rem;
     color: #cf6510;
-    font-size: 0.72rem;
-    font-weight: 800;
+    font-size: 1.5rem;
+    font-weight: 700;
     letter-spacing: 1px;
-    text-transform: uppercase;
 }
 
 .bank-data dd {
     margin: 0;
     color: #1a1a1a;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 1.3;
 }
 

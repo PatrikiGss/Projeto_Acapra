@@ -54,6 +54,26 @@ function Home() {
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    const elementosAnimados = document.querySelectorAll(".scroll-reveal");
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.16,
+      rootMargin: "0px 0px -60px 0px",
+    });
+
+    elementosAnimados.forEach((elemento) => observer.observe(elemento));
+
+    return () => observer.disconnect();
+  }, [animais]);
+
   const irParaSlideAnterior = () => {
     setSlideAtual((current) => (
       current === 0 ? carouselItems.length - 1 : current - 1
@@ -65,6 +85,7 @@ function Home() {
   };
 
   return (
+    
     <div className="main">
       <section className="hero">
         <img
@@ -79,7 +100,7 @@ function Home() {
           </h1>
 
           <p className="hero-subtitle">
-            Resgatamos, cuidamos e encontramos famílias para cães abandonados.
+            Resgatamos, cuidamos e encontramos famílias para animais.
           </p>
 
           <div className="hero-links">
@@ -89,7 +110,31 @@ function Home() {
         </div>
       </section>
 
-      <section className="home-carousel" aria-label="Destaques da Acapra">
+      <section className="about-section scroll-reveal" id="sobre">
+        <div className="about-content">
+          <span className="section-kicker">Sobre Nós</span>
+          <h2>ACAPRA: O que somos e Onde estamos?
+          </h2>
+          <p>
+            Que somos uma ONG sem fins lucrativos feita de voluntários a gente sempre diz.
+            Mas o que você tem que saber é que <strong>ACAPRA SOMOS TODOS NÓS </strong>
+            que gostamos e ajudamos os animais que precisam.
+
+            Simples né? Então eu sou, e você também é ou já foi ACAPRA em algum momento.
+
+            Quando você resgata um bichinho jogado na rua, quando você ajuda a encontrar
+            um lar para eles, quando doa dinheiro para um atendimento. Quando você doa
+            ração você é ACAPRA!
+
+            ...
+
+            Ah é a minha casa, a sua casa. É todo lugar que os bichinhos são acolhidos!
+
+          </p>
+        </div>
+      </section>
+
+      <section className="home-carousel scroll-reveal" aria-label="Destaques da Acapra">
         <div className="carousel-viewport">
           {carouselItems.map((item, index) => (
             <Link
@@ -131,17 +176,8 @@ function Home() {
         </div>
       </section>
 
-      <section className="about-section" id="sobre">
-        <div className="about-content">
-          <h2>Sobre Nós</h2>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Molestiae architecto veniam, voluptatibus quis doloribus asperiores esse deleniti debitis optio magni neque iure, accusamus nobis recusandae ut autem tempore soluta iusto?
-          </p>
-        </div>
-      </section>
-
-      <section className="adote-section" id="adote">
-        <div className="section-heading">
+      <section className="adote-section scroll-reveal" id="adote">
+        <div className="section-heading scroll-reveal">
           <span className="section-kicker">Adote</span>
           <h2>Animais esperando por uma família</h2>
           <p>
@@ -161,7 +197,7 @@ function Home() {
           )}
 
           {animais.map((animal) => (
-            <Link className="home-animal-card" to={`/adocao/${animal.id}`} key={animal.id}>
+            <Link className="home-animal-card scroll-reveal" to={`/adocao/${animal.id}`} key={animal.id}>
               <img
                 src={animal.foto || "/adocao-cachorro.png"}
                 alt={animal.nome_animal || "Animal para adoção"}
@@ -180,7 +216,7 @@ function Home() {
         </div>
       </section>
 
-      <section className="produtos-section" id="produtos">
+      <section className="produtos-section scroll-reveal" id="produtos">
         <div className="produtos-content">
           <span className="section-kicker">Produtos solidários</span>
           <h2>Compre e ajude a manter o cuidado com os animais</h2>

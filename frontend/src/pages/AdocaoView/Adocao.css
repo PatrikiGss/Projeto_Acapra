@@ -1,8 +1,7 @@
 .adocao-page {
     min-height: 100vh;
-    background: #fff7ed;
+    background: #fbfaf8;
     color: #1a1a1a;
-    font-family: Arial, sans-serif;
 }
 
 .adocao-content {
@@ -34,12 +33,6 @@
 
 .adocao-heading h1 {
     margin: 0 0 0.6rem;
-    font-family: 'Compacta', 'Bebas Neue', sans-serif;
-    font-size: clamp(2.2rem, 4vw, 3rem);
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: 0;
-    text-transform: uppercase;
 }
 
 .adocao-heading p {
@@ -181,7 +174,6 @@
     margin: 0;
     overflow: hidden;
     color: #000;
-    font-family: 'Compacta', 'Bebas Neue', sans-serif;
     font-size: 1.75rem;
     font-weight: 800;
     line-height: 1;

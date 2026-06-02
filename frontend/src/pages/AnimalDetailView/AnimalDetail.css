@@ -3,7 +3,6 @@
     padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 5vw, 4rem);
     background: #fff7ed;
     color: #1a1a1a;
-    font-family: Arial, sans-serif;
 }
 
 .animal-detail {
@@ -37,19 +36,6 @@
     box-shadow: 0 12px 28px rgba(26, 26, 26, 0.08);
 }
 
-.back-link {
-    display: inline-flex;
-    margin-bottom: 1.25rem;
-    color: #cf6510;
-    font-weight: 800;
-    text-decoration: none;
-}
-
-.back-link:hover,
-.back-link:focus-visible {
-    color: #e87722;
-}
-
 .detail-eyebrow {
     display: inline-flex;
     align-items: center;
@@ -62,17 +48,10 @@
     font-size: 0.78rem;
     font-weight: 800;
     letter-spacing: 1px;
-    text-transform: uppercase;
 }
 
 .animal-detail-info h1 {
     margin: 0 0 1rem;
-    font-family: 'Compacta', 'Bebas Neue', sans-serif;
-    font-size: clamp(2.4rem, 6vw, 4.6rem);
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: 0;
-    text-transform: uppercase;
 }
 
 .detail-tags {
@@ -113,7 +92,6 @@
 
 .detail-contact strong {
     color: #cf6510;
-    text-transform: uppercase;
     letter-spacing: 1px;
     font-size: 0.78rem;
 }

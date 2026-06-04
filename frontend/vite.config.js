@@ -9,7 +9,12 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] })
   ],
   server: {
+<<<<<<< HEAD
     port: 3000
+=======
+    port: 5173,
+    strictPort: true,
+>>>>>>> 0140d65813e373354c943297caa6aa3eb01b5ebf
   }
 })
 

@@ -1,25 +1,69 @@
 from django.db import models
+from phonenumber_field.modelfields import PhoneNumberField
+
+
+class EspecieAnimal(models.TextChoices):
+    CACHORRO = 'cachorro', 'Cachorro'
+    GATO = 'gato', 'Gato'
+    OUTROS = 'outros', 'Outros'
+
+
+class SexoAnimal(models.TextChoices):
+    MACHO = 'macho', 'Macho'
+    FEMEA = 'femea', 'Fêmea'
+
 
 class Animal(models.Model):
-    STATUS_CHOICES = [
-        ('disponivel', 'Disponível'),
-        ('adotado', 'Adotado'),
-        ('reservado', 'Reservado'),
-    ]
+    nome_animal = models.CharField(max_length=30)
+    
+    nome_doador = models.CharField(max_length=30)
+    
+    telefone = PhoneNumberField(unique=True)
 
-    nome = models.CharField(max_length=100)
-    descricao = models.TextField(blank=True, null=True)
-    raca = models.CharField('raça', max_length=100)
-    especie = models.CharField(max_length=100)
-    idade = models.PositiveIntegerField()
-    vacinado = models.BooleanField(default=False)
-    porte = models.CharField(max_length=50)
-    foto = models.ImageField(upload_to='animais/', blank=True, null=True)
-    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default='disponivel')
-    data_criacao = models.DateTimeField(auto_now_add=True)
+    especie = models.CharField(
+        max_length=10,
+        choices=EspecieAnimal.choices
+    )
+
+    sexo = models.CharField(
+        max_length=10,
+        choices=SexoAnimal.choices
+    )
+
+
+
+    foto = models.ImageField(
+        upload_to='fotos/%Y/%m/%d',
+        blank=True,
+        null=True
+    )
+
+    descricao = models.TextField(
+        max_length=500,
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
-        return self.nome
-    
-    
+        return f"{self.nome_doador} - {self.especie}"
 
+
+class AnimalImagem(models.Model):
+    animal = models.ForeignKey(
+        Animal,
+        related_name="imagens",
+        on_delete=models.CASCADE,
+    )
+    imagem = models.ImageField(
+        upload_to="fotos/%Y/%m/%d",
+    )
+    ordem = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["ordem", "id"]
+        verbose_name = "Foto do animal"
+        verbose_name_plural = "Fotos dos animais"
+
+    def __str__(self):
+        return f"Foto de {self.animal.nome_animal}"

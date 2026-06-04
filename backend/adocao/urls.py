@@ -1,12 +1,14 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import AnimalViewSet
+from django.urls import path
+from .views import (AnimaisView,AnimalDetailView)
 
-app_name = 'adocao' 
-
-router = DefaultRouter()
-router.register(r'animais', AnimalViewSet)
+app_name='adocao'
 
 urlpatterns = [
-    path('', include(router.urls)),
+    # Lista todos os animais
+    # Cria novo animal
+    path('animais/',AnimaisView.as_view(),name='animais'),
+    # Busca animal específico
+    # Atualiza animal
+    # Remove animal
+    path('animais/<int:pk>/',AnimalDetailView.as_view(),name='animal_detail'),
 ]

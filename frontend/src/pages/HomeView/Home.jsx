@@ -199,7 +199,7 @@ function Home() {
           {animais.map((animal) => (
             <Link className="home-animal-card scroll-reveal" to={`/adocao/${animal.id}`} key={animal.id}>
               <img
-                src={animal.foto || "/adocao-cachorro.png"}
+                src={animal.foto || animal.fotos?.[0] || "/adocao-cachorro.png"}
                 alt={animal.nome_animal || "Animal para adoção"}
               />
 

@@ -2,7 +2,7 @@
   min-height: 100vh;
   display: flex;
   align-items: stretch;
-  background-color: #fff;
+  background-color: #fbfaf8;
 }
 
 /* ---- LADO DA IMAGEM ---- */
@@ -60,16 +60,12 @@
 }
 
 .login-logo {
-  font-size: 2.5rem;
+  height: 10rem;
 }
 
 .login-header h1 {
-  font-size: 1.8rem;
-  font-weight: 800;
   color: #1a1a1a;
   margin: 0.5rem 0 0.25rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
 }
 
 .login-header p {
@@ -145,8 +141,16 @@
   margin-top: 0.5rem;
 }
 
+.login-btn.secondary {
+  background: #1a1a1a;
+}
+
 .login-btn:hover {
   background-color: #cf6510;
+}
+
+.login-btn.secondary:hover {
+  background-color: #000;
 }
 
 .login-btn:disabled {
@@ -169,4 +173,49 @@
 
 .login-register a:hover {
   text-decoration: underline;
+}
+
+.login-profile {
+  display: grid;
+  gap: 1rem;
+}
+
+.login-profile-card {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.1rem;
+  border: 1px solid rgba(232, 119, 34, 0.18);
+  border-radius: 16px;
+  background: #fff7ed;
+}
+
+.login-profile-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.login-profile-row span {
+  color: #cf6510;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.login-profile-row strong {
+  color: #1a1a1a;
+  font-size: 1rem;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.login-profile-actions {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.login-profile-loading {
+  margin: 0;
+  color: #545454;
 }

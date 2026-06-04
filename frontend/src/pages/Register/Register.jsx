@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../../services/api";
+import { formatBrazilianPhone, toBrazilianPhoneE164 } from "../../utils/phone";
 import "./Register.css";
 
 function Register() {
@@ -11,7 +12,12 @@ function Register() {
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    setForm({
+      ...form,
+      [name]: name === "telefone" ? formatBrazilianPhone(value) : value,
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -25,7 +31,10 @@ function Register() {
 
     setLoading(true);
     try {
-    await api.post("/api/gerenciamento/auth/register/", form);
+    await api.post("/api/gerenciamento/auth/register/", {
+      ...form,
+      telefone: toBrazilianPhoneE164(form.telefone),
+    });
 
       navigate("/login");
     } catch (err) {
@@ -52,7 +61,7 @@ function Register() {
 
       <div className="register-card">
         <div className="register-header">
-          <span className="register-logo">🐾</span>
+          <span className="register-logo"><img src="/logo.png" alt="logo" className="register-logo" /></span>
           <h1>Criar Conta</h1>
           <p>Faça parte da <strong>Acapra</strong> e ajude a proteger os animais</p>
         </div>
@@ -89,8 +98,11 @@ function Register() {
             <input
               id="telefone"
               name="telefone"
-              type="text"
-              placeholder="(00) 00000-0000"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel-national"
+              placeholder="(49) 99999-9999"
+              maxLength="15"
               value={form.telefone}
               onChange={handleChange}
               required

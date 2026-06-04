@@ -1,0 +1,30 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Rubik', Arial, sans-serif;
+  color: #1a1a1a;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2.4rem, 6vw, 3.5rem);
+  font-weight: 750;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}

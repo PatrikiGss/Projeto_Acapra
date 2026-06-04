@@ -16,39 +16,21 @@
 
 .produto-gallery {
     display: grid;
-    grid-template-columns: 74px minmax(0, 1fr);
-    gap: clamp(1rem, 3vw, 2rem);
-    align-items: center;
+    gap: 0.9rem;
+    align-items: start;
     min-height: 34rem;
 }
 
-.produto-thumb {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 74px;
-    height: 74px;
-    border: 1px solid rgba(232, 119, 34, 0.28);
-    border-radius: 8px;
-    background: #fbfaf8;
-    color: #cf6510;
-    font-weight: 800;
-}
-
-.produto-thumb img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    padding: 0.35rem;
-    object-fit: contain;
-}
-
 .produto-main-image {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 34rem;
     background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 10px 24px rgba(26, 26, 26, 0.08);
 }
 
 .produto-main-image img {
@@ -56,6 +38,52 @@
     width: 100%;
     max-height: 34rem;
     object-fit: contain;
+}
+
+.produto-carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #000;
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(26, 26, 26, 0.14);
+}
+
+.produto-carousel-arrow-left {
+    left: 0.85rem;
+}
+
+.produto-carousel-arrow-right {
+    right: 0.85rem;
+}
+
+.produto-carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.55rem;
+    padding-top: 0.15rem;
+}
+
+.produto-carousel-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+.produto-carousel-dot.active {
+    background: #000;
+    transform: scale(1.15);
 }
 
 .produto-detail-placeholder {
@@ -78,9 +106,8 @@
 
 .produto-summary h1 {
     margin: 0 0 0.45rem;
-    color: #1f2c45;
+    color: black;
     line-height: 1.12;
-    text-transform: uppercase;
 }
 
 .detail-code {
@@ -210,15 +237,12 @@
 }
 
 @media (max-width: 560px) {
-    .produto-gallery {
-        grid-template-columns: 1fr;
-    }
-
-    .produto-thumb {
-        display: none;
-    }
-
     .product-specs {
         grid-template-columns: 1fr;
+    }
+
+    .produto-carousel-arrow {
+        width: 2.3rem;
+        height: 2.3rem;
     }
 }

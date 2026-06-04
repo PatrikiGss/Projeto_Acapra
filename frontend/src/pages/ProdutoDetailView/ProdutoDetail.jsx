@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../../services/api";
 import "./ProdutoDetail.css";
@@ -8,6 +8,7 @@ function ProdutoDetail() {
     const [produto, setProduto] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
+    const [fotoIndex, setFotoIndex] = useState(0);
 
     useEffect(() => {
         api.get(`/api/vendas/produtos/${id}/`)
@@ -27,6 +28,35 @@ function ProdutoDetail() {
             style: "currency",
             currency: "BRL",
         });
+    };
+
+    const fotos = useMemo(() => {
+        const imagens = [produto?.foto, ...(produto?.fotos || [])].filter(Boolean);
+        return [...new Set(imagens)];
+    }, [produto]);
+
+    useEffect(() => {
+        if (fotos.length <= 1) return undefined;
+
+        const timer = setInterval(() => {
+            setFotoIndex((current) => (current + 1) % fotos.length);
+        }, 5000);
+
+        return () => clearInterval(timer);
+    }, [fotos.length]);
+
+    const irParaAnterior = () => {
+        setFotoIndex((current) => (current === 0 ? fotos.length - 1 : current - 1));
+    };
+
+    const irParaProxima = () => {
+        setFotoIndex((current) => (current + 1) % fotos.length);
+    };
+
+    const fotoAtual = fotos.length > 0 ? fotos[fotoIndex % fotos.length] : null;
+
+    const selecionarFoto = (index) => {
+        setFotoIndex(index);
     };
 
     if (loading) {
@@ -51,21 +81,50 @@ function ProdutoDetail() {
         <main className="produto-detail-page">
             <section className="produto-detail">
                 <div className="produto-gallery">
-                    <div className="produto-thumb">
-                        {produto.foto ? (
-                            <img src={produto.foto} alt={produto.nome} />
-                        ) : (
-                            <span>ACAPRA</span>
-                        )}
-                    </div>
-
                     <div className="produto-main-image">
-                        {produto.foto ? (
-                            <img src={produto.foto} alt={produto.nome} />
+                        {fotoAtual ? (
+                            <>
+                                <img src={fotoAtual} alt={produto.nome} />
+
+                                {fotos.length > 1 && (
+                                    <>
+                                        <button
+                                            type="button"
+                                            className="produto-carousel-arrow produto-carousel-arrow-left"
+                                            onClick={irParaAnterior}
+                                            aria-label="Foto anterior"
+                                        >
+                                            <span aria-hidden="true">&lt;</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="produto-carousel-arrow produto-carousel-arrow-right"
+                                            onClick={irParaProxima}
+                                            aria-label="Próxima foto"
+                                        >
+                                            <span aria-hidden="true">&gt;</span>
+                                        </button>
+                                    </>
+                                )}
+                            </>
                         ) : (
                             <div className="produto-detail-placeholder">ACAPRA</div>
                         )}
                     </div>
+
+                    {fotos.length > 1 && (
+                        <div className="produto-carousel-dots" aria-label="Fotos do produto">
+                            {fotos.map((foto, index) => (
+                                <button
+                                    type="button"
+                                    key={foto}
+                                    className={`produto-carousel-dot ${fotoIndex === index ? "active" : ""}`}
+                                    onClick={() => selecionarFoto(index)}
+                                    aria-label={`Ver foto ${index + 1} de ${produto.nome}`}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <div className="produto-summary">
@@ -103,3 +162,4 @@ function ProdutoDetail() {
 }
 
 export default ProdutoDetail;
+

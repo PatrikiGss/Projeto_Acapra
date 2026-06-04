@@ -2,6 +2,8 @@ import { defineConfig } from 'vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
 
+const backendTarget = "http://127.0.0.1:8000"
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -9,12 +11,18 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] })
   ],
   server: {
-<<<<<<< HEAD
-    port: 3000
-=======
     port: 5173,
     strictPort: true,
->>>>>>> 0140d65813e373354c943297caa6aa3eb01b5ebf
+    proxy: {
+      "/api": {
+        target: backendTarget,
+        changeOrigin: true,
+      },
+      "/media": {
+        target: backendTarget,
+        changeOrigin: true,
+      },
+    },
   }
 })
 

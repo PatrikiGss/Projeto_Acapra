@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 import "./Adocao.css";
 import api, { getMediaURL } from "../../services/api";
-import { isLoggedIn, subscribeToAuthChanges } from "../../utils/auth";
+import { useAdminAccess } from "../../hooks/useAdminAccess";
 import { formatBrazilianPhone, toBrazilianPhoneE164 } from "../../utils/phone";
 
 const formVazio = {
@@ -18,7 +18,7 @@ const formVazio = {
 function Adocao() {
     const [animais, setAnimais] = useState([]);
     const [filtroEspecie, setFiltroEspecie] = useState("todos");
-    const [estaLogado, setEstaLogado] = useState(isLoggedIn());
+    const { podeEditar } = useAdminAccess("adocao");
     const [modalAberto, setModalAberto] = useState(false);
     const [modoFormulario, setModoFormulario] = useState("criar");
     const [animalEditando, setAnimalEditando] = useState(null);
@@ -37,15 +37,6 @@ function Adocao() {
 
     useEffect(() => {
         carregarAnimais();
-    }, []);
-
-    useEffect(() => {
-        const sincronizarAuth = () => {
-            setEstaLogado(isLoggedIn());
-        };
-
-        sincronizarAuth();
-        return subscribeToAuthChanges(sincronizarAuth);
     }, []);
 
     useEffect(() => {
@@ -235,7 +226,7 @@ function Adocao() {
     const renderAnimalCard = (animal) => {
         const imagem = animal.foto || animal.fotos?.[0];
 
-        if (!estaLogado) {
+        if (!podeEditar) {
             return (
                 <Link className="animal-card" to={`/adocao/${animal.id}`} key={animal.id}>
                     <div className="animal-card-image">
@@ -301,7 +292,7 @@ function Adocao() {
                             <p>Conheça nossos animais disponíveis para adoção.</p>
                         </div>
 
-                        {estaLogado && (
+                        {podeEditar && (
                             <button type="button" className="adocao-add-button" onClick={abrirCriacao}>
                                 Adicionar animal
                             </button>

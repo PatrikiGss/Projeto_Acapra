@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api, { getMediaURL } from "../../services/api";
-import { isLoggedIn, subscribeToAuthChanges } from "../../utils/auth";
+import { useAdminAccess } from "../../hooks/useAdminAccess";
 import "./NewsArticle.css";
 
 const categoriaLabels = {
@@ -27,7 +27,7 @@ function NewsArticle({ categoria, backPath }) {
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [estaLogado, setEstaLogado] = useState(isLoggedIn());
+  const { podeEditar } = useAdminAccess(categoria);
 
   useEffect(() => {
     let ignorado = false;
@@ -57,15 +57,6 @@ function NewsArticle({ categoria, backPath }) {
       ignorado = true;
     };
   }, [id]);
-
-  useEffect(() => {
-    const sincronizarAuth = () => {
-      setEstaLogado(isLoggedIn());
-    };
-
-    sincronizarAuth();
-    return subscribeToAuthChanges(sincronizarAuth);
-  }, []);
 
   const categoriaLabel = useMemo(
     () => categoriaLabels[categoria] || "Publicação",
@@ -126,7 +117,7 @@ function NewsArticle({ categoria, backPath }) {
               {item.texto}
             </div>
 
-            {estaLogado && (
+            {podeEditar && (
             <div className="news-article-actions">
               <button type="button" className="news-article-action edit" onClick={editarItem}>
                 Editar

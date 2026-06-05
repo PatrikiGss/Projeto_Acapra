@@ -1,27 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
-import { isLoggedIn, subscribeToAuthChanges } from "../../utils/auth";
+import { useAdminAccess } from "../../hooks/useAdminAccess";
 import "./NewsComposer.css";
 
 function NewsComposer({ categoria, categoriaLabel, backPath }) {
   const navigate = useNavigate();
-  const [estaLogado, setEstaLogado] = useState(isLoggedIn());
+  const { podeEditar } = useAdminAccess(categoria);
   const [titulo, setTitulo] = useState("");
   const [texto, setTexto] = useState("");
   const [fotoFile, setFotoFile] = useState(null);
   const [fotoPreview, setFotoPreview] = useState("");
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
-
-  useEffect(() => {
-    const sincronizarAuth = () => {
-      setEstaLogado(isLoggedIn());
-    };
-
-    sincronizarAuth();
-    return subscribeToAuthChanges(sincronizarAuth);
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -86,12 +77,12 @@ function NewsComposer({ categoria, categoriaLabel, backPath }) {
     }
   };
 
-  if (!estaLogado) {
+  if (!podeEditar) {
     return (
       <section className="news-composer-page">
         <div className="news-composer-shell">
           <div className="news-composer-message">
-            Você precisa estar logado para criar publicações.
+            Você não possui permissão para criar publicações nesta seção.
           </div>
         </div>
       </section>

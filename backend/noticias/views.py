@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from gerenciamento.permissions import require_module
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -13,7 +14,7 @@ class PublicacoesView(APIView):
         if self.request.method == "GET":
             return [AllowAny()]
 
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), require_module("noticias")()]
 
     def get_queryset(self, request):
         queryset = Publicacao.objects.all().order_by("-created_at")
@@ -54,7 +55,7 @@ class PublicacaoDetailView(APIView):
         if self.request.method == "GET":
             return [AllowAny()]
 
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), require_module("noticias")()]
 
     def get_object(self, pk, include_inactive=False):
         queryset = Publicacao.objects.all() if include_inactive else Publicacao.objects.filter(ativo=True)

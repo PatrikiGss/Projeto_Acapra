@@ -7,11 +7,7 @@ def _absolute_file_url(request, file_field):
     if not file_field:
         return None
 
-    url = file_field.url
-    if request is None:
-        return url
-
-    return request.build_absolute_uri(url)
+    return file_field.url
 
 
 class PublicacaoWriteSerializer(serializers.ModelSerializer):

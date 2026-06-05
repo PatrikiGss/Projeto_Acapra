@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api, { getMediaURL } from "../../services/api";
-import { isLoggedIn, subscribeToAuthChanges } from "../../utils/auth";
+import { useAdminAccess } from "../../hooks/useAdminAccess";
 import "./NewsForm.css";
 
 const categoriaLabels = {
@@ -20,7 +20,7 @@ const formVazio = {
 function NewsForm({ categoria, backPath, mode = "create" }) {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [estaLogado, setEstaLogado] = useState(isLoggedIn());
+  const { podeEditar } = useAdminAccess(categoria);
   const [loading, setLoading] = useState(mode === "edit");
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
@@ -33,15 +33,6 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
     () => categoriaLabels[categoria] || "Publicação",
     [categoria]
   );
-
-  useEffect(() => {
-    const sincronizarAuth = () => {
-      setEstaLogado(isLoggedIn());
-    };
-
-    sincronizarAuth();
-    return subscribeToAuthChanges(sincronizarAuth);
-  }, []);
 
   useEffect(() => {
     let ignorado = false;
@@ -162,12 +153,12 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
     }
   };
 
-  if (!estaLogado) {
+  if (!podeEditar) {
     return (
       <section className="news-form-page">
         <div className="news-form-shell">
           <div className="news-form-message">
-            Você precisa estar logado para criar ou editar publicações.
+            Você não possui permissão para criar ou editar publicações nesta seção.
           </div>
         </div>
       </section>

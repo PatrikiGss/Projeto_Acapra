@@ -140,3 +140,127 @@
         grid-template-columns: 1fr;
     }
 }
+
+.voluntariado-admin {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(224, 224, 224, 0.85);
+}
+
+.voluntariado-admin-header h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1.6rem;
+}
+
+.voluntariado-admin-header p {
+    margin: 0 0 1.25rem;
+    color: #545454;
+}
+
+.voluntariado-admin-message {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid rgba(224, 224, 224, 0.85);
+    color: #545454;
+}
+
+.voluntariado-admin-message.error {
+    background: #fdebea;
+    color: #b42318;
+    border-color: rgba(180, 35, 24, 0.15);
+}
+
+.voluntariado-admin-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.voluntariado-card {
+    background: #fff;
+    border: 1px solid rgba(224, 224, 224, 0.85);
+    border-radius: 8px;
+    padding: 1.25rem;
+    box-shadow: 0 10px 24px rgba(26, 26, 26, 0.06);
+}
+
+.voluntariado-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.voluntariado-card-header h3 {
+    margin: 0 0 0.25rem;
+    font-size: 1.15rem;
+}
+
+.voluntariado-card-header p {
+    margin: 0;
+    color: #777;
+    font-size: 0.9rem;
+}
+
+.voluntariado-delete-button {
+    border: 1px solid rgba(180, 35, 24, 0.25);
+    border-radius: 8px;
+    background: #fff;
+    color: #b42318;
+    padding: 0.55rem 0.85rem;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.voluntariado-delete-button:hover,
+.voluntariado-delete-button:focus-visible {
+    background: #fdebea;
+}
+
+.voluntariado-card-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.85rem;
+    margin: 0 0 1rem;
+}
+
+.voluntariado-card-details div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.voluntariado-card-details dt {
+    color: #cf6510;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.voluntariado-card-details dd {
+    margin: 0;
+    color: #1a1a1a;
+    font-weight: 600;
+}
+
+.voluntariado-card-motivo span {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: #cf6510;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.voluntariado-card-motivo p {
+    margin: 0;
+    color: #333;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}

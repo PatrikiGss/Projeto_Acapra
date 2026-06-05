@@ -71,9 +71,10 @@ class PerfilAdministrativo(models.Model):
     """
 
     class Nivel(models.TextChoices):
-        USUARIO = "usuario", "Usuário Comum"
-        ADMIN = "admin", "Administrador"
-        MASTER = "master", "Administrador Master"
+        USUARIO = "usuario", "Usuário sem vínculo"
+        DOACOES = "doacoes", "Doações"
+        FINANCEIRO = "financeiro", "Financeiro"
+        MASTER = "master", "Diretor Acapra"
 
     # Relacionamento 1:1 com usuário
     usuario = models.OneToOneField(

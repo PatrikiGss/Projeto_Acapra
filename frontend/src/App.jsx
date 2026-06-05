@@ -21,6 +21,8 @@ import CampanhasEditar from "./pages/CampanhasView/CampanhasEditar";
 import NoticiasDetail from "./pages/NoticiasDetailView/NoticiasDetail";
 import ResgatesDetail from "./pages/ResgatesDetailView/ResgatesDetail";
 import CampanhasDetail from "./pages/CampanhasDetailView/CampanhasDetail";
+import Dashboard from "./pages/DashboardView/Dashboard";
+import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 
 function App() {
   return (
@@ -48,8 +50,14 @@ function App() {
           <Route path="/produtos" element={<Vendas />} />
           <Route path="/produtos/:id" element={<ProdutoDetail />} />
           <Route path="/voluntariado" element={<Voluntariado />} />
-
-
+          <Route
+            path="/dashboard"
+            element={(
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            )}
+          />
         </Route>
       </Routes>
     </BrowserRouter>

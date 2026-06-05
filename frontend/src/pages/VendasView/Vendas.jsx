@@ -1,7 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import api, { getMediaURL } from "../../services/api";
-import { isLoggedIn, subscribeToAuthChanges } from "../../utils/auth";
+import { useAdminAccess } from "../../hooks/useAdminAccess";
 import "./Vendas.css";
 
 const formVazio = {
@@ -18,7 +18,7 @@ function Vendas() {
     const [tipo, setTipo] = useState("todos");
     const [estoque, setEstoque] = useState("todos");
     const [ordenacao, setOrdenacao] = useState("recentes");
-    const [estaLogado, setEstaLogado] = useState(isLoggedIn());
+    const { podeEditar } = useAdminAccess("vendas");
     const [modalAberto, setModalAberto] = useState(false);
     const [modoFormulario, setModoFormulario] = useState("criar");
     const [produtoEditando, setProdutoEditando] = useState(null);
@@ -37,15 +37,6 @@ function Vendas() {
 
     useEffect(() => {
         carregarProdutos();
-    }, []);
-
-    useEffect(() => {
-        const sincronizarAuth = () => {
-            setEstaLogado(isLoggedIn());
-        };
-
-        sincronizarAuth();
-        return subscribeToAuthChanges(sincronizarAuth);
     }, []);
 
     useEffect(() => {
@@ -271,7 +262,7 @@ function Vendas() {
         const imagem = produto.foto || produto.fotos?.[0];
         const statusProduto = getStatusProduto(produto);
 
-        if (!estaLogado) {
+        if (!podeEditar) {
             return (
                 <Link className="product-card" to={`/produtos/${produto.id}`} key={produto.id}>
                     <span className={`product-status ${statusProduto.className}`}>
@@ -347,7 +338,7 @@ function Vendas() {
                             <p>Compre itens da ACAPRA e ajude no cuidado dos animais.</p>
                         </div>
 
-                        {estaLogado && (
+                        {podeEditar && (
                             <button type="button" className="vendas-add-button" onClick={abrirCriacao}>
                                 Adicionar produto
                             </button>

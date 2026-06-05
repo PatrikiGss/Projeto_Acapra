@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../../services/api";
-import { isLoggedIn, subscribeToAuthChanges } from "../../utils/auth";
+import { useAdminAccess } from "../../hooks/useAdminAccess";
 import "./Doe.css";
 
 const bankFields = [
@@ -28,7 +28,7 @@ function Doe() {
   const [dadosList, setDadosList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [estaLogado, setEstaLogado] = useState(isLoggedIn());
+  const { podeEditar } = useAdminAccess("doacoes");
   const [modalAberto, setModalAberto] = useState(false);
   const [modoFormulario, setModoFormulario] = useState("criar");
   const [dadosEditando, setDadosEditando] = useState(null);
@@ -67,15 +67,6 @@ function Doe() {
     return () => {
       ignorado = true;
     };
-  }, []);
-
-  useEffect(() => {
-    const sincronizarAuth = () => {
-      setEstaLogado(isLoggedIn());
-    };
-
-    sincronizarAuth();
-    return subscribeToAuthChanges(sincronizarAuth);
   }, []);
 
   useEffect(() => {
@@ -230,7 +221,7 @@ function Doe() {
           {dadosDoacao?.descricao || "Use o PIX ou os dados bancários para fazer a sua doação."}
         </p>
 
-        {estaLogado && (
+        {podeEditar && (
           <button
             type="button"
             className="doe-admin-button"
@@ -293,7 +284,7 @@ function Doe() {
         </section>
       )}
 
-      {modalAberto && estaLogado && (
+      {modalAberto && podeEditar && (
         <div className="doe-modal-backdrop" onClick={fecharModal}>
           <div className="doe-modal" onClick={(event) => event.stopPropagation()}>
             <div className="doe-modal-header">

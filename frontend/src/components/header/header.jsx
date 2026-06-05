@@ -2,6 +2,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { clearAuthSession, getStoredUser, isLoggedIn, subscribeToAuthChanges } from "../../utils/auth";
+import { temAcessoDashboard } from "../../utils/permissions";
 import "./header.css";
 
 function Header() {
@@ -112,6 +113,12 @@ function Header() {
           </div>
         </div>
         <Link className="site-nav-link" to="/doe" onClick={closeMenu}>Doe</Link>
+
+        {estaLogado && temAcessoDashboard(usuario) && (
+          <Link className="site-nav-link" to="/dashboard" onClick={closeMenu}>
+            Dashboard
+          </Link>
+        )}
 
         {estaLogado ? (
           <div className="site-user-menu">

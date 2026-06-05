@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from gerenciamento.permissions import require_module
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -23,7 +24,7 @@ class DadosPixView(APIView):
         if self.request.method == "GET":
             return [AllowAny()]
 
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), require_module("doacoes")()]
 
     def get(self, request):
         """
@@ -70,7 +71,7 @@ class DadosPixDetailView(APIView):
         if self.request.method == "GET":
             return [AllowAny()]
 
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), require_module("doacoes")()]
 
     def get_object(self, pk, include_inactive=False):
         queryset = DadosPix.objects.all() if include_inactive else DadosPix.objects.filter(ativo=True)

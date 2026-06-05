@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api, { getMediaURL } from "../../services/api";
-import { isLoggedIn, subscribeToAuthChanges } from "../../utils/auth";
+import { useAdminAccess } from "../../hooks/useAdminAccess";
 import "./NewsFeed.css";
 
 function formatarData(valor) {
@@ -27,7 +27,7 @@ function NewsFeed({ categoria, titulo, subtitulo }) {
   const [itens, setItens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [estaLogado, setEstaLogado] = useState(isLoggedIn());
+  const { podeEditar } = useAdminAccess(categoria);
 
   useEffect(() => {
     let ignorado = false;
@@ -60,15 +60,6 @@ function NewsFeed({ categoria, titulo, subtitulo }) {
       ignorado = true;
     };
   }, [categoria]);
-
-  useEffect(() => {
-    const sincronizarAuth = () => {
-      setEstaLogado(isLoggedIn());
-    };
-
-    sincronizarAuth();
-    return subscribeToAuthChanges(sincronizarAuth);
-  }, []);
 
   const abrirCriacao = () => {
     navigate(`/${categoria}/nova`);
@@ -103,7 +94,7 @@ function NewsFeed({ categoria, titulo, subtitulo }) {
             <p>{subtitulo}</p>
           </div>
 
-          {estaLogado && (
+          {podeEditar && (
             <button type="button" className="news-admin-button" onClick={abrirCriacao}>
               Nova publicação
             </button>
@@ -145,7 +136,7 @@ function NewsFeed({ categoria, titulo, subtitulo }) {
                 </div>
               </Link>
 
-              {estaLogado && (
+              {podeEditar && (
                 <div className="news-admin-actions">
                   <button
                     type="button"

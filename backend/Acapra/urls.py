@@ -13,9 +13,11 @@ urlpatterns = [
     path('api/denuncias/',     include('denuncias.urls',     namespace='denuncias')),
     path('api/doacoes/',       include('doacoes.urls',       namespace='doacoes')),
     path('api/gerenciamento/', include('gerenciamento.urls', namespace='gerenciamento')),
+    path('api/noticias/',      include('noticias.urls',      namespace='noticias')),
     path('api/resgates/',      include('resgates.urls',      namespace='resgates')),
     path('api/transparencia/', include('transparencia.urls', namespace='transparencia')),
     path('api/vendas/',        include('vendas.urls',        namespace='vendas')),
+    path('api/voluntariado/',  include('voluntariado.urls',  namespace='voluntariado')),
 ]
 
 if settings.DEBUG:

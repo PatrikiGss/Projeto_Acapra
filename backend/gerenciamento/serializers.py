@@ -1,6 +1,9 @@
 from django.contrib.auth.password_validation import validate_password
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
-from .models import Usuario
+from .models import PerfilAdministrativo, Usuario
+from .permissions import get_nivel_usuario
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
@@ -16,6 +19,13 @@ class UsuarioSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'password': {'write_only': True}
         }
+    def validate_email(self, value):
+        try:
+            validate_email(value)
+        except DjangoValidationError:
+            raise serializers.ValidationError("Informe um e-mail válido.")
+        return value.lower().strip()
+
     def validate_password(self, value):
         # Aplica validações do Django (tamanho, comum, numérica, etc)
         validate_password(value)
@@ -55,15 +65,61 @@ class UpdateUsuarioSerializer(serializers.ModelSerializer):
         fields = ['nome', 'telefone']
 
 
+class PerfilAdministrativoSerializer(serializers.ModelSerializer):
+    nivel_display = serializers.CharField(source="get_nivel_display", read_only=True)
+
+    class Meta:
+        model = PerfilAdministrativo
+        fields = ["nivel", "nivel_display", "cargo", "setor", "ativo"]
+
+
 class GetUsuarioSerializer(serializers.ModelSerializer):
     """
     Serializer para retorno de dados do usuário.
     Não expõe informações sensíveis.
     """
 
+    perfil_admin = PerfilAdministrativoSerializer(read_only=True)
+
     class Meta:
         model = Usuario
-        fields = ['id', 'nome', 'email', 'telefone']
+        fields = ["id", "nome", "email", "telefone", "perfil_admin"]
+
+
+class AdminUsuarioSerializer(serializers.ModelSerializer):
+    perfil_admin = PerfilAdministrativoSerializer(read_only=True)
+
+    class Meta:
+        model = Usuario
+        fields = ["id", "nome", "email", "telefone", "date_joined", "perfil_admin"]
+
+
+class AtualizarPerfilAdministrativoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PerfilAdministrativo
+        fields = ["nivel", "cargo", "setor", "ativo", "observacoes"]
+
+    def validate_nivel(self, value):
+        niveis_validos = {choice[0] for choice in PerfilAdministrativo.Nivel.choices}
+        if value not in niveis_validos:
+            raise serializers.ValidationError("Nível administrativo inválido.")
+        return value
+
+    def validate(self, attrs):
+        request = self.context.get("request")
+        usuario_alvo = self.instance.usuario
+
+        if (
+            request
+            and usuario_alvo == request.user
+            and attrs.get("nivel") == PerfilAdministrativo.Nivel.USUARIO
+            and get_nivel_usuario(request.user) == PerfilAdministrativo.Nivel.MASTER
+        ):
+            raise serializers.ValidationError(
+                "O diretor não pode remover o próprio vínculo administrativo."
+            )
+
+        return attrs
 
 
 class ChangePasswordSerializer(serializers.Serializer):

@@ -1,7 +1,11 @@
+﻿from io import BytesIO
+
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase
+from PIL import Image
 
 from .models import Animal, EspecieAnimal, SexoAnimal
 from .serializers import (
@@ -14,6 +18,12 @@ from .serializers import (
 User = get_user_model()
 
 
+def criar_imagem(nome):
+    buffer = BytesIO()
+    Image.new("RGB", (1, 1), color="white").save(buffer, format="PNG")
+    return SimpleUploadedFile(nome, buffer.getvalue(), content_type="image/png")
+
+
 # =========================================================
 # MODEL
 # =========================================================
@@ -22,27 +32,29 @@ class AnimalModelTests(APITestCase):
 
     def setUp(self):
         self.animal = Animal.objects.create(
-            nome_doador="João Silva",
+            nome_animal="Thor",
+            nome_doador="JoÃ£o Silva",
             telefone="+5511999999999",
             especie=EspecieAnimal.CACHORRO,
             sexo=SexoAnimal.MACHO,
-            descricao="Cachorro dócil",
+            descricao="Cachorro dÃ³cil",
         )
 
     def test_criacao_animal(self):
-        """Animal é criado com os campos obrigatórios."""
-        self.assertEqual(self.animal.nome_doador, "João Silva")
+        """Animal Ã© criado com os campos obrigatÃ³rios."""
+        self.assertEqual(self.animal.nome_doador, "JoÃ£o Silva")
         self.assertEqual(self.animal.especie, "cachorro")
         self.assertEqual(self.animal.sexo, "macho")
         self.assertEqual(Animal.objects.count(), 1)
 
     def test_str_animal(self):
         """__str__ retorna 'nome_doador - especie'."""
-        self.assertEqual(str(self.animal), "João Silva - cachorro")
+        self.assertEqual(str(self.animal), "JoÃ£o Silva - cachorro")
 
     def test_campos_opcionais_aceitam_nulo(self):
         """foto e descricao podem ser nulos."""
         animal = Animal.objects.create(
+            nome_animal="Mia",
             nome_doador="Maria",
             telefone="+5511988888888",
             especie=EspecieAnimal.GATO,
@@ -52,14 +64,14 @@ class AnimalModelTests(APITestCase):
         self.assertFalse(animal.foto)
 
     def test_choices_especie(self):
-        """EspecieAnimal expõe cachorro, gato e outros."""
+        """EspecieAnimal expÃµe cachorro, gato e outros."""
         valores = [c[0] for c in EspecieAnimal.choices]
         self.assertIn("cachorro", valores)
         self.assertIn("gato", valores)
         self.assertIn("outros", valores)
 
     def test_choices_sexo(self):
-        """SexoAnimal expõe macho e femea."""
+        """SexoAnimal expÃµe macho e femea."""
         valores = [c[0] for c in SexoAnimal.choices]
         self.assertIn("macho", valores)
         self.assertIn("femea", valores)
@@ -73,11 +85,12 @@ class AnimalSerializerTests(APITestCase):
 
     def setUp(self):
         self.dados_validos = {
+            "nome_animal": "Bob",
             "nome_doador": "Carlos",
             "telefone": "+5511977777777",
             "especie": EspecieAnimal.CACHORRO,
             "sexo": SexoAnimal.MACHO,
-            "descricao": "Animal saudável",
+            "descricao": "Animal saudÃ¡vel",
         }
 
     def test_animal_serializer_aceita_dados_validos(self):
@@ -112,20 +125,32 @@ class AnimalSerializerTests(APITestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn("telefone", serializer.errors)
 
-    def test_get_serializer_oculta_telefone(self):
-        """GetAnimalSerializer não deve expor telefone (privacidade)."""
+    def test_get_serializer_expoe_telefone_para_contato(self):
+        """GetAnimalSerializer expÃµe telefone para contato via WhatsApp."""
         animal = Animal.objects.create(**self.dados_validos)
         serializer = GetAnimalSerializer(animal)
-        self.assertNotIn("telefone", serializer.data)
+        self.assertIn("telefone", serializer.data)
         self.assertIn("nome_doador", serializer.data)
         self.assertIn("especie", serializer.data)
 
     def test_update_serializer_nao_inclui_telefone(self):
-        """UpdateAnimalSerializer não permite alterar telefone."""
-        self.assertNotIn("telefone", UpdateAnimalSerializer.Meta.fields)
+        """UpdateAnimalSerializer permite alterar telefone."""
+        self.assertIn("telefone", UpdateAnimalSerializer.Meta.fields)
 
 
-# =========================================================
+
+    def test_animal_serializer_aceita_multiplas_fotos(self):
+        dados = self.dados_validos.copy()
+        dados["fotos"] = [criar_imagem("animal-1.png"), criar_imagem("animal-2.png")]
+
+        serializer = AnimalSerializer(data=dados)
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+        animal = serializer.save()
+
+        self.assertEqual(animal.imagens.count(), 2)
+
 # VIEW: lista e criação
 # =========================================================
 class AnimaisViewTests(APITestCase):
@@ -135,11 +160,12 @@ class AnimaisViewTests(APITestCase):
         self.user = User.objects.create_user(
             email="user@example.com",
             password="senha123",
-            nome="Usuário Teste",
+            nome="UsuÃ¡rio Teste",
             telefone="+5511966666666",
         )
         self.url = reverse("adocao:animais")
         self.dados = {
+            "nome_animal": "Luna",
             "nome_doador": "Fernanda",
             "telefone": "+5511955555555",
             "especie": EspecieAnimal.GATO,
@@ -148,7 +174,7 @@ class AnimaisViewTests(APITestCase):
         }
 
     def test_get_lista_publica(self):
-        """GET na lista é público (200)."""
+        """GET na lista Ã© pÃºblico (200)."""
         Animal.objects.create(**self.dados)
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
@@ -159,19 +185,21 @@ class AnimaisViewTests(APITestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(resp.data, [])
 
-    def test_get_lista_oculta_telefone(self):
+    def test_get_lista_expoe_telefone_para_contato(self):
         Animal.objects.create(**self.dados)
         resp = self.client.get(self.url)
-        self.assertNotIn("telefone", resp.data[0])
+        self.assertIn("telefone", resp.data[0])
 
     def test_get_lista_ordenada_por_id_desc(self):
         Animal.objects.create(
+            nome_animal="Animal A",
             nome_doador="A",
             telefone="+5511944444444",
             especie=EspecieAnimal.CACHORRO,
             sexo=SexoAnimal.MACHO,
         )
         Animal.objects.create(
+            nome_animal="Animal B",
             nome_doador="B",
             telefone="+5511933333333",
             especie=EspecieAnimal.GATO,
@@ -219,15 +247,16 @@ class AnimalDetailViewTests(APITestCase):
         self.user = User.objects.create_user(
             email="user2@example.com",
             password="senha123",
-            nome="Outro Usuário",
+            nome="Outro UsuÃ¡rio",
             telefone="+5511922222222",
         )
         self.animal = Animal.objects.create(
+            nome_animal="Max",
             nome_doador="Pedro",
             telefone="+5511911111111",
             especie=EspecieAnimal.CACHORRO,
             sexo=SexoAnimal.MACHO,
-            descricao="Cão pequeno",
+            descricao="CÃ£o pequeno",
         )
         self.url = reverse(
             "adocao:animal_detail",
@@ -244,9 +273,9 @@ class AnimalDetailViewTests(APITestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(resp.data["nome_doador"], "Pedro")
 
-    def test_get_detalhes_oculta_telefone(self):
+    def test_get_detalhes_expoe_telefone_para_contato(self):
         resp = self.client.get(self.url)
-        self.assertNotIn("telefone", resp.data)
+        self.assertIn("telefone", resp.data)
 
     def test_get_pk_inexistente_retorna_404(self):
         resp = self.client.get(self.url_inexistente)
@@ -254,7 +283,7 @@ class AnimalDetailViewTests(APITestCase):
 
         # ---------- PATCH ----------
     def test_patch_sem_autenticacao_retorna_401(self):
-        resp = self.client.patch(          # <-- put → patch
+        resp = self.client.patch(          # <-- put â†’ patch
             self.url,
             {"nome_doador": "Atualizado"},
             format="json",
@@ -263,7 +292,7 @@ class AnimalDetailViewTests(APITestCase):
 
     def test_patch_autenticado_atualiza_animal(self):
         self.client.force_authenticate(user=self.user)
-        resp = self.client.patch(          # <-- put → patch
+        resp = self.client.patch(          # <-- put â†’ patch
            self.url,
             {"nome_doador": "Pedro Editado"},
             format="json",
@@ -274,7 +303,7 @@ class AnimalDetailViewTests(APITestCase):
 
     def test_patch_autenticado_dados_invalidos_retorna_400(self):
         self.client.force_authenticate(user=self.user)
-        resp = self.client.patch(          # <-- put → patch
+        resp = self.client.patch(          # <-- put â†’ patch
             self.url,
             {"especie": "invalido"},
            format="json",
@@ -283,7 +312,7 @@ class AnimalDetailViewTests(APITestCase):
 
     def test_patch_pk_inexistente_retorna_404(self):
         self.client.force_authenticate(user=self.user)
-        resp = self.client.patch(          # <-- put → patch
+        resp = self.client.patch(          # <-- put â†’ patch
             self.url_inexistente,
             {"nome_doador": "X"},
             format="json",
@@ -306,3 +335,5 @@ class AnimalDetailViewTests(APITestCase):
         self.client.force_authenticate(user=self.user)
         resp = self.client.delete(self.url_inexistente)
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+

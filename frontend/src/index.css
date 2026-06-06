@@ -1,5 +1,6 @@
 * {
   box-sizing: border-box;
+  font-family: "Rubik", sans-serif;
 }
 
 html,
@@ -10,7 +11,7 @@ body,
 
 body {
   margin: 0;
-  font-family: 'Rubik', Arial, sans-serif;
+  font-family: 'Rubik', sans-serif;
   color: #1a1a1a;
 }
 

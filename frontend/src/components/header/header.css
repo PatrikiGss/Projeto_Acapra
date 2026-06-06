@@ -6,6 +6,18 @@ header {
     align-items: center;
 }
 
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.header-logo img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
 h1 {
     margin: 0;
     font-size: 1.5rem;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
 import { formatBrazilianPhone, toBrazilianPhoneE164 } from "../../utils/phone";
@@ -35,7 +35,7 @@ function Voluntariado() {
   const [loadingLista, setLoadingLista] = useState(false);
   const [erroLista, setErroLista] = useState("");
 
-  const carregarVoluntarios = () => {
+  const carregarVoluntarios = useCallback(() => {
     if (!podeEditar) return;
 
     setLoadingLista(true);
@@ -51,10 +51,20 @@ function Voluntariado() {
         setErroLista("Não foi possível carregar os voluntários cadastrados.");
       })
       .finally(() => setLoadingLista(false));
-  };
+  }, [podeEditar]);
 
   useEffect(() => {
-    carregarVoluntarios();
+    if (!podeEditar) return;
+
+    api
+      .get("/api/voluntariado/voluntarios/")
+      .then((response) => {
+        setVoluntarios(response.data || []);
+      })
+      .catch((erro) => {
+        console.error(erro);
+        setErroLista("Não foi possível carregar os voluntários cadastrados.");
+      });
   }, [podeEditar]);
 
   const handleChange = (event) => {

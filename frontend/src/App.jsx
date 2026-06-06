@@ -12,6 +12,10 @@ import Voluntariado from "./pages/VoluntariadoView/Voluntariado";
 import Noticias from "./pages/NoticiasView/Noticias";
 import Resgates from "./pages/ResgatesView/Resgates";
 import Campanhas from "./pages/CampanhasView/Campanhas";
+import Informacoes from "./pages/InformacoesView/Informacoes";
+import InformacoesDetail from "./pages/InformacoesView/InformacoesDetail";
+import InformacoesNova from "./pages/InformacoesView/InformacoesNova";
+import InformacoesEditar from "./pages/InformacoesView/InformacoesEditar";
 import NoticiasNova from "./pages/NoticiasView/NoticiasNova";
 import NoticiasEditar from "./pages/NoticiasView/NoticiasEditar";
 import ResgatesNova from "./pages/ResgatesView/ResgatesNova";
@@ -35,6 +39,10 @@ function App() {
           <Route path="/adocao" element={<Adocao />} />
           <Route path="/adocao/:id" element={<AnimalDetail />} />
           <Route path="/doe" element={<Doe />} />
+          <Route path="/informacoes" element={<Informacoes />} />
+          <Route path="/informacoes/:categoria/nova" element={<InformacoesNova />} />
+          <Route path="/informacoes/:categoria/:id/editar" element={<InformacoesEditar />} />
+          <Route path="/informacoes/:categoria/:id" element={<InformacoesDetail />} />
           <Route path="/noticias" element={<Noticias />} />
           <Route path="/noticias/nova" element={<NoticiasNova />} />
           <Route path="/noticias/:id/editar" element={<NoticiasEditar />} />

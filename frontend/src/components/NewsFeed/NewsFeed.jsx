@@ -22,12 +22,13 @@ function resumirTexto(texto) {
   return `${limpo.slice(0, 220).trimEnd()}...`;
 }
 
-function NewsFeed({ categoria, titulo, subtitulo }) {
+function NewsFeed({ categoria, titulo, subtitulo, basePath, embedded = false }) {
   const navigate = useNavigate();
   const [itens, setItens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const { podeEditar } = useAdminAccess(categoria);
+  const rotaCategoria = basePath ? `${basePath}/${categoria}` : `/${categoria}`;
 
   useEffect(() => {
     let ignorado = false;
@@ -62,11 +63,11 @@ function NewsFeed({ categoria, titulo, subtitulo }) {
   }, [categoria]);
 
   const abrirCriacao = () => {
-    navigate(`/${categoria}/nova`);
+    navigate(`${rotaCategoria}/nova`);
   };
 
   const abrirEdicao = (item) => {
-    navigate(`/${categoria}/${item.id}/editar`);
+    navigate(`${rotaCategoria}/${item.id}/editar`);
   };
 
   const excluirItem = async (item) => {
@@ -85,7 +86,7 @@ function NewsFeed({ categoria, titulo, subtitulo }) {
   const itensVisiveis = itens.filter((item) => item.categoria === categoria);
 
   return (
-    <section className="news-page">
+    <section className={`news-page ${embedded ? "embedded" : ""}`}>
       <div className="news-content">
       <header className="news-hero">
         <div className="news-hero-row">
@@ -116,7 +117,7 @@ function NewsFeed({ categoria, titulo, subtitulo }) {
         <div className="news-list">
           {itensVisiveis.map((item) => (
             <article className="news-row" key={item.id}>
-              <Link className="news-row-link" to={`/${categoria}/${item.id}`}>
+              <Link className="news-row-link" to={`${rotaCategoria}/${item.id}`}>
                 <div className="news-row-image">
                   {item.foto ? (
                     <img src={getMediaURL(item.foto)} alt={item.titulo} />

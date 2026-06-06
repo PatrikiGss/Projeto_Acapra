@@ -337,13 +337,123 @@
     border-radius: 8px;
 }
 
+.fresh-news-section {
+    width: 100%;
+    padding: 2rem clamp(1rem, 5vw, 4rem) 4rem;
+    background: #faf7f4;
+}
+
+.fresh-news-banner {
+    width: min(100%, 1120px);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.1fr);
+    overflow: hidden;
+    color: inherit;
+    text-decoration: none;
+    background: #fff;
+    border: 1px solid #eee4dc;
+    border-radius: 8px;
+    box-shadow: 0 14px 32px rgba(26, 26, 26, 0.08);
+}
+
+.fresh-news-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 260px;
+    object-fit: cover;
+}
+
+.fresh-news-copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(1.4rem, 4vw, 2.8rem);
+}
+
+.fresh-news-copy span {
+    color: #e87722;
+    font-size: 0.82rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.fresh-news-copy h2 {
+    max-width: 680px;
+    margin-top: 0.65rem;
+    font-size: clamp(1.8rem, 3.6vw, 3rem);
+    line-height: 1.04;
+}
+
+.fresh-news-copy p {
+    max-width: 620px;
+    margin-top: 0.9rem;
+    color: #555;
+    line-height: 1.7;
+}
+
+.fresh-news-copy strong {
+    width: fit-content;
+    margin-top: 1.2rem;
+    color: #1a1a1a;
+    font-size: 0.82rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.fresh-news-dots {
+    display: flex;
+    gap: 0.45rem;
+    margin-top: 1.25rem;
+}
+
+.fresh-news-dots button {
+    width: 10px;
+    height: 10px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: #ddd2c9;
+    cursor: pointer;
+}
+
+.fresh-news-dots button.active {
+    background: #e87722;
+}
+
 .produtos-section {
     background-color: #faf7f4;
     padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.produtos-layout {
+    width: min(100%, 1120px);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 0.75fr);
+    align-items: center;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
 }
 
 .produtos-content {
-    max-width: 850px;
+    max-width: 720px;
+}
+
+.produtos-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 320px;
+}
+
+.produtos-image img {
+    display: block;
+    width: min(100%, 430px);
+    max-height: 430px;
+    object-fit: contain;
 }
 
 .produtos-link {
@@ -466,7 +576,28 @@
         padding-bottom: 1.25rem;
     }
 
+    .fresh-news-section {
+        padding: 1.25rem 1rem 2.5rem;
+    }
+
+    .fresh-news-banner {
+        grid-template-columns: 1fr;
+    }
+
+    .fresh-news-image img {
+        min-height: 220px;
+        max-height: 260px;
+    }
+
     .produtos-section {
         padding-top: 1.25rem;
+    }
+
+    .produtos-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .produtos-image {
+        order: -1;
     }
 }

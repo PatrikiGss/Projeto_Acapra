@@ -4,6 +4,17 @@
   background: #fbfaf8;
   color: #1a1a1a;
 }
+
+.news-page.embedded {
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.news-page.embedded .news-content {
+  width: min(100%, 1160px);
+  padding: 0;
+}
 .news-content{
     width: min(100%, 1220px);
     margin: 0 auto;

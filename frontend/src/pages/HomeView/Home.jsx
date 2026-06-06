@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import api from "../../services/api";
+import api, { getMediaURL } from "../../services/api";
 import "./Home.css";
 
 const carouselItems = [
@@ -30,10 +30,21 @@ const carouselItems = [
   },
 ];
 
+const destaqueExemplo = {
+  id: "exemplo",
+  categoria: "noticias",
+  categoria_display: "Notícia",
+  titulo: "Campanha de arrecadação ganha novos pontos de coleta",
+  resumo: "Voluntários organizaram novos locais para receber ração, cobertores e itens de limpeza para os animais acolhidos.",
+  foto: "/carousel-voluntariado.jpg",
+};
+
 function Home() {
   const [animais, setAnimais] = useState([]);
   const [carregandoAnimais, setCarregandoAnimais] = useState(true);
   const [slideAtual, setSlideAtual] = useState(0);
+  const [destaquesInfo, setDestaquesInfo] = useState([destaqueExemplo]);
+  const [destaqueAtual, setDestaqueAtual] = useState(0);
 
   useEffect(() => {
     api.get("/api/adocao/animais/")
@@ -47,12 +58,30 @@ function Home() {
   }, []);
 
   useEffect(() => {
+    api.get("/api/noticias/publicacoes/")
+      .then((response) => {
+        const publicacoes = response.data?.slice(0, 5);
+        setDestaquesInfo(publicacoes?.length ? publicacoes : [destaqueExemplo]);
+        setDestaqueAtual(0);
+      })
+      .catch(() => setDestaquesInfo([destaqueExemplo]));
+  }, []);
+
+  useEffect(() => {
     const timer = setInterval(() => {
       setSlideAtual((current) => (current + 1) % carouselItems.length);
     }, 6000);
 
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setDestaqueAtual((current) => (current + 1) % destaquesInfo.length);
+    }, 7000);
+
+    return () => clearInterval(timer);
+  }, [destaquesInfo.length]);
 
   useEffect(() => {
     const elementosAnimados = document.querySelectorAll(".scroll-reveal");
@@ -83,6 +112,8 @@ function Home() {
   const irParaProximoSlide = () => {
     setSlideAtual((current) => (current + 1) % carouselItems.length);
   };
+
+  const destaqueInfo = destaquesInfo[destaqueAtual] || destaqueExemplo;
 
   return (
     
@@ -217,17 +248,63 @@ function Home() {
       </section>
 
       <section className="produtos-section scroll-reveal" id="produtos">
-        <div className="produtos-content">
-          <span className="section-kicker">Produtos solidários</span>
-          <h2>Compre e ajude a manter o cuidado com os animais</h2>
-          <p>
-            Todo o valor arrecadado com os produtos da Acapra é reutilizado na
-            ONG para apoiar resgates, alimentação, medicação, castrações e a
-            manutenção dos animais acolhidos.
-          </p>
-          <Link to="/produtos" className="link produtos-link">
-            Conheça nossos produtos
-          </Link>
+        <div className="produtos-layout">
+          <div className="produtos-content">
+            <span className="section-kicker">Produtos solidários</span>
+            <h2>Compre e ajude a manter o cuidado com os animais</h2>
+            <p>
+              Todo o valor arrecadado com os produtos da Acapra é reutilizado na
+              ONG para apoiar resgates, alimentação, medicação, castrações e a
+              manutenção dos animais acolhidos.
+            </p>
+            <Link to="/produtos" className="link produtos-link">
+              Conheça nossos produtos
+            </Link>
+          </div>
+
+          <div className="produtos-image">
+            <img
+              src="/produtos-solidarios.png"
+              alt="Gato com carrinho de compras representando produtos solidários"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="fresh-news-section scroll-reveal" aria-label="Informações recentes em destaque">
+        <Link
+          className="fresh-news-banner"
+          to={destaqueInfo.id === "exemplo"
+            ? "/informacoes"
+            : `/informacoes/${destaqueInfo.categoria}/${destaqueInfo.id}`}
+        >
+          <div className="fresh-news-image">
+            <img
+              src={destaqueInfo.foto?.startsWith("/")
+                ? destaqueInfo.foto
+                : getMediaURL(destaqueInfo.foto)}
+              alt={destaqueInfo.titulo}
+            />
+          </div>
+
+          <div className="fresh-news-copy">
+            <span>Boas notícias saindo do forno</span>
+            <h2>{destaqueInfo.titulo}</h2>
+            <p>{destaqueInfo.resumo}</p>
+            <strong>{destaqueInfo.categoria_display || "Informação"}</strong>
+          </div>
+        </Link>
+
+        <div className="fresh-news-dots" aria-label="Publicações recentes">
+          {destaquesInfo.map((item, index) => (
+            <button
+              className={index === destaqueAtual ? "active" : ""}
+              type="button"
+              onClick={() => setDestaqueAtual(index)}
+              aria-label={`Mostrar ${item.titulo}`}
+              key={`${item.id}-${item.titulo}`}
+            />
+          ))}
         </div>
       </section>
     </div>

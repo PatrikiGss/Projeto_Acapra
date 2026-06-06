@@ -104,9 +104,10 @@ function Header() {
             aria-expanded={newsOpen}
             aria-haspopup="menu"
           >
-            Notícias
+            Informações
           </button>
-          <div className="site-dropdown-menu" role="menu" aria-label="Seções de notícias">
+          <div className="site-dropdown-menu" role="menu" aria-label="Seções de informações">
+            <Link className="site-dropdown-link" to="/informacoes" onClick={closeMenu}>Todas</Link>
             <Link className="site-dropdown-link" to="/noticias" onClick={closeMenu}>Notícias</Link>
             <Link className="site-dropdown-link" to="/resgates" onClick={closeMenu}>Resgates</Link>
             <Link className="site-dropdown-link" to="/campanhas" onClick={closeMenu}>Campanhas</Link>

@@ -21,13 +21,14 @@ function formatarData(valor) {
   }).format(data);
 }
 
-function NewsArticle({ categoria, backPath }) {
+function NewsArticle({ categoria, backPath, basePath }) {
   const navigate = useNavigate();
   const { id } = useParams();
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const { podeEditar } = useAdminAccess(categoria);
+  const rotaCategoria = basePath ? `${basePath}/${categoria}` : `/${categoria}`;
 
   useEffect(() => {
     let ignorado = false;
@@ -80,7 +81,7 @@ function NewsArticle({ categoria, backPath }) {
 
   const editarItem = () => {
     if (!item) return;
-    navigate(`/${categoria}/${item.id}/editar`);
+    navigate(`${rotaCategoria}/${item.id}/editar`);
   };
 
   return (

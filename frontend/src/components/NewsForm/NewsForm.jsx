@@ -17,10 +17,11 @@ const formVazio = {
   ativo: true,
 };
 
-function NewsForm({ categoria, backPath, mode = "create" }) {
+function NewsForm({ categoria, backPath, mode = "create", basePath }) {
   const navigate = useNavigate();
   const { id } = useParams();
   const { podeEditar } = useAdminAccess(categoria);
+  const rotaCategoria = basePath ? `${basePath}/${categoria}` : `/${categoria}`;
   const [loading, setLoading] = useState(mode === "edit");
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
@@ -145,7 +146,7 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
         response = await api.post("/api/noticias/publicacoes/", payload);
       }
 
-      navigate(`/${categoria}/${response.data.id}`);
+      navigate(`${rotaCategoria}/${response.data.id}`);
     } catch (error) {
       setErro(extrairMensagemErro(error));
     } finally {

@@ -1,5 +1,13 @@
 from django.urls import path
-from .views import RegisterView, MeuPerfilView, ChangePasswordView
+from .views import (
+    AdminPerfilUpdateView,
+    AdminUsuariosView,
+    ChangePasswordView,
+    DashboardView,
+    MeuPerfilView,
+    RegisterView,
+)
+
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -44,4 +52,17 @@ urlpatterns = [
     # Alteração de senha
     # Requer senha atual + nova senha válida
     path('user/change-password/', ChangePasswordView.as_view(), name='change_password'),
+
+
+    # =========================
+    # DASHBOARD / ADMINISTRAÇÃO
+    # =========================
+
+    path('dashboard/', DashboardView.as_view(), name='dashboard'),
+    path('admin/usuarios/', AdminUsuariosView.as_view(), name='admin_usuarios'),
+    path(
+        'admin/usuarios/<int:pk>/perfil/',
+        AdminPerfilUpdateView.as_view(),
+        name='admin_perfil_update',
+    ),
 ]

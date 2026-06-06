@@ -3,12 +3,13 @@ import Footer from "../components/footer/footer.jsx";
 import "./layout.css"
 import { Outlet } from "react-router-dom";
 
-function Layout({ children }) {
+function Layout() {
   return (
     <>
       <div className="layout">
         <Header />
         <main>
+          
           <Outlet />
         </main>
         <Footer />

@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { clearAuthSession, getStoredUser, isLoggedIn, subscribeToAuthChanges } from "../../utils/auth";
@@ -113,6 +113,7 @@ function Header() {
           </div>
         </div>
         <Link className="site-nav-link" to="/doe" onClick={closeMenu}>Doe</Link>
+        <Link className="site-nav-link" to="/transparencia" onClick={closeMenu}>Transparência</Link>
 
         {estaLogado && temAcessoDashboard(usuario) && (
           <Link className="site-nav-link" to="/dashboard" onClick={closeMenu}>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../../services/api";
+import logo from "../../assets/acapra.jpeg";
 import { formatBrazilianPhone, toBrazilianPhoneE164 } from "../../utils/phone";
 import "./Register.css";
 
@@ -60,6 +61,7 @@ function Register() {
       </div>
 
       <div className="register-card">
+        <img src={logo} alt="Logo Acapra" className="register-logo-topo" />
         <div className="register-header">
           <span className="register-logo"><img src="/logo.png" alt="logo" className="register-logo" /></span>
           <h1>Criar Conta</h1>

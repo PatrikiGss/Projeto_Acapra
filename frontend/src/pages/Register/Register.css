@@ -52,6 +52,16 @@
   max-width: 520px;
   width: 100%;
   margin: 0 auto;
+  position: relative;
+}
+
+.register-logo-topo {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
 }
 
 .register-header {

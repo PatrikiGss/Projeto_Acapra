@@ -22,6 +22,7 @@ import NoticiasDetail from "./pages/NoticiasDetailView/NoticiasDetail";
 import ResgatesDetail from "./pages/ResgatesDetailView/ResgatesDetail";
 import CampanhasDetail from "./pages/CampanhasDetailView/CampanhasDetail";
 import Dashboard from "./pages/DashboardView/Dashboard";
+import Transparencia from "./pages/TransparenciaView/Transparencia";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 
 function App() {
@@ -50,6 +51,7 @@ function App() {
           <Route path="/produtos" element={<Vendas />} />
           <Route path="/produtos/:id" element={<ProdutoDetail />} />
           <Route path="/voluntariado" element={<Voluntariado />} />
+          <Route path="/transparencia" element={<Transparencia />} />
           <Route
             path="/dashboard"
             element={(

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Categoria, Movimento
+from .models import Categoria, DocumentoInstitucional, Movimento
 
 
 @admin.register(Categoria)
@@ -15,3 +15,10 @@ class MovimentoAdmin(admin.ModelAdmin):
     list_filter = ["categoria__tipo", "ativo", "data"]
     search_fields = ["descricao", "categoria__nome"]
     date_hierarchy = "data"
+
+
+@admin.register(DocumentoInstitucional)
+class DocumentoInstitucionalAdmin(admin.ModelAdmin):
+    list_display = ["nome", "ativo", "ordem", "created_at"]
+    list_filter = ["ativo"]
+    search_fields = ["nome", "descricao"]

@@ -113,6 +113,7 @@ function Header() {
           </div>
         </div>
         <Link className="site-nav-link" to="/doe" onClick={closeMenu}>Doe</Link>
+        <Link className="site-nav-link" to="/transparencia" onClick={closeMenu}>Transparência</Link>
 
         {estaLogado && temAcessoDashboard(usuario) && (
           <Link className="site-nav-link" to="/dashboard" onClick={closeMenu}>

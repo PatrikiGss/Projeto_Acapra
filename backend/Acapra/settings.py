@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "denuncias.apps.DenunciasConfig",
     "doacoes.apps.DoacoesConfig",
     "gerenciamento.apps.GerenciamentoConfig",
+    "noticias.apps.NoticiasConfig",
     "resgates.apps.ResgatesConfig",
     "transparencia.apps.TransparenciaConfig",
     "vendas.apps.VendasConfig",

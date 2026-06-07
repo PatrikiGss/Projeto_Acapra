@@ -11,9 +11,10 @@ MODULOS_POR_NIVEL = {
         "adocao",
         "vendas",
         "voluntariado",
+        "transparencia",
         "gerenciamento_usuarios",
     },
-    PerfilAdministrativo.Nivel.FINANCEIRO: {"doacoes"},
+    PerfilAdministrativo.Nivel.FINANCEIRO: {"doacoes", "transparencia"},
     PerfilAdministrativo.Nivel.DOACOES: {"adocao", "noticias"},
     PerfilAdministrativo.Nivel.USUARIO: set(),
 }

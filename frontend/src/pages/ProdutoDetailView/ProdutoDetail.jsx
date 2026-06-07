@@ -1,6 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../../services/api";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import "./ProdutoDetail.css";
 
 function ProdutoDetail() {
@@ -62,7 +63,9 @@ function ProdutoDetail() {
     if (loading) {
         return (
             <main className="produto-detail-page">
-                <div className="produto-detail-message">Carregando produto...</div>
+                <div className="produto-detail-message">
+                    <LoadingSpinner label="Carregando produto..." />
+                </div>
             </main>
         );
     }
@@ -84,7 +87,7 @@ function ProdutoDetail() {
                     <div className="produto-main-image">
                         {fotoAtual ? (
                             <>
-                                <img src={fotoAtual} alt={produto.nome} />
+                                <img src={fotoAtual} alt={produto.nome} width="1200" height="900" />
 
                                 {fotos.length > 1 && (
                                     <>

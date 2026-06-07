@@ -337,6 +337,14 @@
     border-radius: 8px;
 }
 
+.home-loading {
+    grid-column: 1 / -1;
+}
+
+.home-empty-state {
+    grid-column: 1 / -1;
+}
+
 .fresh-news-section {
     width: 100%;
     padding: 2rem clamp(1rem, 5vw, 4rem) 4rem;
@@ -363,6 +371,10 @@
     height: 100%;
     min-height: 260px;
     object-fit: cover;
+}
+
+.fresh-news-image {
+    aspect-ratio: 16 / 9;
 }
 
 .fresh-news-copy {

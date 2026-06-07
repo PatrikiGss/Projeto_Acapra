@@ -11,6 +11,7 @@ class SecurityHeadersMiddleware:
         response["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
         response["Content-Security-Policy"] = (
             "default-src 'none'; "
-            "frame-ancestors 'none'"
+            "frame-ancestors 'none'; "
+            "connect-src 'self'"
         )
         return response

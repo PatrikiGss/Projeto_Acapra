@@ -2,6 +2,10 @@
 import { Link } from "react-router-dom";
 import api, { getMediaURL } from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
+import EmptyState from "../../components/ui/EmptyState";
+import ConfirmModal from "../../components/ui/ConfirmModal";
+import { getResponseItems } from "../../utils/collection";
+import { getApiErrorMessage } from "../../utils/errorUtils";
 import "./Vendas.css";
 
 const formVazio = {
@@ -28,10 +32,12 @@ function Vendas() {
     const [fotosAdicionais, setFotosAdicionais] = useState([]);
     const [salvando, setSalvando] = useState(false);
     const [erroFormulario, setErroFormulario] = useState("");
+    const [erroAcao, setErroAcao] = useState("");
+    const [produtoParaExclusao, setProdutoParaExclusao] = useState(null);
 
     const carregarProdutos = () => {
         api.get("/api/vendas/produtos/")
-            .then((response) => setProdutos(response.data))
+            .then((response) => setProdutos(getResponseItems(response.data)))
             .catch((error) => console.error(error));
     };
 
@@ -163,18 +169,7 @@ function Vendas() {
     };
 
     const extrairMensagemErro = (error) => {
-        const data = error.response?.data;
-
-        if (!data) return "Não foi possível salvar o produto.";
-
-        if (typeof data === "string") return data;
-
-        if (typeof data === "object") {
-            const mensagens = Object.values(data).flat().filter(Boolean);
-            if (mensagens.length > 0) return mensagens.join(" ");
-        }
-
-        return "Não foi possível salvar o produto.";
+        return getApiErrorMessage(error, "Não foi possível salvar o produto.");
     };
 
     const lidarComFotoPrincipal = (file) => {
@@ -247,14 +242,19 @@ function Vendas() {
     };
 
     const excluirProduto = async (produto) => {
-        const confirmado = window.confirm(`Excluir o produto "${produto.nome}"?`);
-        if (!confirmado) return;
+        setProdutoParaExclusao(produto);
+    };
+
+    const confirmarExclusao = async () => {
+        if (!produtoParaExclusao) return;
 
         try {
-            await api.delete(`/api/vendas/produtos/${produto.id}/`);
+            await api.delete(`/api/vendas/produtos/${produtoParaExclusao.id}/`);
             await carregarProdutos();
         } catch (error) {
-            alert(extrairMensagemErro(error));
+            setErroAcao(getApiErrorMessage(error, "Não foi possível excluir o produto."));
+        } finally {
+            setProdutoParaExclusao(null);
         }
     };
 
@@ -271,7 +271,7 @@ function Vendas() {
 
                     <div className="product-card-image">
                         {imagem ? (
-                            <img src={imagem} alt={produto.nome} />
+                            <img src={imagem} alt={produto.nome} width="640" height="640" />
                         ) : (
                             <div className="product-placeholder">ACAPRA</div>
                         )}
@@ -299,7 +299,7 @@ function Vendas() {
 
                         <div className="product-card-image">
                             {imagem ? (
-                                <img src={imagem} alt={produto.nome} />
+                                <img src={imagem} alt={produto.nome} width="640" height="640" />
                             ) : (
                                 <div className="product-placeholder">ACAPRA</div>
                             )}
@@ -380,11 +380,14 @@ function Vendas() {
                     {produtosFiltrados.map((produto) => renderProductCard(produto))}
 
                     {produtosFiltrados.length === 0 && (
-                        <div className="empty-state">
-                            Nenhum produto encontrado para estes filtros.
-                        </div>
+                        <EmptyState
+                            title="Nenhum produto encontrado para estes filtros."
+                            description="Ajuste os filtros ou cadastre novos produtos."
+                        />
                     )}
                 </div>
+
+                {erroAcao && <p className="vendas-action-error">{erroAcao}</p>}
             </section>
 
             {modalAberto && (
@@ -538,14 +541,17 @@ function Vendas() {
                     </div>
                 </div>
             )}
+
+            <ConfirmModal
+                open={Boolean(produtoParaExclusao)}
+                title="Excluir produto"
+                message={`Tem certeza que deseja excluir "${produtoParaExclusao?.nome || ""}"?`}
+                confirmLabel="Excluir"
+                onClose={() => setProdutoParaExclusao(null)}
+                onConfirm={confirmarExclusao}
+            />
         </div>
     );
 }
 
 export default Vendas;
-
-
-
-
-
-

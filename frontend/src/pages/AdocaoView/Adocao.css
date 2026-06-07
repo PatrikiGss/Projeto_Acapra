@@ -299,6 +299,12 @@
     box-shadow: 0 12px 28px rgba(26, 26, 26, 0.06);
 }
 
+.adocao-action-error {
+    margin-top: 1rem;
+    color: #8a1f1f;
+    font-weight: 700;
+}
+
 /* ── Responsivo ────────────────────────────────────────── */
 
 @media (max-width: 768px) {

@@ -1,6 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import api from "../../services/api";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import "./AnimalDetail.css";
 
 function AnimalDetail() {
@@ -74,7 +75,9 @@ function AnimalDetail() {
     if (loading) {
         return (
             <main className="animal-detail-page">
-                <div className="animal-detail-message">Carregando animal...</div>
+                <div className="animal-detail-message">
+                    <LoadingSpinner label="Carregando animal..." />
+                </div>
             </main>
         );
     }
@@ -97,7 +100,7 @@ function AnimalDetail() {
                     <div className="animal-main-image">
                         {fotoAtual ? (
                             <>
-                                <img src={fotoAtual} alt={animal.nome_animal} />
+                                <img src={fotoAtual} alt={animal.nome_animal} width="1200" height="900" />
 
                                 {fotos.length > 1 && (
                                     <>

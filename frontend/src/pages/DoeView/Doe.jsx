@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import EmptyState from "../../components/ui/EmptyState";
+import { getResponseItems } from "../../utils/collection";
+import { getApiErrorMessage } from "../../utils/errorUtils";
 import "./Doe.css";
 
 const bankFields = [
@@ -38,34 +42,35 @@ function Doe() {
   const [removerQrCode, setRemoverQrCode] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erroFormulario, setErroFormulario] = useState("");
-
-  const sincronizarLista = () => {
-    setLoading(true);
-
-    api
-      .get("/api/doacoes/pix/")
-      .then((response) => {
-        setDadosList(response.data || []);
-        setError(false);
-      })
-      .catch((erro) => {
-        console.error(erro);
-        setError(true);
-      })
-      .finally(() => setLoading(false));
-  };
+  const [copiado, setCopiado] = useState(false);
 
   useEffect(() => {
-    let ignorado = false;
+    let ativo = true;
 
-    Promise.resolve().then(() => {
-      if (!ignorado) {
-        sincronizarLista();
+    const carregar = async () => {
+      setLoading(true);
+
+      try {
+        const response = await api.get("/api/doacoes/pix/");
+        if (!ativo) return;
+
+        setDadosList(getResponseItems(response.data));
+        setError(false);
+      } catch (erro) {
+        if (!ativo) return;
+        console.error(erro);
+        setError(true);
+      } finally {
+        if (ativo) {
+          setLoading(false);
+        }
       }
-    });
+    };
+
+    void carregar();
 
     return () => {
-      ignorado = true;
+      ativo = false;
     };
   }, []);
 
@@ -77,9 +82,32 @@ function Doe() {
     };
   }, [previewQrCode]);
 
+  useEffect(() => {
+    if (!copiado) return undefined;
+
+    const timer = window.setTimeout(() => setCopiado(false), 2000);
+    return () => window.clearTimeout(timer);
+  }, [copiado]);
+
   const dadosDoacao = useMemo(() => dadosList[0] || null, [dadosList]);
   const hasBankData = dadosDoacao && bankFields.some(([, key]) => dadosDoacao[key]);
   const qrCodeAtual = dadosEditando?.qr_code || dadosDoacao?.qr_code || "";
+  const modalVisivel = podeEditar && modalAberto;
+
+  const atualizarLista = async () => {
+    setLoading(true);
+
+    try {
+      const response = await api.get("/api/doacoes/pix/");
+      setDadosList(getResponseItems(response.data));
+      setError(false);
+    } catch (erro) {
+      console.error(erro);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const limparPreview = () => {
     if (previewQrCode.startsWith("blob:")) {
@@ -134,14 +162,7 @@ function Doe() {
   };
 
   const extrairMensagemErro = (errorResponse) => {
-    const data = errorResponse.response?.data;
-    if (!data) return "Não foi possível salvar os dados de doação.";
-    if (typeof data === "string") return data;
-    if (typeof data === "object") {
-      const mensagens = Object.values(data).flat().filter(Boolean);
-      if (mensagens.length > 0) return mensagens.join(" ");
-    }
-    return "Não foi possível salvar os dados de doação.";
+    return getApiErrorMessage(errorResponse, "Não foi possível salvar os dados de doação.");
   };
 
   const alterarCampo = (event) => {
@@ -167,6 +188,18 @@ function Doe() {
     if (checked) {
       setQrCodeFile(null);
       limparPreview();
+    }
+  };
+
+  const copiarChavePix = async () => {
+    if (!dadosDoacao?.chave_pix) return;
+
+    try {
+      await navigator.clipboard.writeText(dadosDoacao.chave_pix);
+      setCopiado(true);
+    } catch (error) {
+      console.error(error);
+      setErroFormulario("Não foi possível copiar a chave PIX.");
     }
   };
 
@@ -201,7 +234,7 @@ function Doe() {
         await api.post("/api/doacoes/pix/", payload);
       }
 
-      await sincronizarLista();
+      await atualizarLista();
       fecharModal();
     } catch (errorResponse) {
       setErroFormulario(extrairMensagemErro(errorResponse));
@@ -232,14 +265,20 @@ function Doe() {
         )}
       </section>
 
-      {loading && <div className="donation-message">Carregando dados de doação...</div>}
+      {loading && <LoadingSpinner label="Carregando dados de doação..." />}
 
       {!loading && error && (
-        <div className="donation-message">Não foi possível carregar os dados de doação.</div>
+        <EmptyState
+          title="Não foi possível carregar os dados de doação."
+          description="Tente novamente em instantes."
+        />
       )}
 
       {!loading && !error && !dadosDoacao && (
-        <div className="donation-message">Nenhum dado de doação ativo foi cadastrado.</div>
+        <EmptyState
+          title="Nenhum dado de doação ativo foi cadastrado."
+          description="Cadastre os dados pelo painel administrativo."
+        />
       )}
 
       {!loading && !error && dadosDoacao && (
@@ -261,6 +300,10 @@ function Doe() {
             <div className="pix-key-box">
               <strong>Chave PIX</strong>
               <span>{dadosDoacao.chave_pix}</span>
+              <button type="button" className="pix-copy-button" onClick={copiarChavePix}>
+                Copiar chave PIX
+              </button>
+              {copiado && <span className="pix-copy-feedback">Copiado!</span>}
             </div>
           </article>
 
@@ -284,7 +327,7 @@ function Doe() {
         </section>
       )}
 
-      {modalAberto && podeEditar && (
+      {modalVisivel && (
         <div className="doe-modal-backdrop" onClick={fecharModal}>
           <div className="doe-modal" onClick={(event) => event.stopPropagation()}>
             <div className="doe-modal-header">

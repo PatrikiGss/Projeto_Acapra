@@ -74,8 +74,7 @@
 .news-form-image-zone img,
 .news-form-image-placeholder {
   width: 100%;
-  min-height: 320px;
-  max-height: 520px;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
   background: transparent;
 }

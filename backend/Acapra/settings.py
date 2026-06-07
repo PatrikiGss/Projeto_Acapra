@@ -53,7 +53,6 @@ INSTALLED_APPS = [
     # Apps do projeto
     "core.apps.CoreConfig",
     "adocao.apps.AdocaoConfig",
-    "denuncias.apps.DenunciasConfig",
     "doacoes.apps.DoacoesConfig",
     "gerenciamento.apps.GerenciamentoConfig",
     "noticias.apps.NoticiasConfig",
@@ -181,10 +180,13 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",
+        "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE":20,
+    "DEFAULT_THROTTLE_RATES": {
+        "public_animals": "60/min",
+    },
 }
 
 

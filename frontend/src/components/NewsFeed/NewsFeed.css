@@ -106,7 +106,7 @@
 .news-row-image {
   position: relative;
   flex: 0 0 min(34vw, 280px);
-  min-height: 180px;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   background: transparent;
 }

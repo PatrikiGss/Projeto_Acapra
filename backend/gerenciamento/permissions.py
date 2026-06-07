@@ -13,6 +13,7 @@ MODULOS_POR_NIVEL = {
         "voluntariado",
         "transparencia",
         "gerenciamento_usuarios",
+        "transparencia",
     },
     PerfilAdministrativo.Nivel.FINANCEIRO: {"doacoes", "transparencia"},
     PerfilAdministrativo.Nivel.DOACOES: {"adocao", "noticias"},

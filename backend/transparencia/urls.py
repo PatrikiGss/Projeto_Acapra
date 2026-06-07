@@ -1,9 +1,11 @@
 from django.urls import path
-from .views import DocumentosTransparenciaView, DocumentoTransparenciaDetailView
+from .views import CategoriasView, CategoriaDetailView, MovimentosView, MovimentoDetailView
 
-app_name='transparencia'
+app_name = "transparencia"
 
 urlpatterns = [
-    path("documentos/", DocumentosTransparenciaView.as_view(), name="documentos"),
-    path("documentos/<int:pk>/", DocumentoTransparenciaDetailView.as_view(), name="documento-detail"),
+    path("categorias/", CategoriasView.as_view(), name="categorias"),
+    path("categorias/<int:pk>/", CategoriaDetailView.as_view(), name="categoria_detail"),
+    path("movimentos/", MovimentosView.as_view(), name="movimentos"),
+    path("movimentos/<int:pk>/", MovimentoDetailView.as_view(), name="movimento_detail"),
 ]

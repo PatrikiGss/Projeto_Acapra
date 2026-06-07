@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import BaseUserManager
+from phonenumber_field.modelfields import PhoneNumberField
 from django.db import models
 """
 Pequenos ajustes posteriores

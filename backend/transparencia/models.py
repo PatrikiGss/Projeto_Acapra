@@ -46,3 +46,25 @@ class Movimento(models.Model):
 
     def __str__(self):
         return f"{self.categoria} | {self.descricao} (R$ {self.valor})"
+
+
+class DocumentoInstitucional(models.Model):
+    nome = models.CharField(max_length=200)
+    descricao = models.CharField(max_length=300, blank=True, default="")
+    arquivo = models.FileField(
+        upload_to="transparencia/documentos/%Y/%m/%d",
+        blank=True,
+        null=True,
+    )
+    ativo = models.BooleanField(default=True)
+    ordem = models.PositiveSmallIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Documento Institucional"
+        verbose_name_plural = "Documentos Institucionais"
+        ordering = ["ordem", "nome"]
+
+    def __str__(self):
+        return self.nome

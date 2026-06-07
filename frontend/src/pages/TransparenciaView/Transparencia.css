@@ -444,6 +444,27 @@
   background: #fff3e8;
 }
 
+/* BOTÃO NO HEADER DA SEÇÃO */
+
+.transp-header-btn {
+  flex-shrink: 0;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid rgba(232, 119, 34, 0.45);
+  border-radius: 8px;
+  background: transparent;
+  color: #e87722;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.transp-header-btn:hover {
+  background: #fff3e8;
+}
+
 /* DOCUMENTOS */
 
 .transp-doc-lista {
@@ -495,6 +516,39 @@
   background: #f5f5f5;
   color: #777;
   border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.transp-doc-acoes {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.transp-doc-btn {
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid rgba(224, 224, 224, 0.9);
+  background: #fff;
+  color: #1a1a1a;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.transp-doc-btn:hover {
+  background: #f5f5f5;
+}
+
+.transp-doc-btn.danger {
+  color: #b42318;
+  border-color: rgba(180, 35, 24, 0.25);
+}
+
+.transp-doc-btn.danger:hover {
+  background: #fdebea;
 }
 
 /* PARCEIROS */

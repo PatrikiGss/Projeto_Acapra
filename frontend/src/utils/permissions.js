@@ -30,6 +30,7 @@ const MODULO_ACESSO = {
   vendas: [NIVEIS.MASTER],
   voluntariado: [NIVEIS.MASTER],
   gerenciamento_usuarios: [NIVEIS.MASTER],
+  transparencia: [NIVEIS.MASTER, NIVEIS.FINANCEIRO],
 };
 
 export function getUserNivel(user = getStoredUser()) {

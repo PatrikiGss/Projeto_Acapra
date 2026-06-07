@@ -1,35 +1,45 @@
 from rest_framework import serializers
-
-from .models import DocumentoTransparencia
-
-
-def _absolute_file_url(request, file_field):
-    if not file_field:
-        return None
-
-    return file_field.url
+from .models import Categoria, Movimento
 
 
-class DocumentoTransparenciaSerializer(serializers.ModelSerializer):
-    categoria_display = serializers.CharField(source="get_categoria_display", read_only=True)
-    arquivo_pdf_url = serializers.SerializerMethodField()
+class MovimentoReadSerializer(serializers.ModelSerializer):
+    comprovante = serializers.SerializerMethodField()
 
     class Meta:
-        model = DocumentoTransparencia
-        fields = [
-            "id",
-            "titulo",
-            "descricao",
-            "arquivo_pdf",
-            "arquivo_pdf_url",
-            "ano",
-            "categoria",
-            "categoria_display",
-            "ativo",
-            "created_at",
-        ]
-        read_only_fields = ["id", "created_at", "categoria_display", "arquivo_pdf_url"]
+        model = Movimento
+        fields = ["id", "categoria", "descricao", "valor", "data", "comprovante", "ativo", "created_at"]
+        read_only_fields = fields
 
-    def get_arquivo_pdf_url(self, obj):
+    def get_comprovante(self, obj):
+        if not obj.comprovante:
+            return None
+        return obj.comprovante.url
+
+
+class MovimentoWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movimento
+        fields = ["id", "categoria", "descricao", "valor", "data", "comprovante", "ativo"]
+
+
+class CategoriaReadSerializer(serializers.ModelSerializer):
+    tipo_display = serializers.CharField(source="get_tipo_display", read_only=True)
+    movimentos = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Categoria
+        fields = ["id", "nome", "tipo", "tipo_display", "ativo", "movimentos"]
+        read_only_fields = fields
+
+    def get_movimentos(self, obj):
         request = self.context.get("request")
-        return _absolute_file_url(request, obj.arquivo_pdf)
+        qs = obj.movimentos.all()
+        if not request or not request.user.is_authenticated:
+            qs = qs.filter(ativo=True)
+        return MovimentoReadSerializer(qs, many=True, context=self.context).data
+
+
+class CategoriaWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Categoria
+        fields = ["id", "nome", "tipo", "ativo"]

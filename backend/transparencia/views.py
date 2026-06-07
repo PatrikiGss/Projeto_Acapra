@@ -3,97 +3,132 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from gerenciamento.permissions import require_module
 
-from .models import CategoriaDocumento, DocumentoTransparencia
-from .serializers import DocumentoTransparenciaSerializer
+from .models import Categoria, Movimento
+from .serializers import (
+    CategoriaReadSerializer,
+    CategoriaWriteSerializer,
+    MovimentoReadSerializer,
+    MovimentoWriteSerializer,
+)
 
 
-class DocumentosTransparenciaView(APIView):
+class CategoriasView(APIView):
     def get_permissions(self):
         if self.request.method == "GET":
             return [AllowAny()]
-
         return [IsAuthenticated(), require_module("transparencia")()]
 
-    def get_queryset(self, request):
-        queryset = DocumentoTransparencia.objects.all()
-
-        if not request.user.is_authenticated:
-            queryset = queryset.filter(ativo=True)
-
-        categoria = request.query_params.get("categoria")
-        if categoria:
-            categorias_validas = {valor for valor, _ in CategoriaDocumento.choices}
-            if categoria not in categorias_validas:
-                return DocumentoTransparencia.objects.none()
-            queryset = queryset.filter(categoria=categoria)
-
-        ano = request.query_params.get("ano")
-        if ano:
-            try:
-                queryset = queryset.filter(ano=int(ano))
-            except (TypeError, ValueError):
-                return DocumentoTransparencia.objects.none()
-
-        return queryset.order_by("-ano", "-created_at", "-id")
-
     def get(self, request):
-        queryset = self.get_queryset(request)
-        serializer = DocumentoTransparenciaSerializer(
-            queryset,
-            many=True,
-            context={"request": request},
-        )
+        qs = Categoria.objects.prefetch_related("movimentos")
+        if not request.user.is_authenticated:
+            qs = qs.filter(ativo=True)
+        tipo = request.query_params.get("tipo")
+        if tipo in ("entrada", "saida"):
+            qs = qs.filter(tipo=tipo)
+        serializer = CategoriaReadSerializer(qs, many=True, context={"request": request})
         return Response(serializer.data)
 
     def post(self, request):
-        serializer = DocumentoTransparenciaSerializer(data=request.data, context={"request": request})
+        serializer = CategoriaWriteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        documento = serializer.save()
+        categoria = serializer.save()
         return Response(
-            DocumentoTransparenciaSerializer(documento, context={"request": request}).data,
+            CategoriaReadSerializer(categoria, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
         )
 
 
-class DocumentoTransparenciaDetailView(APIView):
+class CategoriaDetailView(APIView):
     def get_permissions(self):
         if self.request.method == "GET":
             return [AllowAny()]
-
         return [IsAuthenticated(), require_module("transparencia")()]
 
-    def get_object(self, pk, include_inactive=False):
-        queryset = DocumentoTransparencia.objects.all() if include_inactive else DocumentoTransparencia.objects.filter(ativo=True)
-        return get_object_or_404(queryset, pk=pk)
+    def get_object(self, pk):
+        return get_object_or_404(Categoria, pk=pk)
 
     def get(self, request, pk):
-        documento = self.get_object(pk, include_inactive=request.user.is_authenticated)
-        serializer = DocumentoTransparenciaSerializer(documento, context={"request": request})
-        return Response(serializer.data)
+        categoria = self.get_object(pk)
+        return Response(CategoriaReadSerializer(categoria, context={"request": request}).data)
 
     def patch(self, request, pk):
-        documento = self.get_object(pk, include_inactive=True)
-        serializer = DocumentoTransparenciaSerializer(
-            documento,
-            data=request.data,
-            partial=True,
-            context={"request": request},
-        )
+        categoria = self.get_object(pk)
+        serializer = CategoriaWriteSerializer(categoria, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        documento = serializer.save()
-        return Response(
-            DocumentoTransparenciaSerializer(documento, context={"request": request}).data
-        )
+        categoria = serializer.save()
+        return Response(CategoriaReadSerializer(categoria, context={"request": request}).data)
 
     def delete(self, request, pk):
-        documento = self.get_object(pk, include_inactive=True)
-        if documento.arquivo_pdf:
-            documento.arquivo_pdf.delete(save=False)
-        documento.delete()
+        categoria = self.get_object(pk)
+        categoria.delete()
         return Response(
-            {"detail": f"Documento {pk} removido com sucesso."},
+            {"detail": f"Categoria {pk} removida."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
+
+class MovimentosView(APIView):
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+        return [IsAuthenticated(), require_module("transparencia")()]
+
+    def get(self, request):
+        qs = Movimento.objects.select_related("categoria")
+        if not request.user.is_authenticated:
+            qs = qs.filter(ativo=True)
+        categoria_id = request.query_params.get("categoria")
+        if categoria_id:
+            qs = qs.filter(categoria_id=categoria_id)
+        tipo = request.query_params.get("tipo")
+        if tipo in ("entrada", "saida"):
+            qs = qs.filter(categoria__tipo=tipo)
+        return Response(MovimentoReadSerializer(qs, many=True, context={"request": request}).data)
+
+    def post(self, request):
+        serializer = MovimentoWriteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        movimento = serializer.save()
+        return Response(
+            MovimentoReadSerializer(movimento, context={"request": request}).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class MovimentoDetailView(APIView):
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+        return [IsAuthenticated(), require_module("transparencia")()]
+
+    def get_object(self, pk):
+        return get_object_or_404(Movimento, pk=pk)
+
+    def patch(self, request, pk):
+        movimento = self.get_object(pk)
+
+        remover = request.data.get("remover_comprovante") == "true"
+        novo_comprovante = request.FILES.get("comprovante")
+
+        if (remover or novo_comprovante) and movimento.comprovante:
+            movimento.comprovante.delete(save=False)
+            if not novo_comprovante:
+                movimento.comprovante = None
+                movimento.save(update_fields=["comprovante"])
+
+        serializer = MovimentoWriteSerializer(movimento, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        movimento = serializer.save()
+        return Response(MovimentoReadSerializer(movimento, context={"request": request}).data)
+
+    def delete(self, request, pk):
+        movimento = self.get_object(pk)
+        if movimento.comprovante:
+            movimento.comprovante.delete(save=False)
+        movimento.delete()
+        return Response(
+            {"detail": f"Movimento {pk} removido."},
             status=status.HTTP_204_NO_CONTENT,
         )

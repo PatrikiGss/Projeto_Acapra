@@ -215,6 +215,65 @@
   width: 100%;
 }
 
+/* ÍCONE DE LOGIN (USUÁRIO) */
+
+.site-login-link {
+  padding: 4px;
+}
+
+.site-login-link::after {
+  display: none;
+}
+
+.site-login-icon {
+  display: block;
+}
+
+/* ÍCONE DE WHATSAPP */
+
+.site-nav-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-left: 0.4rem;
+  border-left: 1px solid rgba(224, 224, 224, 0.9);
+}
+
+.site-user-menu .site-whatsapp-link {
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+.site-whatsapp-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  color: #e87722;
+  text-decoration: none;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.site-whatsapp-link:hover,
+.site-whatsapp-link:focus-visible {
+  color: #cf6510;
+  transform: translateY(-1px);
+}
+
+.site-whatsapp-link:focus-visible {
+  outline: 2px solid #e87722;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.site-whatsapp-link::after {
+  display: none;
+}
+
+.site-whatsapp-icon {
+  display: block;
+}
+
 /* BOTÃO HAMBÚRGUER */
 
 .menu-toggle {
@@ -349,6 +408,17 @@
   .site-user-menu {
     width: min(100%, 320px);
     flex-direction: column;
+    padding: 1rem;
+    margin: 0;
+    border-left: 0;
+    border-top: 1px solid rgba(224, 224, 224, 0.9);
+  }
+
+  .site-nav-icons {
+    width: min(100%, 320px);
+    flex-direction: row;
+    justify-content: center;
+    gap: 1rem;
     padding: 1rem;
     margin: 0;
     border-left: 0;

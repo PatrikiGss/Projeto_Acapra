@@ -46,3 +46,44 @@ class Movimento(models.Model):
 
     def __str__(self):
         return f"{self.categoria} | {self.descricao} (R$ {self.valor})"
+
+
+class DocumentoInstitucional(models.Model):
+    nome = models.CharField(max_length=200)
+    descricao = models.CharField(max_length=300, blank=True, default="")
+    arquivo = models.FileField(
+        upload_to="transparencia/documentos/%Y/%m/%d",
+        blank=True,
+        null=True,
+    )
+    ativo = models.BooleanField(default=True)
+    ordem = models.PositiveSmallIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Documento Institucional"
+        verbose_name_plural = "Documentos Institucionais"
+        ordering = ["ordem", "nome"]
+
+    def __str__(self):
+        return self.nome
+
+
+class Indicador(models.Model):
+    class Chave(models.TextChoices):
+        ANIMAIS = "animais_resgatados", "Animais resgatados"
+        CASTRACOES = "castracoes", "Castrações realizadas"
+        ADOCOES = "adocoes", "Adoções bem-sucedidas"
+
+    chave = models.CharField(max_length=30, choices=Chave.choices, unique=True)
+    valor = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Indicador de impacto"
+        verbose_name_plural = "Indicadores de impacto"
+        ordering = ["chave"]
+
+    def __str__(self):
+        return f"{self.get_chave_display()}: {self.valor}"

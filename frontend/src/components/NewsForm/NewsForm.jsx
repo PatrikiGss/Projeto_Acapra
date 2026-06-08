@@ -116,8 +116,14 @@ function NewsForm({ categoria, backPath, mode = "create", basePath }) {
 
   const enviarFormulario = async (event) => {
     event.preventDefault();
-    setSalvando(true);
     setErro("");
+
+    if (mode === "create" && !fotoFile && !item?.foto) {
+      setErro("Adicione uma foto para a publicação.");
+      return;
+    }
+
+    setSalvando(true);
 
     const payload = new FormData();
     payload.append("categoria", categoria);
@@ -213,7 +219,6 @@ function NewsForm({ categoria, backPath, mode = "create", basePath }) {
               type="file"
               accept="image/*"
               onChange={(event) => lidarComFoto(event.target.files?.[0] || null)}
-              required={mode === "create" && !item?.foto}
             />
           </label>
 

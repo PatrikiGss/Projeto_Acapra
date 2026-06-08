@@ -3,19 +3,11 @@ import api, { getMediaURL } from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
 import "./Transparencia.css";
 
-const metricas = [
-  { valor: "—", rotulo: "Animais resgatados", descricao: "animais tirados das ruas e maus-tratos" },
-  { valor: "—", rotulo: "Castrações realizadas", descricao: "procedimentos realizados em parceria com clínicas locais" },
-  { valor: "—", rotulo: "Adoções bem-sucedidas", descricao: "animais que encontraram um lar amoroso" },
-];
-
-const documentosInstitucionais = [
-  { nome: "Estatuto Social", descricao: "Documento que rege a organização da ACAPRA" },
-  { nome: "Ata de Eleição da Diretoria", descricao: "Registro da última assembleia de eleição" },
-  { nome: "CNPJ", descricao: "Cadastro Nacional de Pessoa Jurídica" },
-  { nome: "Alvará de Funcionamento", descricao: "Autorização municipal de funcionamento" },
-  { nome: "Política de Adoção Responsável", descricao: "Critérios e termos do processo de adoção" },
-];
+const descricaoIndicador = {
+  animais_resgatados: "animais tirados das ruas e maus-tratos",
+  castracoes: "procedimentos realizados em parceria com clínicas locais",
+  adocoes: "animais que encontraram um lar amoroso",
+};
 
 const parceiros = [
   { nome: "Clínicas Veterinárias Parceiras", descricao: "Estabelecimentos que oferecem atendimento com desconto ou gratuito" },
@@ -39,22 +31,20 @@ function calcularTotal(movimentos) {
 
 const formCatVazio = { nome: "", tipo: "entrada", ativo: true };
 const formMovVazio = { categoria: "", descricao: "", valor: "", data: "", ativo: true };
-
-function CardDocumento({ nome, descricao }) {
-  return (
-    <div className="transp-doc-item">
-      <div className="transp-doc-info">
-        <span className="transp-doc-nome">{nome}</span>
-        <span className="transp-doc-desc">{descricao}</span>
-      </div>
-      <span className="transp-doc-badge em-breve">Em breve</span>
-    </div>
-  );
-}
+const formDocVazio = { nome: "", descricao: "", ativo: true, ordem: 0 };
 
 function Transparencia() {
   const { podeEditar } = useAdminAccess("transparencia");
 
+  // --- Indicadores de impacto ---
+  const [indicadores, setIndicadores] = useState([]);
+  const [loadingInd, setLoadingInd] = useState(true);
+  const [modalInd, setModalInd] = useState({ aberto: false, dados: null });
+  const [valorInd, setValorInd] = useState(0);
+  const [salvandoInd, setSalvandoInd] = useState(false);
+  const [erroInd, setErroInd] = useState("");
+
+  // --- Categorias / Movimentos ---
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(false);
@@ -72,20 +62,50 @@ function Transparencia() {
   const [salvandoMov, setSalvandoMov] = useState(false);
   const [erroMov, setErroMov] = useState("");
 
+  // --- Documentos Institucionais ---
+  const [documentos, setDocumentos] = useState([]);
+  const [loadingDocs, setLoadingDocs] = useState(true);
+  const [erroDocs, setErroDocs] = useState(false);
+
+  const [modalDoc, setModalDoc] = useState({ aberto: false, modo: "criar", dados: null });
+  const [formDoc, setFormDoc] = useState(formDocVazio);
+  const [arquivoFile, setArquivoFile] = useState(null);
+  const [removerArquivo, setRemoverArquivo] = useState(false);
+  const [salvandoDoc, setSalvandoDoc] = useState(false);
+  const [erroDoc, setErroDoc] = useState("");
+
+  // ---- Loaders ----
   const carregarCategorias = () => {
     setLoading(true);
     api
       .get("/api/transparencia/categorias/")
-      .then((res) => {
-        setCategorias(res.data || []);
-        setErro(false);
-      })
+      .then((res) => { setCategorias(res.data || []); setErro(false); })
       .catch(() => setErro(true))
       .finally(() => setLoading(false));
   };
 
+  const carregarDocumentos = () => {
+    setLoadingDocs(true);
+    api
+      .get("/api/transparencia/documentos/")
+      .then((res) => { setDocumentos(res.data || []); setErroDocs(false); })
+      .catch(() => setErroDocs(true))
+      .finally(() => setLoadingDocs(false));
+  };
+
+  const carregarIndicadores = () => {
+    setLoadingInd(true);
+    api
+      .get("/api/transparencia/indicadores/")
+      .then((res) => { setIndicadores(res.data || []); })
+      .catch(() => setIndicadores([]))
+      .finally(() => setLoadingInd(false));
+  };
+
   useEffect(() => {
     carregarCategorias();
+    carregarDocumentos();
+    carregarIndicadores();
   }, []);
 
   const entradas = useMemo(() => categorias.filter((c) => c.tipo === "entrada"), [categorias]);
@@ -99,7 +119,7 @@ function Transparencia() {
     });
   };
 
-  // --- Categoria ---
+  // ---- Categoria ----
   const abrirCriarCategoria = (tipo) => {
     setFormCat({ ...formCatVazio, tipo });
     setErroCat("");
@@ -113,10 +133,7 @@ function Transparencia() {
     setModalCat({ aberto: true, modo: "editar", dados: cat });
   };
 
-  const fecharModalCat = () => {
-    setModalCat((p) => ({ ...p, aberto: false }));
-    setSalvandoCat(false);
-  };
+  const fecharModalCat = () => { setModalCat((p) => ({ ...p, aberto: false })); setSalvandoCat(false); };
 
   const salvarCategoria = async (e) => {
     e.preventDefault();
@@ -132,28 +149,18 @@ function Transparencia() {
       fecharModalCat();
     } catch (err) {
       const data = err.response?.data;
-      setErroCat(
-        data && typeof data === "object"
-          ? Object.values(data).flat().join(" ")
-          : "Erro ao salvar categoria."
-      );
-    } finally {
-      setSalvandoCat(false);
-    }
+      setErroCat(data && typeof data === "object" ? Object.values(data).flat().join(" ") : "Erro ao salvar categoria.");
+    } finally { setSalvandoCat(false); }
   };
 
   const excluirCategoria = async (cat, e) => {
     e.stopPropagation();
     if (!window.confirm(`Remover a categoria "${cat.nome}" e todos os seus registros?`)) return;
-    try {
-      await api.delete(`/api/transparencia/categorias/${cat.id}/`);
-      carregarCategorias();
-    } catch {
-      alert("Não foi possível remover a categoria.");
-    }
+    try { await api.delete(`/api/transparencia/categorias/${cat.id}/`); carregarCategorias(); }
+    catch { alert("Não foi possível remover a categoria."); }
   };
 
-  // --- Movimento ---
+  // ---- Movimento ----
   const abrirCriarMovimento = (categoriaId, e) => {
     e.stopPropagation();
     setFormMov({ ...formMovVazio, categoria: categoriaId });
@@ -165,72 +172,116 @@ function Transparencia() {
 
   const abrirEditarMovimento = (mov, e) => {
     e.stopPropagation();
-    setFormMov({
-      categoria: mov.categoria,
-      descricao: mov.descricao,
-      valor: mov.valor,
-      data: mov.data,
-      ativo: mov.ativo,
-    });
+    setFormMov({ categoria: mov.categoria, descricao: mov.descricao, valor: mov.valor, data: mov.data, ativo: mov.ativo });
     setComprovanteFile(null);
     setRemoverComprovante(false);
     setErroMov("");
     setModalMov({ aberto: true, modo: "editar", dados: mov });
   };
 
-  const fecharModalMov = () => {
-    setModalMov((p) => ({ ...p, aberto: false }));
-    setSalvandoMov(false);
-  };
+  const fecharModalMov = () => { setModalMov((p) => ({ ...p, aberto: false })); setSalvandoMov(false); };
 
   const salvarMovimento = async (e) => {
     e.preventDefault();
     setSalvandoMov(true);
     setErroMov("");
-
     const payload = new FormData();
     payload.append("categoria", formMov.categoria);
     payload.append("descricao", formMov.descricao);
     payload.append("valor", formMov.valor);
     payload.append("data", formMov.data);
     payload.append("ativo", formMov.ativo ? "true" : "false");
-    if (comprovanteFile) {
-      payload.append("comprovante", comprovanteFile);
-    } else if (removerComprovante) {
-      payload.append("remover_comprovante", "true");
-    }
-
+    if (comprovanteFile) payload.append("comprovante", comprovanteFile);
+    else if (removerComprovante) payload.append("remover_comprovante", "true");
     try {
-      if (modalMov.modo === "criar") {
-        await api.post("/api/transparencia/movimentos/", payload);
-      } else {
-        await api.patch(`/api/transparencia/movimentos/${modalMov.dados.id}/`, payload);
-      }
+      if (modalMov.modo === "criar") await api.post("/api/transparencia/movimentos/", payload);
+      else await api.patch(`/api/transparencia/movimentos/${modalMov.dados.id}/`, payload);
       carregarCategorias();
       fecharModalMov();
     } catch (err) {
       const data = err.response?.data;
-      setErroMov(
-        data && typeof data === "object"
-          ? Object.values(data).flat().join(" ")
-          : "Erro ao salvar registro."
-      );
-    } finally {
-      setSalvandoMov(false);
-    }
+      setErroMov(data && typeof data === "object" ? Object.values(data).flat().join(" ") : "Erro ao salvar registro.");
+    } finally { setSalvandoMov(false); }
   };
 
   const excluirMovimento = async (mov, e) => {
     e.stopPropagation();
     if (!window.confirm(`Remover o registro "${mov.descricao}"?`)) return;
-    try {
-      await api.delete(`/api/transparencia/movimentos/${mov.id}/`);
-      carregarCategorias();
-    } catch {
-      alert("Não foi possível remover o registro.");
-    }
+    try { await api.delete(`/api/transparencia/movimentos/${mov.id}/`); carregarCategorias(); }
+    catch { alert("Não foi possível remover o registro."); }
   };
 
+  // ---- Documento Institucional ----
+  const abrirCriarDocumento = () => {
+    setFormDoc(formDocVazio);
+    setArquivoFile(null);
+    setRemoverArquivo(false);
+    setErroDoc("");
+    setModalDoc({ aberto: true, modo: "criar", dados: null });
+  };
+
+  const abrirEditarDocumento = (doc) => {
+    setFormDoc({ nome: doc.nome, descricao: doc.descricao, ativo: doc.ativo, ordem: doc.ordem });
+    setArquivoFile(null);
+    setRemoverArquivo(false);
+    setErroDoc("");
+    setModalDoc({ aberto: true, modo: "editar", dados: doc });
+  };
+
+  const fecharModalDoc = () => { setModalDoc((p) => ({ ...p, aberto: false })); setSalvandoDoc(false); };
+
+  const salvarDocumento = async (e) => {
+    e.preventDefault();
+    setSalvandoDoc(true);
+    setErroDoc("");
+    const payload = new FormData();
+    payload.append("nome", formDoc.nome);
+    payload.append("descricao", formDoc.descricao);
+    payload.append("ativo", formDoc.ativo ? "true" : "false");
+    payload.append("ordem", formDoc.ordem);
+    if (arquivoFile) payload.append("arquivo", arquivoFile);
+    else if (removerArquivo) payload.append("remover_arquivo", "true");
+    try {
+      if (modalDoc.modo === "criar") await api.post("/api/transparencia/documentos/", payload);
+      else await api.patch(`/api/transparencia/documentos/${modalDoc.dados.id}/`, payload);
+      carregarDocumentos();
+      fecharModalDoc();
+    } catch (err) {
+      const data = err.response?.data;
+      setErroDoc(data && typeof data === "object" ? Object.values(data).flat().join(" ") : "Erro ao salvar documento.");
+    } finally { setSalvandoDoc(false); }
+  };
+
+  const excluirDocumento = async (doc) => {
+    if (!window.confirm(`Remover o documento "${doc.nome}"?`)) return;
+    try { await api.delete(`/api/transparencia/documentos/${doc.id}/`); carregarDocumentos(); }
+    catch { alert("Não foi possível remover o documento."); }
+  };
+
+  // ---- Indicador de impacto ----
+  const abrirEditarIndicador = (ind) => {
+    setValorInd(ind.valor);
+    setErroInd("");
+    setModalInd({ aberto: true, dados: ind });
+  };
+
+  const fecharModalInd = () => { setModalInd((p) => ({ ...p, aberto: false })); setSalvandoInd(false); };
+
+  const salvarIndicador = async (e) => {
+    e.preventDefault();
+    setSalvandoInd(true);
+    setErroInd("");
+    try {
+      await api.patch(`/api/transparencia/indicadores/${modalInd.dados.id}/`, { valor: valorInd });
+      carregarIndicadores();
+      fecharModalInd();
+    } catch (err) {
+      const data = err.response?.data;
+      setErroInd(data && typeof data === "object" ? Object.values(data).flat().join(" ") : "Erro ao salvar indicador.");
+    } finally { setSalvandoInd(false); }
+  };
+
+  // ---- Render helpers ----
   function renderGrupo(tipo, lista) {
     const totalGrupo = lista.reduce((soma, cat) => soma + calcularTotal(cat.movimentos || []), 0);
     const labelTipo = tipo === "entrada" ? "Entradas" : "Saídas";
@@ -245,7 +296,6 @@ function Transparencia() {
         {lista.map((cat) => {
           const aberta = abertas.has(cat.id);
           const totalCat = calcularTotal(cat.movimentos || []);
-
           return (
             <div key={cat.id} className="transp-pasta">
               <div className="transp-pasta-header" onClick={() => togglePasta(cat.id)}>
@@ -264,19 +314,13 @@ function Transparencia() {
               {aberta && (
                 <div className="transp-pasta-body">
                   {podeEditar && (
-                    <button
-                      type="button"
-                      className="transp-add-mov-btn"
-                      onClick={(e) => abrirCriarMovimento(cat.id, e)}
-                    >
+                    <button type="button" className="transp-add-mov-btn" onClick={(e) => abrirCriarMovimento(cat.id, e)}>
                       + Novo registro
                     </button>
                   )}
-
                   {(cat.movimentos || []).length === 0 && (
                     <p className="transp-pasta-vazio">Nenhum registro nesta categoria.</p>
                   )}
-
                   {(cat.movimentos || []).map((mov) => (
                     <div key={mov.id} className="transp-movimento">
                       <span className="transp-mov-data">{formatarData(mov.data)}</span>
@@ -284,13 +328,7 @@ function Transparencia() {
                       <span className={`transp-mov-valor ${tipo}`}>{formatarMoeda(mov.valor)}</span>
                       <div className="transp-mov-acoes">
                         {mov.comprovante && (
-                          <a
-                            href={getMediaURL(mov.comprovante)}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="transp-mov-comprovante"
-                            onClick={(e) => e.stopPropagation()}
-                          >
+                          <a href={getMediaURL(mov.comprovante)} target="_blank" rel="noreferrer" className="transp-mov-comprovante" onClick={(e) => e.stopPropagation()}>
                             Comprovante
                           </a>
                         )}
@@ -310,57 +348,44 @@ function Transparencia() {
         })}
 
         {podeEditar && (
-          <button
-            type="button"
-            className="transp-add-cat-btn"
-            onClick={() => abrirCriarCategoria(tipo)}
-          >
+          <button type="button" className="transp-add-cat-btn" onClick={() => abrirCriarCategoria(tipo)}>
             + Nova categoria de {tipo === "entrada" ? "entrada" : "saída"}
           </button>
         )}
-
-        {lista.length === 0 && !podeEditar && (
-          <p className="transp-grupo-vazio">Nenhuma categoria cadastrada.</p>
-        )}
+        {lista.length === 0 && !podeEditar && <p className="transp-grupo-vazio">Nenhuma categoria cadastrada.</p>}
       </div>
     );
   }
 
   return (
     <div className="transp-page">
-      <section className="transp-hero">
-        <div className="transp-hero-inner">
-          <span className="transp-hero-tag">Transparência</span>
-          <h1>Cada centavo importa. E você merece saber onde vai.</h1>
-          <p>
-            A ACAPRA existe porque pessoas como você escolhem acreditar que animais
-            merecem uma chance. Por isso, abrimos nossas contas, nossos documentos
-            e nossos números para que você veja, com clareza, o caminho da sua doação:
-            da sua mão à tigela de ração, à cirurgia que salvou uma vida, ao lar
-            que adotou com amor.
-          </p>
-          <p>
-            Agimos com responsabilidade contábil e com o coração aberto. Consulte,
-            questione e fiscalize — isso nos torna mais fortes.
-          </p>
-        </div>
-      </section>
+      
 
       <div className="transp-content">
+
+        {/* IMPACTO */}
         <section className="transp-impacto" aria-labelledby="impacto-titulo">
           <h2 id="impacto-titulo" className="transp-section-title">Nosso impacto</h2>
           <p className="transp-section-sub">Números atualizados pela equipe da ACAPRA</p>
           <div className="transp-metricas">
-            {metricas.map((m) => (
-              <article key={m.rotulo} className="transp-metrica-card">
-                <span className="transp-metrica-valor">{m.valor}</span>
-                <strong className="transp-metrica-rotulo">{m.rotulo}</strong>
-                <p className="transp-metrica-desc">{m.descricao}</p>
+            {indicadores.map((ind) => (
+              <article key={ind.id} className="transp-metrica-card">
+                <span className="transp-metrica-valor">
+                  {loadingInd ? "—" : Number(ind.valor).toLocaleString("pt-BR")}
+                </span>
+                <strong className="transp-metrica-rotulo">{ind.chave_display}</strong>
+                <p className="transp-metrica-desc">{descricaoIndicador[ind.chave] || ""}</p>
+                {podeEditar && (
+                  <button type="button" className="transp-metrica-btn" onClick={() => abrirEditarIndicador(ind)}>
+                    Editar
+                  </button>
+                )}
               </article>
             ))}
           </div>
         </section>
 
+        {/* FINANCEIRO */}
         <section className="transp-dimensao" aria-labelledby="financeiro-titulo">
           <div className="transp-dimensao-header">
             <div>
@@ -368,10 +393,8 @@ function Transparencia() {
               <p>Entradas e saídas organizadas por categoria</p>
             </div>
           </div>
-
           {loading && <p className="transp-estado">Carregando dados financeiros...</p>}
           {!loading && erro && <p className="transp-estado erro">Não foi possível carregar os dados financeiros.</p>}
-
           {!loading && !erro && (
             <div className="transp-financeiro">
               {renderGrupo("entrada", entradas)}
@@ -380,20 +403,56 @@ function Transparencia() {
           )}
         </section>
 
+        {/* DOCUMENTOS INSTITUCIONAIS */}
         <section className="transp-dimensao" aria-labelledby="institucional-titulo">
           <div className="transp-dimensao-header">
             <div>
               <h2 id="institucional-titulo">Documentos Institucionais</h2>
               <p>Comprove nossa legalidade e governança</p>
             </div>
+            {podeEditar && (
+              <button type="button" className="transp-header-btn" onClick={abrirCriarDocumento}>
+                + Novo documento
+              </button>
+            )}
           </div>
-          <div className="transp-doc-lista">
-            {documentosInstitucionais.map((doc) => (
-              <CardDocumento key={doc.nome} nome={doc.nome} descricao={doc.descricao} />
-            ))}
-          </div>
+
+          {loadingDocs && <p className="transp-estado">Carregando documentos...</p>}
+          {!loadingDocs && erroDocs && <p className="transp-estado erro">Não foi possível carregar os documentos.</p>}
+          {!loadingDocs && !erroDocs && documentos.length === 0 && !podeEditar && (
+            <p className="transp-estado">Nenhum documento publicado ainda.</p>
+          )}
+
+          {!loadingDocs && !erroDocs && (
+            <div className="transp-doc-lista">
+              {documentos.map((doc) => (
+                <div key={doc.id} className="transp-doc-item">
+                  <div className="transp-doc-info">
+                    <span className="transp-doc-nome">{doc.nome}</span>
+                    {doc.descricao && <span className="transp-doc-desc">{doc.descricao}</span>}
+                  </div>
+                  <div className="transp-doc-acoes">
+                    {doc.arquivo ? (
+                      <a href={getMediaURL(doc.arquivo)} target="_blank" rel="noreferrer" className="transp-doc-badge disponivel">
+                        Download
+                      </a>
+                    ) : (
+                      <span className="transp-doc-badge em-breve">Em breve</span>
+                    )}
+                    {podeEditar && (
+                      <>
+                        <button type="button" className="transp-doc-btn" onClick={() => abrirEditarDocumento(doc)}>Editar</button>
+                        <button type="button" className="transp-doc-btn danger" onClick={() => excluirDocumento(doc)}>Excluir</button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
+        {/* PARCERIAS */}
         <section className="transp-dimensao" aria-labelledby="parceiros-titulo">
           <div className="transp-dimensao-header">
             <div>
@@ -411,16 +470,15 @@ function Transparencia() {
           </div>
         </section>
 
+        {/* CTA */}
         <section className="transp-cta">
           <h2>Dúvidas ou sugestões?</h2>
-          <p>
-            Entre em contato conosco. Queremos ser cada vez mais transparentes
-            e sua opinião nos ajuda a melhorar.
-          </p>
+          <p>Entre em contato conosco. Queremos ser cada vez mais transparentes e sua opinião nos ajuda a melhorar.</p>
           <a href="mailto:acapra@email.com" className="transp-cta-link">Falar com a ACAPRA</a>
         </section>
       </div>
 
+      {/* MODAL CATEGORIA */}
       {modalCat.aberto && podeEditar && (
         <div className="transp-modal-backdrop" onClick={fecharModalCat}>
           <div className="transp-modal" onClick={(e) => e.stopPropagation()}>
@@ -429,29 +487,16 @@ function Transparencia() {
               <button type="button" className="transp-modal-close" onClick={fecharModalCat}>Fechar</button>
             </div>
             <form className="transp-form" onSubmit={salvarCategoria}>
-              <label>
-                Nome
-                <input
-                  value={formCat.nome}
-                  onChange={(e) => setFormCat({ ...formCat, nome: e.target.value })}
-                  required
-                  maxLength={100}
-                />
-              </label>
-              <label>
-                Tipo
+              <label>Nome<input value={formCat.nome} onChange={(e) => setFormCat({ ...formCat, nome: e.target.value })} required maxLength={100} /></label>
+              <label>Tipo
                 <select value={formCat.tipo} onChange={(e) => setFormCat({ ...formCat, tipo: e.target.value })}>
                   <option value="entrada">Entrada</option>
                   <option value="saida">Saída</option>
                 </select>
               </label>
               {modalCat.modo === "editar" && (
-                <label>
-                  Status
-                  <select
-                    value={formCat.ativo ? "true" : "false"}
-                    onChange={(e) => setFormCat({ ...formCat, ativo: e.target.value === "true" })}
-                  >
+                <label>Status
+                  <select value={formCat.ativo ? "true" : "false"} onChange={(e) => setFormCat({ ...formCat, ativo: e.target.value === "true" })}>
                     <option value="true">Ativo</option>
                     <option value="false">Inativo</option>
                   </select>
@@ -467,6 +512,7 @@ function Transparencia() {
         </div>
       )}
 
+      {/* MODAL MOVIMENTO */}
       {modalMov.aberto && podeEditar && (
         <div className="transp-modal-backdrop" onClick={fecharModalMov}>
           <div className="transp-modal" onClick={(e) => e.stopPropagation()}>
@@ -475,80 +521,31 @@ function Transparencia() {
               <button type="button" className="transp-modal-close" onClick={fecharModalMov}>Fechar</button>
             </div>
             <form className="transp-form" onSubmit={salvarMovimento}>
-              <label>
-                Categoria
-                <select
-                  value={formMov.categoria}
-                  onChange={(e) => setFormMov({ ...formMov, categoria: e.target.value })}
-                  required
-                >
+              <label>Categoria
+                <select value={formMov.categoria} onChange={(e) => setFormMov({ ...formMov, categoria: e.target.value })} required>
                   <option value="">Selecione...</option>
                   {categorias.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.tipo_display} — {cat.nome}
-                    </option>
+                    <option key={cat.id} value={cat.id}>{cat.tipo_display} — {cat.nome}</option>
                   ))}
                 </select>
               </label>
-              <label>
-                Descrição
-                <input
-                  value={formMov.descricao}
-                  onChange={(e) => setFormMov({ ...formMov, descricao: e.target.value })}
-                  required
-                  maxLength={300}
-                />
-              </label>
+              <label>Descrição<input value={formMov.descricao} onChange={(e) => setFormMov({ ...formMov, descricao: e.target.value })} required maxLength={300} /></label>
               <div className="transp-form-row">
-                <label>
-                  Valor (R$)
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={formMov.valor}
-                    onChange={(e) => setFormMov({ ...formMov, valor: e.target.value })}
-                    required
-                  />
-                </label>
-                <label>
-                  Data
-                  <input
-                    type="date"
-                    value={formMov.data}
-                    onChange={(e) => setFormMov({ ...formMov, data: e.target.value })}
-                    required
-                  />
-                </label>
+                <label>Valor (R$)<input type="number" step="0.01" min="0" value={formMov.valor} onChange={(e) => setFormMov({ ...formMov, valor: e.target.value })} required /></label>
+                <label>Data<input type="date" value={formMov.data} onChange={(e) => setFormMov({ ...formMov, data: e.target.value })} required /></label>
               </div>
-              <label>
-                Comprovante (imagem ou PDF)
-                <input
-                  type="file"
-                  accept="image/*,.pdf"
-                  onChange={(e) => {
-                    setComprovanteFile(e.target.files?.[0] || null);
-                    setRemoverComprovante(false);
-                  }}
-                />
+              <label>Comprovante (imagem ou PDF)
+                <input type="file" accept="image/*,.pdf" onChange={(e) => { setComprovanteFile(e.target.files?.[0] || null); setRemoverComprovante(false); }} />
               </label>
               {modalMov.dados?.comprovante && !comprovanteFile && (
                 <label className="transp-form-check">
-                  <input
-                    type="checkbox"
-                    checked={removerComprovante}
-                    onChange={(e) => setRemoverComprovante(e.target.checked)}
-                  />
+                  <input type="checkbox" checked={removerComprovante} onChange={(e) => setRemoverComprovante(e.target.checked)} />
                   Remover comprovante atual
                 </label>
               )}
               {modalMov.modo === "editar" && (
-                <label>
-                  Status
-                  <select
-                    value={formMov.ativo ? "true" : "false"}
-                    onChange={(e) => setFormMov({ ...formMov, ativo: e.target.value === "true" })}
-                  >
+                <label>Status
+                  <select value={formMov.ativo ? "true" : "false"} onChange={(e) => setFormMov({ ...formMov, ativo: e.target.value === "true" })}>
                     <option value="true">Ativo</option>
                     <option value="false">Inativo</option>
                   </select>
@@ -558,6 +555,76 @@ function Transparencia() {
               <div className="transp-modal-footer">
                 <button type="button" className="secondary" onClick={fecharModalMov}>Cancelar</button>
                 <button type="submit" disabled={salvandoMov}>{salvandoMov ? "Salvando..." : "Salvar"}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DOCUMENTO INSTITUCIONAL */}
+      {modalDoc.aberto && podeEditar && (
+        <div className="transp-modal-backdrop" onClick={fecharModalDoc}>
+          <div className="transp-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="transp-modal-header">
+              <h2>{modalDoc.modo === "criar" ? "Novo documento" : "Editar documento"}</h2>
+              <button type="button" className="transp-modal-close" onClick={fecharModalDoc}>Fechar</button>
+            </div>
+            <form className="transp-form" onSubmit={salvarDocumento}>
+              <label>Nome do documento<input value={formDoc.nome} onChange={(e) => setFormDoc({ ...formDoc, nome: e.target.value })} required maxLength={200} /></label>
+              <label>Descrição (opcional)<input value={formDoc.descricao} onChange={(e) => setFormDoc({ ...formDoc, descricao: e.target.value })} maxLength={300} /></label>
+              <div className="transp-form-row">
+                <label>Ordem<input type="number" min="0" value={formDoc.ordem} onChange={(e) => setFormDoc({ ...formDoc, ordem: Number(e.target.value) })} /></label>
+                {modalDoc.modo === "editar" && (
+                  <label>Status
+                    <select value={formDoc.ativo ? "true" : "false"} onChange={(e) => setFormDoc({ ...formDoc, ativo: e.target.value === "true" })}>
+                      <option value="true">Ativo</option>
+                      <option value="false">Inativo</option>
+                    </select>
+                  </label>
+                )}
+              </div>
+              <label>Arquivo (PDF, imagem ou documento)
+                <input type="file" accept=".pdf,image/*,.doc,.docx" onChange={(e) => { setArquivoFile(e.target.files?.[0] || null); setRemoverArquivo(false); }} />
+              </label>
+              {modalDoc.dados?.arquivo && !arquivoFile && (
+                <label className="transp-form-check">
+                  <input type="checkbox" checked={removerArquivo} onChange={(e) => setRemoverArquivo(e.target.checked)} />
+                  Remover arquivo atual
+                </label>
+              )}
+              {erroDoc && <p className="transp-form-erro">{erroDoc}</p>}
+              <div className="transp-modal-footer">
+                <button type="button" className="secondary" onClick={fecharModalDoc}>Cancelar</button>
+                <button type="submit" disabled={salvandoDoc}>{salvandoDoc ? "Salvando..." : "Salvar"}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL INDICADOR DE IMPACTO */}
+      {modalInd.aberto && podeEditar && (
+        <div className="transp-modal-backdrop" onClick={fecharModalInd}>
+          <div className="transp-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="transp-modal-header">
+              <h2>Editar indicador</h2>
+              <button type="button" className="transp-modal-close" onClick={fecharModalInd}>Fechar</button>
+            </div>
+            <form className="transp-form" onSubmit={salvarIndicador}>
+              <label>{modalInd.dados?.chave_display}
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={valorInd}
+                  onChange={(e) => setValorInd(e.target.value)}
+                  required
+                />
+              </label>
+              {erroInd && <p className="transp-form-erro">{erroInd}</p>}
+              <div className="transp-modal-footer">
+                <button type="button" className="secondary" onClick={fecharModalInd}>Cancelar</button>
+                <button type="submit" disabled={salvandoInd}>{salvandoInd ? "Salvando..." : "Salvar"}</button>
               </div>
             </form>
           </div>

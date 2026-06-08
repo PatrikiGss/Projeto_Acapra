@@ -1,6 +1,23 @@
 from django.urls import path
 
-app_name='denuncias'
+from .views import (
+    DenunciasView,
+    DenunciaDetailView
+)
+
+app_name = "denuncia"
 
 urlpatterns = [
+
+    path(
+        "denuncias/",
+        DenunciasView.as_view(),
+        name="denuncias"
+    ),
+
+    path(
+        "denuncias/<int:pk>/",
+        DenunciaDetailView.as_view(),
+        name="denuncia-detail"
+    ),
 ]

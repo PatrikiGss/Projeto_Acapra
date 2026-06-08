@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "core.apps.CoreConfig",
     "adocao.apps.AdocaoConfig",
     "doacoes.apps.DoacoesConfig",
+    "denuncias.apps.DenunciasConfig",
     "gerenciamento.apps.GerenciamentoConfig",
     "noticias.apps.NoticiasConfig",
     "resgates.apps.ResgatesConfig",

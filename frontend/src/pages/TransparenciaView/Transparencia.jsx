@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import api, { getMediaURL } from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
+import ConfirmModal from "../../components/ui/ConfirmModal";
 import "./Transparencia.css";
 
 const descricaoIndicador = {
@@ -72,6 +73,7 @@ function Transparencia() {
   const [arquivoFile, setArquivoFile] = useState(null);
   const [removerArquivo, setRemoverArquivo] = useState(false);
   const [salvandoDoc, setSalvandoDoc] = useState(false);
+  const [confirmacaoTransp, setConfirmacaoTransp] = useState(null);
   const [erroDoc, setErroDoc] = useState("");
 
   // ---- Loaders ----
@@ -153,11 +155,9 @@ function Transparencia() {
     } finally { setSalvandoCat(false); }
   };
 
-  const excluirCategoria = async (cat, e) => {
+  const excluirCategoria = (cat, e) => {
     e.stopPropagation();
-    if (!window.confirm(`Remover a categoria "${cat.nome}" e todos os seus registros?`)) return;
-    try { await api.delete(`/api/transparencia/categorias/${cat.id}/`); carregarCategorias(); }
-    catch { alert("Não foi possível remover a categoria."); }
+    setConfirmacaoTransp({ tipo: "categoria", item: cat, mensagem: `Remover a categoria "${cat.nome}" e todos os seus registros?` });
   };
 
   // ---- Movimento ----
@@ -204,11 +204,9 @@ function Transparencia() {
     } finally { setSalvandoMov(false); }
   };
 
-  const excluirMovimento = async (mov, e) => {
+  const excluirMovimento = (mov, e) => {
     e.stopPropagation();
-    if (!window.confirm(`Remover o registro "${mov.descricao}"?`)) return;
-    try { await api.delete(`/api/transparencia/movimentos/${mov.id}/`); carregarCategorias(); }
-    catch { alert("Não foi possível remover o registro."); }
+    setConfirmacaoTransp({ tipo: "movimento", item: mov, mensagem: `Remover o registro "${mov.descricao}"?` });
   };
 
   // ---- Documento Institucional ----
@@ -252,10 +250,8 @@ function Transparencia() {
     } finally { setSalvandoDoc(false); }
   };
 
-  const excluirDocumento = async (doc) => {
-    if (!window.confirm(`Remover o documento "${doc.nome}"?`)) return;
-    try { await api.delete(`/api/transparencia/documentos/${doc.id}/`); carregarDocumentos(); }
-    catch { alert("Não foi possível remover o documento."); }
+  const excluirDocumento = (doc) => {
+    setConfirmacaoTransp({ tipo: "documento", item: doc, mensagem: `Remover o documento "${doc.nome}"?` });
   };
 
   // ---- Indicador de impacto ----
@@ -266,6 +262,17 @@ function Transparencia() {
   };
 
   const fecharModalInd = () => { setModalInd((p) => ({ ...p, aberto: false })); setSalvandoInd(false); };
+
+  const confirmarAcaoTransp = async () => {
+    if (!confirmacaoTransp) return;
+    const { tipo, item } = confirmacaoTransp;
+    try {
+      if (tipo === "categoria") { await api.delete(`/api/transparencia/categorias/${item.id}/`); carregarCategorias(); }
+      if (tipo === "movimento") { await api.delete(`/api/transparencia/movimentos/${item.id}/`); carregarCategorias(); }
+      if (tipo === "documento") { await api.delete(`/api/transparencia/documentos/${item.id}/`); carregarDocumentos(); }
+    } catch { /* silencioso — o modal fecha de qualquer forma */ }
+    setConfirmacaoTransp(null);
+  };
 
   const salvarIndicador = async (e) => {
     e.preventDefault();
@@ -630,6 +637,15 @@ function Transparencia() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        open={Boolean(confirmacaoTransp)}
+        title="Confirmar remoção"
+        message={confirmacaoTransp?.mensagem || ""}
+        confirmLabel="Remover"
+        onConfirm={confirmarAcaoTransp}
+        onClose={() => setConfirmacaoTransp(null)}
+      />
     </div>
   );
 }

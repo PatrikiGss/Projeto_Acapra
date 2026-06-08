@@ -1,7 +1,7 @@
 import NewsArticle from "../../components/NewsArticle/NewsArticle";
 
 function NoticiasDetail() {
-  return <NewsArticle categoria="noticias" backPath="/noticias" />;
+  return <NewsArticle backPath="/noticias" />;
 }
 
 export default NoticiasDetail;

@@ -33,9 +33,6 @@
 
 .transp-hero h1 {
   margin: 0 0 1.2rem;
-  font-size: clamp(1.8rem, 4vw, 2.8rem);
-  font-weight: 800;
-  line-height: 1.15;
 }
 
 .transp-hero p {

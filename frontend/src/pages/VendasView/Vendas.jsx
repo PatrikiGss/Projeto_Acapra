@@ -20,7 +20,6 @@ const formVazio = {
 function Vendas() {
     const [produtos, setProdutos] = useState([]);
     const [tipo, setTipo] = useState("todos");
-    const [estoque, setEstoque] = useState("todos");
     const [ordenacao, setOrdenacao] = useState("recentes");
     const { podeEditar } = useAdminAccess("vendas");
     const [modalAberto, setModalAberto] = useState(false);
@@ -61,12 +60,7 @@ function Vendas() {
 
     const produtosFiltrados = useMemo(() => {
         const filtrados = produtos
-            .filter((produto) => tipo === "todos" || produto.tipo === tipo)
-            .filter((produto) => {
-                if (estoque === "todos") return true;
-                if (estoque === "disponivel") return produto.estoque > 0;
-                return produto.estoque <= 0;
-            });
+            .filter((produto) => tipo === "todos" || produto.tipo === tipo);
 
         return [...filtrados].sort((a, b) => {
             if (ordenacao === "preco-menor") return Number(a.preco) - Number(b.preco);
@@ -74,7 +68,7 @@ function Vendas() {
             if (ordenacao === "nome") return a.nome.localeCompare(b.nome);
             return b.id - a.id;
         });
-    }, [produtos, tipo, estoque, ordenacao]);
+    }, [produtos, tipo, ordenacao]);
 
     const formatarPreco = (preco) => {
         return Number(preco).toLocaleString("pt-BR", {
@@ -353,15 +347,6 @@ function Vendas() {
                             <option value="todos">Todos</option>
                             <option value="humano">Vestuário humano</option>
                             <option value="pet">Vestuário para pet</option>
-                        </select>
-                    </label>
-
-                    <label>
-                        Estoque
-                        <select value={estoque} onChange={(event) => setEstoque(event.target.value)}>
-                            <option value="todos">Todos</option>
-                            <option value="disponivel">Disponíveis</option>
-                            <option value="esgotado">Esgotados</option>
                         </select>
                     </label>
 

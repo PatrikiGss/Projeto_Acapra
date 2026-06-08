@@ -1,17 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import api, { getMediaURL } from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import EmptyState from "../ui/EmptyState";
 import ConfirmModal from "../ui/ConfirmModal";
 import { getApiErrorMessage } from "../../utils/errorUtils";
+import { getResponseItems } from "../../utils/collection";
 import "./NewsArticle.css";
 
 const categoriaLabels = {
-  noticias: "Notícias",
   resgates: "Resgates",
   campanhas: "Campanhas",
+  desaparecidos: "Desaparecidos",
 };
 
 function formatarData(valor) {
@@ -25,7 +26,7 @@ function formatarData(valor) {
   }).format(data);
 }
 
-function NewsArticle({ categoria, backPath, basePath }) {
+function NewsArticle({ backPath }) {
   const navigate = useNavigate();
   const { id } = useParams();
   const [item, setItem] = useState(null);
@@ -33,8 +34,28 @@ function NewsArticle({ categoria, backPath, basePath }) {
   const [error, setError] = useState(false);
   const [erroAcao, setErroAcao] = useState("");
   const [confirmacao, setConfirmacao] = useState(false);
-  const { podeEditar } = useAdminAccess(categoria);
-  const rotaCategoria = basePath ? `${basePath}/${categoria}` : `/${categoria}`;
+
+  const categoriaEfetiva = item?.categoria || "";
+  const { podeEditar } = useAdminAccess(categoriaEfetiva);
+  const [relacionados, setRelacionados] = useState([]);
+
+  useEffect(() => {
+    if (!item?.categoria) return;
+    const controller = new AbortController();
+
+    api
+      .get("/api/noticias/publicacoes/", {
+        params: { categoria: item.categoria },
+        signal: controller.signal,
+      })
+      .then((res) => {
+        const todos = getResponseItems(res.data);
+        setRelacionados(todos.filter((p) => p.id !== item.id).slice(0, 3));
+      })
+      .catch(() => {});
+
+    return () => controller.abort();
+  }, [item?.categoria, item?.id]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -67,8 +88,8 @@ function NewsArticle({ categoria, backPath, basePath }) {
   }, [id]);
 
   const categoriaLabel = useMemo(
-    () => categoriaLabels[categoria] || "Publicação",
-    [categoria]
+    () => item?.categoria_display || categoriaLabels[categoriaEfetiva] || "Publicação",
+    [item, categoriaEfetiva],
   );
 
   const excluirItem = async () => {
@@ -76,7 +97,7 @@ function NewsArticle({ categoria, backPath, basePath }) {
 
     try {
       await api.delete(`/api/noticias/publicacoes/${item.id}/`);
-      navigate(backPath);
+      navigate(backPath || "/noticias");
     } catch (erro) {
       setErroAcao(getApiErrorMessage(erro, "Não foi possível excluir a publicação."));
       console.error(erro);
@@ -85,7 +106,7 @@ function NewsArticle({ categoria, backPath, basePath }) {
 
   const editarItem = () => {
     if (!item) return;
-    navigate(`${rotaCategoria}/${item.id}/editar`);
+    navigate(`/noticias/${item.categoria}/${item.id}/editar`);
   };
 
   return (
@@ -103,7 +124,7 @@ function NewsArticle({ categoria, backPath, basePath }) {
         {!loading && !error && item && (
           <article className="news-article">
             <div className="news-article-meta">
-              <span>{item.categoria_display || categoriaLabel}</span>
+              <span>{categoriaLabel}</span>
               {item.created_at && <time>{formatarData(item.created_at)}</time>}
             </div>
 
@@ -153,6 +174,29 @@ function NewsArticle({ categoria, backPath, basePath }) {
           onConfirm={excluirItem}
         />
       </div>
+
+      {relacionados.length > 0 && (
+        <div className="related-news">
+          <h2 className="related-news-heading">Relacionadas</h2>
+          <div className="related-news-grid">
+            {relacionados.map((rel) => (
+              <Link key={rel.id} className="related-card" to={`/noticias/${rel.id}`}>
+                <div className="related-card-image">
+                  {rel.foto ? (
+                    <img src={getMediaURL(rel.foto)} alt={rel.titulo} width="560" height="315" />
+                  ) : (
+                    <div className="related-card-placeholder">ACAPRA</div>
+                  )}
+                </div>
+                <div className="related-card-body">
+                  <span className="related-card-cat">{rel.categoria_display}</span>
+                  <h3 className="related-card-title">{rel.titulo}</h3>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

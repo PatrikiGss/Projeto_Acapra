@@ -106,15 +106,19 @@
 
 .qr-placeholder {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 0.5rem;
     width: 100%;
     height: 100%;
     border-radius: 8px;
     background: #ffe5c7;
     color: #cf6510;
-    font-size: 1rem;
-    font-weight: 800;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-align: center;
 }
 
 .pix-key-box {

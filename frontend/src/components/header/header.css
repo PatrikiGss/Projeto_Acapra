@@ -10,7 +10,7 @@
   justify-content: space-between;
 
   gap: 0.5rem;
-  padding: 0 clamp(1rem, 4vw, 3.5rem);
+  padding: 0 clamp(0.1rem, 1vw, 1rem);
 
   background-color: rgba(255, 255, 255, 0.9);
   border-bottom: 1.5px solid rgba(224, 224, 224, 0.85);
@@ -78,40 +78,43 @@
 
 .site-dropdown-menu {
   position: absolute;
-  top: calc(100% + 14px);
-  left: 0;
-  min-width: 220px;
-  padding: 0.55rem;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  min-width: 0;
+  width: max-content;
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.3rem;
   border: 1px solid rgba(224, 224, 224, 0.92);
-  border-radius: 12px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 18px 34px rgba(26, 26, 26, 0.12);
+  box-shadow: 0 10px 24px rgba(26, 26, 26, 0.1);
   opacity: 0;
-  transform: translateY(-8px);
   pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.18s ease, transform 0.18s ease;
   z-index: 1300;
 }
 
-.site-news-dropdown:hover .site-dropdown-menu,
-.site-news-dropdown.open .site-dropdown-menu,
-.site-news-dropdown:focus-within .site-dropdown-menu {
+.site-news-dropdown.open .site-dropdown-menu {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateX(-50%) translateY(0);
   pointer-events: auto;
 }
 
 .site-dropdown-link {
   display: flex;
   align-items: center;
-  min-height: 2.6rem;
-  padding: 0.5rem 0.8rem;
-  border-radius: 8px;
+  justify-content: center;
+  min-height: 2.2rem;
+  padding: 0.3rem 0.9rem;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.92);
   color: #1a1a1a;
-  font-size: 0.94rem;
+  font-size: 0.9rem;
   font-weight: 700;
   text-decoration: none;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .site-dropdown-link:hover,
@@ -295,24 +298,13 @@
   transform: scale(1.05);
 }
 
-/* TABLET */
+/* MOBILE / TABLET */
 
 @media (max-width: 1024px) {
-  .site-nav {
-    gap: 1.2rem;
-  }
-
-  .site-nav-link {
-    font-size: 0.85rem;
-  }
-}
-
-/* MOBILE */
-
-@media (max-width: 768px) {
 
   .site-header {
     height: 75px;
+    padding-left: 1rem;
   }
 
   .menu-toggle {
@@ -327,6 +319,9 @@
     z-index: 1200;
 
     width: 100%;
+    max-height: calc(100vh - 75px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
 
     background: rgba(255, 255, 255, 0.97);
 

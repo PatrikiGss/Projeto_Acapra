@@ -32,6 +32,7 @@ const MODULO_ACESSO = {
   gerenciamento_usuarios: [NIVEIS.MASTER],
   transparencia: [NIVEIS.MASTER, NIVEIS.FINANCEIRO],
   denuncias: [NIVEIS.MASTER],
+  desaparecidos: [NIVEIS.MASTER, NIVEIS.DOACOES],
 };
 
 export function getUserNivel(user = getStoredUser()) {

@@ -18,7 +18,7 @@ class GetVoluntarioSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Voluntario
-        fields = ['id', 'nome', 'telefone', 'idade', 'motivo', 'email', 'created_at']
+        fields = ['id', 'nome', 'telefone', 'idade', 'motivo', 'email', 'ativo', 'created_at']
         read_only_fields = ['id', 'created_at']
 
 

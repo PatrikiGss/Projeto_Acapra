@@ -1,0 +1,347 @@
+.denuncias-page {
+  min-height: 100vh;
+  background: #fbfaf8;
+  color: #1a1a1a;
+}
+
+.denuncias-content {
+  width: min(100%, 860px);
+  margin: 0 auto;
+  padding: clamp(2rem, 4vw, 3.5rem) clamp(1rem, 4vw, 2rem) 4rem;
+}
+
+.denuncias-heading {
+  margin-bottom: 2rem;
+}
+
+.denuncias-heading h1 {
+  margin: 0 0 0.6rem;
+}
+
+.denuncias-heading p {
+  max-width: 600px;
+  color: #545454;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ---- Form ---- */
+
+.denuncias-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: clamp(1rem, 2.5vw, 1.75rem);
+  border: 1px solid rgba(224, 224, 224, 0.85);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(26, 26, 26, 0.08);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-field label {
+  color: #cf6510;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.campo-obrigatorio {
+  color: #e87722;
+}
+
+.denuncias-form input,
+.denuncias-form select,
+.denuncias-form textarea {
+  width: 100%;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgba(232, 119, 34, 0.28);
+  border-radius: 8px;
+  background: #fbfaf8;
+  color: #1a1a1a;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.denuncias-form input[type="file"] {
+  padding: 0.5rem 0.85rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.denuncias-form textarea {
+  resize: vertical;
+  min-height: 8rem;
+}
+
+.denuncias-form input:focus-visible,
+.denuncias-form select:focus-visible,
+.denuncias-form textarea:focus-visible {
+  outline: 2px solid #e87722;
+  outline-offset: 3px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-message {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.form-message.success {
+  background: #e9f7ef;
+  color: #20784a;
+}
+
+.form-message.error {
+  background: #fdebea;
+  color: #b42318;
+}
+
+.denuncias-form button[type="submit"] {
+  min-height: 2.9rem;
+  padding: 0.75rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  background: #e87722;
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(232, 119, 34, 0.18);
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.denuncias-form button[type="submit"]:hover,
+.denuncias-form button[type="submit"]:focus-visible {
+  transform: translateY(-2px);
+  background: #d96c1b;
+}
+
+.denuncias-form button[type="submit"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+  transform: none;
+}
+
+/* ---- Admin section ---- */
+
+.denuncias-admin {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(224, 224, 224, 0.85);
+}
+
+.denuncias-admin-header h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.6rem;
+}
+
+.denuncias-admin-header p {
+  margin: 0 0 1.5rem;
+  color: #545454;
+}
+
+.denuncias-admin-message {
+  margin: 0;
+  padding: 1rem 1.1rem;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid rgba(224, 224, 224, 0.85);
+  color: #545454;
+}
+
+.denuncias-admin-message.error {
+  background: #fdebea;
+  color: #b42318;
+  border-color: rgba(180, 35, 24, 0.15);
+}
+
+.denuncias-admin-list {
+  display: grid;
+  gap: 1rem;
+}
+
+/* ---- Card ---- */
+
+.denuncia-card {
+  background: #fff;
+  border: 1px solid rgba(224, 224, 224, 0.85);
+  border-radius: 8px;
+  padding: 1.25rem;
+  box-shadow: 0 10px 24px rgba(26, 26, 26, 0.06);
+}
+
+.denuncia-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.denuncia-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.denuncia-card-title-row h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.denuncia-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.status-select {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(232, 119, 34, 0.28);
+  border-radius: 6px;
+  background: #fbfaf8;
+  color: #1a1a1a;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.denuncia-delete-button {
+  border: 1px solid rgba(180, 35, 24, 0.25);
+  border-radius: 6px;
+  background: #fff;
+  color: #b42318;
+  padding: 0.45rem 0.85rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.denuncia-delete-button:hover,
+.denuncia-delete-button:focus-visible {
+  background: #fdebea;
+}
+
+/* Gravidade badges */
+
+.gravidade-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.gravidade-baixo {
+  background: #e6f4ea;
+  color: #1e7e3a;
+}
+
+.gravidade-medio {
+  background: #fff4e0;
+  color: #996300;
+}
+
+.gravidade-alta {
+  background: #fff0e0;
+  color: #c45200;
+}
+
+.gravidade-urgente {
+  background: #fdebea;
+  color: #b01c1c;
+}
+
+/* Card details */
+
+.denuncia-card-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.85rem;
+  margin: 0 0 1rem;
+}
+
+.denuncia-card-details div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.denuncia-card-details dt {
+  color: #cf6510;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.denuncia-card-details dd {
+  margin: 0;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.denuncia-card-descricao span,
+.denuncia-card-foto span {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #cf6510;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.denuncia-card-descricao p {
+  margin: 0;
+  color: #333;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.denuncia-card-foto {
+  margin-top: 1rem;
+}
+
+.denuncia-card-foto img {
+  max-width: 100%;
+  max-height: 260px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid rgba(224, 224, 224, 0.85);
+  display: block;
+}
+
+@media (max-width: 620px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}

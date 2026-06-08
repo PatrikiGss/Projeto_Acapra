@@ -5,6 +5,8 @@ from rest_framework.permissions import (
     IsAuthenticated,
     AllowAny
 )
+from rest_framework.throttling import ScopedRateThrottle
+from gerenciamento.permissions import require_module
 
 from django.shortcuts import get_object_or_404
 
@@ -13,6 +15,9 @@ from .serializers import (AnimalSerializer,GetAnimalSerializer,UpdateAnimalSeria
 
 
 class AnimaisView(APIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "public_animals"
+
     """
     Endpoint responsável por:
 
@@ -34,14 +39,14 @@ class AnimaisView(APIView):
             return [AllowAny()]
 
         # POST autenticado
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), require_module("adocao")()]
 
     def get(self, request):
         """
         Retorna lista pública de animais.
         """
 
-        animais = Animal.objects.all().order_by('-id')
+        animais = Animal.objects.prefetch_related('imagens').all().order_by('-id')
 
         serializer = GetAnimalSerializer(
             animais,
@@ -62,6 +67,9 @@ class AnimaisView(APIView):
 
 
 class AnimalDetailView(APIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "public_animals"
+
     """
     Endpoint responsável por:
 
@@ -84,14 +92,14 @@ class AnimalDetailView(APIView):
         if self.request.method == 'GET':
             return [AllowAny()]
 
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), require_module("adocao")()]
 
     def get_object(self, pk):
         """
         Busca animal pelo ID.
         """
 
-        return get_object_or_404(Animal, pk=pk)
+        return get_object_or_404(Animal.objects.prefetch_related('imagens'), pk=pk)
 
     def get(self, request, pk):
         """

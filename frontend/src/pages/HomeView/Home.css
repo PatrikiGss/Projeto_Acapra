@@ -126,7 +126,7 @@ body {
 }
 
 .hero-text {
-  font-size: clamp(2rem, 4.2vw, 3.6rem);
+  font-size: clamp(32px, 4.5vw, 88px);
   font-weight: 900;
   line-height: 1.08;
   color: var(--text-primary);
@@ -564,6 +564,20 @@ body {
     height: 280px;
   }
 
+  .hero-content {
+    align-items: center;
+    text-align: center;
+  }
+
+  .hero-subtitle {
+    text-align: center;
+    max-width: 100%;
+  }
+
+  .hero-links {
+    justify-content: center;
+  }
+
   .about-content {
     grid-template-columns: 1fr;
     gap: 1.2rem;
@@ -609,11 +623,7 @@ body {
   }
 
   .hero-content {
-    padding: 1.5rem 1rem;
-  }
-
-  .hero-text {
-    font-size: 1.8rem;
+    padding: 2rem 1.2rem;
   }
 
   .about-section,

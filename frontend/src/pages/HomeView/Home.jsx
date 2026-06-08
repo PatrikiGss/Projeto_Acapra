@@ -92,6 +92,8 @@ function Home() {
           className="hero-img"
           src="/hero-animals.png"
           alt="Cães da associação"
+          loading="eager"
+          fetchpriority="high"
         />
 
         <div className="hero-content">
@@ -143,7 +145,7 @@ function Home() {
               key={item.title}
               aria-hidden={index !== slideAtual}
             >
-              <img src={item.image} alt={item.alt} />
+              <img src={item.image} alt={item.alt} loading={index === 0 ? "eager" : "lazy"} />
               <div className="carousel-content">
                 <span>{item.action}</span>
                 <h2>{item.title}</h2>
@@ -201,6 +203,7 @@ function Home() {
               <img
                 src={animal.foto || animal.fotos?.[0] || "/adocao-cachorro.png"}
                 alt={animal.nome_animal || "Animal para adoção"}
+                loading="lazy"
               />
 
               <div className="home-animal-card-content">

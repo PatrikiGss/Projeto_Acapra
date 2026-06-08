@@ -145,10 +145,6 @@ function AnimalDetail() {
 
                 <div className="animal-summary">
                     <h1>{animal.nome_animal}</h1>
-                    <p className="detail-code">
-                        Animal #{String(animal.id).padStart(4, "0")}
-                    </p>
-
                     <dl className="animal-specs">
                         <div>
                             <dt>Espécie</dt>

@@ -2,7 +2,6 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-
 }
 
 .main {
@@ -18,7 +17,7 @@
     align-items: stretch;
     min-height: clamp(540px, 78vh, 760px);
     overflow: hidden;
-    background: #fff;
+    background: #fbfaf8;
 }
 
 .hero-img {
@@ -37,22 +36,22 @@
     width: 100%;
     max-width: 760px;
     margin: 0 auto;
-    padding: clamp(2rem, 5vw, 5rem);
-    color: black;
+    padding: clamp(2rem, 5vw, 3.5rem);
+    color: #1a1a1a;
 }
 
 .hero-text {
-    font-size: clamp(2.6rem, 5.6vw, 5rem);
-    font-weight: 750;
-    line-height: 0.92;
-    margin-bottom: 1rem;
+    font-size: clamp(2.4rem, 5vw, 4.2rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
     text-wrap: balance;
 }
 
 .hero-subtitle {
-    color: #181717;
-    font-size: clamp(1rem, 2vw, 1.2rem);
-    line-height: 1.6;
+    color: #555;
+    font-size: 1rem;
+    line-height: 1.7;
     max-width: 550px;
     margin-bottom: 2rem;
 }
@@ -97,176 +96,58 @@
     background-color: #d96c1b;
 }
 
-.home-carousel {
-    position: relative;
-    width: 100%;
-    padding: 4rem clamp(1rem, 5vw, 4rem);
-    background-color: #fbfaf8;
-}
-
-.carousel-viewport {
-    position: relative;
-    overflow: hidden;
-    min-height: 430px;
-    border-radius: 8px;
-    background-color: #1a1a1a;
-}
-
-.carousel-slide {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    grid-template-columns: 1.15fr 0.85fr;
-    min-height: 430px;
-    color: #fff;
-    text-decoration: none;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.35s ease;
-}
-
-.carousel-slide.active {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.carousel-slide img {
-    width: 100%;
-    height: 100%;
-    min-height: 430px;
-    object-fit: cover;
-    display: block;
-}
-
-.carousel-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: clamp(2rem, 5vw, 4rem);
-    background-color: #1f1f1f;
-}
-
-.carousel-content span {
-    color: #e87722;
-    font-size: 0.8rem;
-    font-weight: 800;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-
-.carousel-content h2 {
-    margin-top: 0.8rem;
-    font-size: clamp(2rem, 4vw, 4rem);
-    line-height: 1;
-}
-
-.carousel-content p {
-    max-width: 480px;
-    margin-top: 1rem;
-    color: #e9e9e9;
-    font-size: 1rem;
-    line-height: 1.7;
-}
-
-.carousel-controls {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-.carousel-controls button {
-    width: 38px;
-    height: 38px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #eaded4;
-    border-radius: 999px;
-    background-color: #fff;
-    color: #1a1a1a;
-    font-size: 1.4rem;
-    cursor: pointer;
-    transition: border-color 0.2s ease, color 0.2s ease;
-}
-
-.carousel-controls button:hover {
-    color: #e87722;
-    border-color: #e87722;
-}
-
-.carousel-dots {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.carousel-dots button {
-    width: 10px;
-    height: 10px;
-    padding: 0;
-    border: 0;
-    background-color: #d9d0c8;
-    font-size: 0;
-}
-
-.carousel-dots button.active {
-    background-color: #e87722;
-}
 
 .about-section {
     width: 100%;
-    padding: 4.5rem clamp(1rem, 5vw, 4rem);
-    background-color: #fff;
+    padding: 2.5rem clamp(1rem, 5vw, 4rem);
+    background-color: #fbfaf8;
 }
 
 .about-content {
-    max-width: 850px;
+    max-width: 1120px;
+    margin: 0 auto;
 }
 
 .about-content h2 {
-    font-size: clamp(2rem, 4vw, 3.8rem);
-    line-height: 1;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1rem;
 }
 
 .about-content p {
-    max-width: 720px;
-    margin-top: 1rem;
     color: #555;
     font-size: 1rem;
-    line-height: 1.7;
+    line-height: 1.8;
 }
 
 .adote-section,
 .produtos-section {
     width: 100%;
-    padding: 4rem clamp(1rem, 5vw, 4rem);
-}
-
-.adote-section {
-    background: #fff;
-    padding-bottom: 2rem;
+    padding: 2.5rem clamp(1rem, 5vw, 4rem);
+    background: #fbfaf8;
 }
 
 .section-heading {
-    max-width: 760px;
-    margin-bottom: 2.2rem;
+    max-width: 1120px;
+    margin: 0 auto 2.5rem;
 }
 
 .section-kicker {
     display: inline-flex;
     margin-bottom: 0.75rem;
     color: #e87722;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 800;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
 }
 
 .section-heading h2,
 .produtos-content h2 {
-    font-size: clamp(2rem, 4vw, 3.8rem);
-    line-height: 1;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    line-height: 1.1;
 }
 
 .section-heading p,
@@ -282,6 +163,8 @@
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
+    width: min(100%, 1120px);
+    margin: 0 auto;
 }
 
 .home-animal-card {
@@ -289,15 +172,16 @@
     color: inherit;
     text-decoration: none;
     background-color: #fff;
-    border: 1px solid #e9e2dc;
-    border-radius: 8px;
-    box-shadow: 0 14px 30px rgba(26, 26, 26, 0.08);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid rgba(232, 119, 34, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(26, 26, 26, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .home-animal-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 18px 36px rgba(26, 26, 26, 0.12);
+    transform: translateY(-4px);
+    border-color: rgba(232, 119, 34, 0.25);
+    box-shadow: 0 12px 28px rgba(26, 26, 26, 0.1);
 }
 
 .home-animal-card img {
@@ -313,28 +197,136 @@
 
 .home-animal-card-content span {
     color: #e87722;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 800;
-    letter-spacing: 0.8px;
+    letter-spacing: 1.2px;
     text-transform: uppercase;
 }
 
 .home-animal-card-content h3 {
-    margin: 0.4rem 0 0.7rem;
-    font-size: 1.4rem;
+    margin: 0.5rem 0 0.6rem;
+    font-size: 1.3rem;
+    font-weight: 800;
+    line-height: 1.2;
 }
 
 .home-animal-card-content p {
-    color: #5a5a5a;
-    line-height: 1.6;
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.5;
 }
 
 .section-status {
-    grid-column: 1 / -1;
     padding: 1.2rem;
     color: #666;
     background-color: #faf7f4;
     border-radius: 8px;
+    text-align: center;
+}
+
+/* ── Carrossel de Adoção ─────────────────────────────────── */
+
+.animal-carousel {
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+}
+
+.carousel-viewport {
+    position: relative;
+    width: 100%;
+    height: 450px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.carousel-viewport .home-animal-card {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    border: none;
+    box-shadow: none;
+    border-radius: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.carousel-viewport .home-animal-card.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.carousel-viewport .home-animal-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    grid-column: 1;
+}
+
+.carousel-viewport .home-animal-card-content {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2.5rem 2rem;
+    background: #fff;
+    overflow: hidden;
+}
+
+.carousel-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.carousel-controls button {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(232, 119, 34, 0.3);
+    border-radius: 50%;
+    background: #fff;
+    color: #e87722;
+    font-size: 1.3rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.carousel-controls button:hover {
+    background: #e87722;
+    color: #fff;
+}
+
+.carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.carousel-dots button {
+    width: 10px;
+    height: 10px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(232, 119, 34, 0.25);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.carousel-dots button.active {
+    background: #e87722;
+    width: 12px;
+    height: 12px;
 }
 
 .home-loading {
@@ -347,22 +339,26 @@
 
 .fresh-news-section {
     width: 100%;
-    padding: 2rem clamp(1rem, 5vw, 4rem) 4rem;
-    background: #faf7f4;
+    padding: 2.5rem clamp(1rem, 5vw, 4rem);
+    background: #fbfaf8;
+}
+
+.fresh-news-wrapper {
+    width: min(100%, 1120px);
+    margin: 0 auto;
 }
 
 .fresh-news-banner {
-    width: min(100%, 1120px);
-    margin: 0 auto;
+    width: 100%;
     display: grid;
     grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.1fr);
     overflow: hidden;
     color: inherit;
     text-decoration: none;
     background: #fff;
-    border: 1px solid #eee4dc;
-    border-radius: 8px;
-    box-shadow: 0 14px 32px rgba(26, 26, 26, 0.08);
+    border: 1px solid rgba(232, 119, 34, 0.15);
+    border-radius: 12px;
+    box-shadow: 0 10px 24px rgba(26, 26, 26, 0.06);
 }
 
 .fresh-news-image img {
@@ -381,7 +377,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: clamp(1.4rem, 4vw, 2.8rem);
+    padding: clamp(1.2rem, 3vw, 2.2rem);
 }
 
 .fresh-news-copy span {
@@ -395,8 +391,9 @@
 .fresh-news-copy h2 {
     max-width: 680px;
     margin-top: 0.65rem;
-    font-size: clamp(1.8rem, 3.6vw, 3rem);
-    line-height: 1.04;
+    font-size: clamp(1.6rem, 3.2vw, 2.4rem);
+    font-weight: 800;
+    line-height: 1.1;
 }
 
 .fresh-news-copy p {
@@ -417,8 +414,9 @@
 
 .fresh-news-dots {
     display: flex;
-    gap: 0.45rem;
-    margin-top: 1.25rem;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
 }
 
 .fresh-news-dots button {
@@ -426,19 +424,20 @@
     height: 10px;
     padding: 0;
     border: 0;
-    border-radius: 999px;
-    background: #ddd2c9;
+    border-radius: 50%;
+    background: rgba(232, 119, 34, 0.25);
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .fresh-news-dots button.active {
     background: #e87722;
+    width: 12px;
+    height: 12px;
 }
 
 .produtos-section {
-    background-color: #faf7f4;
-    padding-top: 2rem;
-    padding-bottom: 2rem;
+    background-color: #fbfaf8;
 }
 
 .produtos-layout {
@@ -517,7 +516,7 @@
     .hero-content {
         align-items: center;
         text-align: center;
-        padding: 2rem 1rem 2.5rem;
+        padding: 1.5rem 1rem 2rem;
     }
 
     .hero-links {
@@ -526,70 +525,22 @@
 
     .hero-text {
         max-width: 12ch;
-        font-size: clamp(2.2rem, 11vw, 3.6rem);
+        font-size: clamp(1.8rem, 9vw, 3rem);
     }
 
-    .animal-grid {
-        grid-template-columns: 1fr;
-    }
 
-    .home-carousel {
-        padding: 2rem 1rem;
-    }
-
-    .about-section {
-        padding: 2.5rem 1rem;
+    .section-heading {
+        margin-bottom: 1.5rem;
     }
 
     .carousel-viewport {
-        min-height: 0;
+        height: 400px;
     }
 
-    .carousel-slide {
-        position: relative;
-        inset: auto;
-        display: none;
-        min-height: 0;
-        opacity: 1;
-        pointer-events: auto;
-        grid-template-columns: 1fr;
-    }
-
-    .carousel-slide.active {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .carousel-slide img {
-        min-height: 0;
-        height: 220px;
-    }
-
-    .carousel-content {
-        flex: 0 0 auto;
-        justify-content: flex-start;
-        min-height: 0;
-        padding: 1.25rem 1.25rem 1.5rem;
-    }
-
-    .carousel-content h2 {
-        font-size: clamp(1.7rem, 7vw, 2.2rem);
-    }
-
-    .carousel-content p {
-        font-size: 0.95rem;
-    }
-
-    .carousel-controls {
-        margin-top: 0.85rem;
-    }
-
-    .adote-section {
-        padding-bottom: 1.25rem;
-    }
-
+    .adote-section,
+    .about-section,
     .fresh-news-section {
-        padding: 1.25rem 1rem 2.5rem;
+        padding: 2rem 1rem;
     }
 
     .fresh-news-banner {
@@ -601,15 +552,36 @@
         max-height: 260px;
     }
 
-    .produtos-section {
-        padding-top: 1.25rem;
-    }
-
     .produtos-layout {
         grid-template-columns: 1fr;
     }
 
     .produtos-image {
         order: -1;
+    }
+}
+
+@media (max-width: 480px) {
+    .carousel-viewport {
+        height: 500px;
+    }
+
+    .carousel-viewport .home-animal-card {
+        grid-template-columns: 1fr;
+    }
+
+    .carousel-viewport .home-animal-card img {
+        grid-column: 1;
+        grid-row: 1;
+        position: absolute;
+        inset: 0;
+    }
+
+    .carousel-viewport .home-animal-card-content {
+        grid-column: 1;
+        grid-row: 1;
+        background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.95));
+        padding: 1rem;
+        justify-content: flex-end;
     }
 }

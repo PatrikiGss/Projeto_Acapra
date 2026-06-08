@@ -131,7 +131,7 @@ api.interceptors.response.use(
       }
     }
 
-    if (status === 401 || status === 403) {
+    if (status === 401) {
       handleAuthFailure(originalRequest);
     }
 

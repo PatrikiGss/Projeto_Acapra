@@ -16,9 +16,10 @@
 
 .animal-gallery {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 0.9rem;
     align-items: start;
-    min-height: 34rem;
+    min-width: 0;
 }
 
 .animal-main-image {
@@ -26,12 +27,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 34rem;
+    width: 100%;
+    height: 34rem;
     background: #fff;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 10px 24px rgba(26, 26, 26, 0.08);
-    aspect-ratio: 4 / 3;
 }
 
 .animal-main-image img {
@@ -102,19 +103,15 @@
 }
 
 .animal-summary {
-    padding-top: 0.4rem;
+    padding-top: 1rem;
 }
 
 .animal-summary h1 {
-    margin: 0 0 0.45rem;
+    margin: 0 0 0.8rem;
     color: #000;
-    line-height: 1.12;
-}
-
-.detail-code {
-    margin: 0 0 1rem;
-    color: #000;
-    font-size: 0.95rem;
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 800;
+    line-height: 1.1;
 }
 
 .animal-specs {
@@ -232,12 +229,8 @@
         grid-template-columns: 1fr;
     }
 
-    .animal-gallery {
-        min-height: auto;
-    }
-
     .animal-main-image {
-        min-height: 24rem;
+        height: 24rem;
     }
 }
 

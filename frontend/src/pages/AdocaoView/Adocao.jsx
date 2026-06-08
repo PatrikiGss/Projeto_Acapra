@@ -252,6 +252,7 @@ function Adocao() {
                         </div>
                         <h2 className="name">{animal.nome_animal}</h2>
                         <p className="owner">Doador: {animal.nome_doador}</p>
+                        <span className="animal-card-cta">Ver animal</span>
                     </div>
                 </Link>
             );
@@ -280,6 +281,7 @@ function Adocao() {
                             </div>
                             <h2 className="name">{animal.nome_animal}</h2>
                             <p className="owner">Doador: {animal.nome_doador}</p>
+                            <span className="animal-card-cta">Ver animal</span>
                         </div>
                     </Link>
                 </div>

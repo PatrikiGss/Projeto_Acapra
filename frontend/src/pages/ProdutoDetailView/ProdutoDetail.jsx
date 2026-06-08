@@ -24,6 +24,14 @@ function ProdutoDetail() {
             .finally(() => setLoading(false));
     }, [id]);
 
+    const WHATSAPP_ACAPRA = "5549999999999";
+
+    const linkWhatsApp = useMemo(() => {
+        if (!produto) return null;
+        const mensagem = `Olá! Tenho interesse no produto "${produto.nome}".`;
+        return `https://wa.me/${WHATSAPP_ACAPRA}?text=${encodeURIComponent(mensagem)}`;
+    }, [produto]);
+
     const formatarPreco = (preco) => {
         return Number(preco).toLocaleString("pt-BR", {
             style: "currency",
@@ -131,10 +139,7 @@ function ProdutoDetail() {
                 </div>
 
                 <div className="produto-summary">
-                    
                     <h1>{produto.nome}</h1>
-                    <p className="detail-code">Código #{String(produto.id).padStart(4, "0")}</p>
-
                     <p className="detail-price">{formatarPreco(produto.preco)}</p>
 
                     <dl className="product-specs">
@@ -148,9 +153,14 @@ function ProdutoDetail() {
                         </div>
                     </dl>
 
-                    <button className="interest-button" type="button">
+                    <a
+                        className="interest-button"
+                        href={linkWhatsApp}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
                         Tenho interesse
-                    </button>
+                    </a>
 
                     {produto.descricao && (
                         <section className="description-panel">

@@ -92,15 +92,11 @@ function Vendas() {
     }, [produtoEditando]);
 
     const getStatusProduto = (produto) => {
-        if (!produto.ativo) {
-            return { label: "Inativo", className: "inactive" };
+        if (produto.estoque <= 0) {
+            return { label: "Esgotado", className: "sold-out" };
         }
 
-        if (produto.estoque > 0) {
-            return { label: "Disponível", className: "available" };
-        }
-
-        return { label: "Esgotado", className: "sold-out" };
+        return null;
     };
 
     const abrirCriacao = () => {
@@ -265,9 +261,11 @@ function Vendas() {
         if (!podeEditar) {
             return (
                 <Link className="product-card" to={`/produtos/${produto.id}`} key={produto.id}>
-                    <span className={`product-status ${statusProduto.className}`}>
-                        {statusProduto.label}
-                    </span>
+                    {statusProduto && (
+                        <span className={`product-status ${statusProduto.className}`}>
+                            {statusProduto.label}
+                        </span>
+                    )}
 
                     <div className="product-card-image">
                         {imagem ? (
@@ -293,9 +291,11 @@ function Vendas() {
             <article className="product-card product-card-admin" key={produto.id}>
                 <div className="product-card-link">
                     <Link to={`/produtos/${produto.id}`} className="product-card-main-link">
-                        <span className={`product-status ${statusProduto.className}`}>
-                            {statusProduto.label}
-                        </span>
+                        {statusProduto && (
+                            <span className={`product-status ${statusProduto.className}`}>
+                                {statusProduto.label}
+                            </span>
+                        )}
 
                         <div className="product-card-image">
                             {imagem ? (

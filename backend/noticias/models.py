@@ -5,6 +5,7 @@ class CategoriaNoticia(models.TextChoices):
     NOTICIAS = "noticias", "Notícias"
     RESGATES = "resgates", "Resgates"
     CAMPANHAS = "campanhas", "Campanhas"
+    DESAPARECIDOS = "desaparecidos", "Desaparecidos"
 
 
 class Publicacao(models.Model):

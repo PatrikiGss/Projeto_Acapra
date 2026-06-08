@@ -1,13 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import api, { getMediaURL } from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
+import LoadingSpinner from "../ui/LoadingSpinner";
+import EmptyState from "../ui/EmptyState";
+import ConfirmModal from "../ui/ConfirmModal";
+import { getApiErrorMessage } from "../../utils/errorUtils";
+import { getResponseItems } from "../../utils/collection";
 import "./NewsArticle.css";
 
 const categoriaLabels = {
-  noticias: "Notícias",
   resgates: "Resgates",
   campanhas: "Campanhas",
+  desaparecidos: "Desaparecidos",
 };
 
 function formatarData(valor) {
@@ -21,81 +26,105 @@ function formatarData(valor) {
   }).format(data);
 }
 
-function NewsArticle({ categoria, backPath }) {
+function NewsArticle({ backPath }) {
   const navigate = useNavigate();
   const { id } = useParams();
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const { podeEditar } = useAdminAccess(categoria);
+  const [erroAcao, setErroAcao] = useState("");
+  const [confirmacao, setConfirmacao] = useState(false);
+
+  const categoriaEfetiva = item?.categoria || "";
+  const { podeEditar } = useAdminAccess(categoriaEfetiva);
+  const [relacionados, setRelacionados] = useState([]);
 
   useEffect(() => {
-    let ignorado = false;
+    if (!item?.categoria) return;
+    const controller = new AbortController();
 
-    Promise.resolve().then(async () => {
-      if (ignorado) return;
+    api
+      .get("/api/noticias/publicacoes/", {
+        params: { categoria: item.categoria },
+        signal: controller.signal,
+      })
+      .then((res) => {
+        const todos = getResponseItems(res.data);
+        setRelacionados(todos.filter((p) => p.id !== item.id).slice(0, 3));
+      })
+      .catch(() => {});
 
+    return () => controller.abort();
+  }, [item?.categoria, item?.id]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const carregar = async () => {
       setLoading(true);
 
       try {
-        const response = await api.get(`/api/noticias/publicacoes/${id}/`);
-        if (ignorado) return;
+        const response = await api.get(`/api/noticias/publicacoes/${id}/`, {
+          signal: controller.signal,
+        });
         setItem(response.data || null);
         setError(false);
       } catch (erro) {
-        if (ignorado) return;
+        if (controller.signal.aborted) return;
         console.error(erro);
         setError(true);
       } finally {
-        if (!ignorado) {
+        if (!controller.signal.aborted) {
           setLoading(false);
         }
       }
-    });
+    };
+
+    carregar();
 
     return () => {
-      ignorado = true;
+      controller.abort();
     };
   }, [id]);
 
   const categoriaLabel = useMemo(
-    () => categoriaLabels[categoria] || "Publicação",
-    [categoria]
+    () => item?.categoria_display || categoriaLabels[categoriaEfetiva] || "Publicação",
+    [item, categoriaEfetiva],
   );
 
   const excluirItem = async () => {
     if (!item) return;
 
-    const confirmado = window.confirm(`Excluir a publicação "${item.titulo}"?`);
-    if (!confirmado) return;
-
     try {
       await api.delete(`/api/noticias/publicacoes/${item.id}/`);
-      navigate(backPath);
+      navigate(backPath || "/noticias");
     } catch (erro) {
-      alert("Não foi possível excluir a publicação.");
+      setErroAcao(getApiErrorMessage(erro, "Não foi possível excluir a publicação."));
       console.error(erro);
     }
   };
 
   const editarItem = () => {
     if (!item) return;
-    navigate(`/${categoria}/${item.id}/editar`);
+    navigate(`/noticias/${item.categoria}/${item.id}/editar`);
   };
 
   return (
     <section className="news-article-page">
       <div className="news-article-shell">
-        {loading && <div className="news-article-message">Carregando publicação...</div>}
+        {loading && <LoadingSpinner label="Carregando publicação..." />}
 
         {!loading && error && (
-          <div className="news-article-message">Não foi possível carregar esta publicação.</div>
+          <EmptyState
+            title="Não foi possível carregar esta publicação."
+            description="Verifique a conexão e tente novamente."
+          />
         )}
 
         {!loading && !error && item && (
           <article className="news-article">
             <div className="news-article-meta">
-              <span>{item.categoria_display || categoriaLabel}</span>
+              <span>{categoriaLabel}</span>
               {item.created_at && <time>{formatarData(item.created_at)}</time>}
             </div>
 
@@ -107,7 +136,7 @@ function NewsArticle({ categoria, backPath }) {
 
             <div className="news-article-image">
               {item.foto ? (
-                <img src={getMediaURL(item.foto)} alt={item.titulo} />
+                <img src={getMediaURL(item.foto)} alt={item.titulo} width="1200" height="675" />
               ) : (
                 <div className="news-article-placeholder">ACAPRA</div>
               )}
@@ -118,18 +147,56 @@ function NewsArticle({ categoria, backPath }) {
             </div>
 
             {podeEditar && (
-            <div className="news-article-actions">
-              <button type="button" className="news-article-action edit" onClick={editarItem}>
-                Editar
-              </button>
-              <button type="button" className="news-article-action delete" onClick={excluirItem}>
-                Excluir
-              </button>
+              <div className="news-article-actions">
+                <button type="button" className="news-article-action edit" onClick={editarItem}>
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  className="news-article-action delete"
+                  onClick={() => setConfirmacao(true)}
+                >
+                  Excluir
+                </button>
               </div>
             )}
+
+            {erroAcao && <p className="news-article-error">{erroAcao}</p>}
           </article>
         )}
+
+        <ConfirmModal
+          open={confirmacao}
+          title="Excluir publicação"
+          message={`Tem certeza que deseja excluir "${item?.titulo || ""}"?`}
+          confirmLabel="Excluir"
+          onClose={() => setConfirmacao(false)}
+          onConfirm={excluirItem}
+        />
       </div>
+
+      {relacionados.length > 0 && (
+        <div className="related-news">
+          <h2 className="related-news-heading">Relacionadas</h2>
+          <div className="related-news-grid">
+            {relacionados.map((rel) => (
+              <Link key={rel.id} className="related-card" to={`/noticias/${rel.id}`}>
+                <div className="related-card-image">
+                  {rel.foto ? (
+                    <img src={getMediaURL(rel.foto)} alt={rel.titulo} width="560" height="315" />
+                  ) : (
+                    <div className="related-card-placeholder">ACAPRA</div>
+                  )}
+                </div>
+                <div className="related-card-body">
+                  <span className="related-card-cat">{rel.categoria_display}</span>
+                  <h3 className="related-card-title">{rel.titulo}</h3>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

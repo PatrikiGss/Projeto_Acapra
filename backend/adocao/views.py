@@ -5,6 +5,7 @@ from rest_framework.permissions import (
     IsAuthenticated,
     AllowAny
 )
+from rest_framework.throttling import ScopedRateThrottle
 from gerenciamento.permissions import require_module
 
 from django.shortcuts import get_object_or_404
@@ -14,6 +15,9 @@ from .serializers import (AnimalSerializer,GetAnimalSerializer,UpdateAnimalSeria
 
 
 class AnimaisView(APIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "public_animals"
+
     """
     Endpoint responsável por:
 
@@ -63,6 +67,9 @@ class AnimaisView(APIView):
 
 
 class AnimalDetailView(APIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "public_animals"
+
     """
     Endpoint responsável por:
 

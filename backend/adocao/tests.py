@@ -163,6 +163,8 @@ class AnimaisViewTests(APITestCase):
             nome="UsuÃ¡rio Teste",
             telefone="+5511966666666",
         )
+        self.user.perfil_admin.nivel = "master"
+        self.user.perfil_admin.save()
         self.url = reverse("adocao:animais")
         self.dados = {
             "nome_animal": "Luna",
@@ -250,6 +252,8 @@ class AnimalDetailViewTests(APITestCase):
             nome="Outro UsuÃ¡rio",
             telefone="+5511922222222",
         )
+        self.user.perfil_admin.nivel = "master"
+        self.user.perfil_admin.save()
         self.animal = Animal.objects.create(
             nome_animal="Max",
             nome_doador="Pedro",

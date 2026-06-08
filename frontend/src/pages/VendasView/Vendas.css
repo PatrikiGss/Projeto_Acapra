@@ -81,7 +81,7 @@
     padding: 0.65rem 0.8rem;
     border: 1px solid rgba(232, 119, 34, 0.28);
     border-radius: 8px;
-    background: #fff7ed;
+    background: #fbfaf8;
     color: #1a1a1a;
     font: inherit;
     font-size: 0.95rem;
@@ -106,7 +106,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    min-height: 25.5rem;
+    height: 26rem;
     overflow: hidden;
     border: 1px solid rgba(224, 224, 224, 0.95);
     border-radius: 8px;
@@ -134,7 +134,9 @@
 .product-card-admin {
     display: flex;
     flex-direction: column;
-    min-height: 25.5rem;
+    height: auto;
+    min-height: 26rem;
+    overflow: visible;
 }
 
 .product-card-link {
@@ -181,9 +183,11 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    aspect-ratio: 1 / 1;
-    padding: 1rem;
+    height: 12rem;
+    padding: 0.75rem;
     background: #fff;
+    flex-shrink: 0;
+    overflow: hidden;
 }
 
 .product-card-image img {
@@ -309,6 +313,12 @@
     color: #545454;
     text-align: center;
     box-shadow: 0 12px 28px rgba(26, 26, 26, 0.06);
+}
+
+.vendas-action-error {
+    margin-top: 1rem;
+    color: #8a1f1f;
+    font-weight: 700;
 }
 
 .product-modal-backdrop {

@@ -103,7 +103,7 @@ class UpdateAnimalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Animal
-        fields = ['nome_animal', 'nome_doador', 'telefone', 'especie', 'sexo', 'foto', 'fotos', 'descricao']
+        fields = ['nome_animal', 'nome_doador', 'especie', 'sexo', 'foto', 'fotos', 'descricao']
 
     def update(self, instance, validated_data):
         fotos = _extra_fotos_from_validated_data(self, validated_data)

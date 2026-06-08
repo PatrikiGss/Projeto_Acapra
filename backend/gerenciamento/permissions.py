@@ -13,16 +13,20 @@ MODULOS_POR_NIVEL = {
         "voluntariado",
         "gerenciamento_usuarios",
         "transparencia",
+        "denuncias",
     },
-    PerfilAdministrativo.Nivel.FINANCEIRO: {"doacoes", "transparencia"},
-    PerfilAdministrativo.Nivel.DOACOES: {"adocao", "noticias"},
+    PerfilAdministrativo.Nivel.ADMIN: {
+        "doacoes",
+        "noticias",
+        "resgates",
+        "campanhas",
+        "adocao",
+        "vendas",
+        "voluntariado",
+        "transparencia",
+        "denuncias",
+    },
     PerfilAdministrativo.Nivel.USUARIO: set(),
-}
-
-NIVEIS_COM_DASHBOARD = {
-    PerfilAdministrativo.Nivel.MASTER,
-    PerfilAdministrativo.Nivel.FINANCEIRO,
-    PerfilAdministrativo.Nivel.DOACOES,
 }
 
 
@@ -54,7 +58,7 @@ class IsMaster(BasePermission):
 
 class TemAcessoDashboard(BasePermission):
     def has_permission(self, request, view):
-        return get_nivel_usuario(request.user) in NIVEIS_COM_DASHBOARD
+        return request.user and request.user.is_authenticated
 
 
 def require_module(modulo):

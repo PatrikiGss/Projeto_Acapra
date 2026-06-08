@@ -1,39 +1,24 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import api from "../../services/api";
+import api, { getMediaURL } from "../../services/api";
 import "./Home.css";
 
-const carouselItems = [
-  {
-    title: "Produtos que ajudam a Acapra",
-    description: "Compre produtos solidários e ajude a transformar cada venda em cuidado para os animais.",
-    image: "/carousel-produtos.jpg",
-    alt: "Cão e gato em um carrinho de compras",
-    link: "/produtos",
-    action: "Conheça os produtos",
-  },
-  {
-    title: "Adote um novo amigo",
-    description: "Conheça cães e gatos que estão esperando uma família para chamar de sua.",
-    image: "/carousel-adocao.jpg",
-    alt: "Cão e gato juntos debaixo de uma manta",
-    link: "/adocao",
-    action: "Ver animais",
-  },
-  {
-    title: "Seja voluntário",
-    description: "Doe tempo, carinho e presença para fortalecer o trabalho da ONG.",
-    image: "/carousel-voluntariado.jpg",
-    alt: "Cão e gato dormindo abraçados",
-    link: "/voluntariado",
-    action: "Faça parte",
-  },
-];
+const destaqueExemplo = {
+  id: "exemplo",
+  categoria: "noticias",
+  categoria_display: "Notícia",
+  titulo: "Campanha de arrecadação ganha novos pontos de coleta",
+  resumo: "Voluntários organizaram novos locais para receber ração, cobertores e itens de limpeza para os animais acolhidos.",
+  foto: "/carousel-voluntariado.jpg",
+};
 
 function Home() {
   const [animais, setAnimais] = useState([]);
   const [carregandoAnimais, setCarregandoAnimais] = useState(true);
-  const [slideAtual, setSlideAtual] = useState(0);
+  const [animalSlideAtual, setAnimalSlideAtual] = useState(0);
+  const [destaquesInfo, setDestaquesInfo] = useState([destaqueExemplo]);
+  const [destaqueAtual, setDestaqueAtual] = useState(0);
+  const [indicadores, setIndicadores] = useState([]);
 
   useEffect(() => {
     api.get("/api/adocao/animais/")
@@ -47,12 +32,37 @@ function Home() {
   }, []);
 
   useEffect(() => {
+    api.get("/api/transparencia/indicadores/")
+      .then((res) => setIndicadores(res.data || []))
+      .catch(() => setIndicadores([]));
+  }, []);
+
+  useEffect(() => {
+    api.get("/api/noticias/publicacoes/")
+      .then((response) => {
+        const publicacoes = response.data?.slice(0, 5);
+        setDestaquesInfo(publicacoes?.length ? publicacoes : [destaqueExemplo]);
+        setDestaqueAtual(0);
+      })
+      .catch(() => setDestaquesInfo([destaqueExemplo]));
+  }, []);
+
+  useEffect(() => {
+    if (animais.length === 0) return;
     const timer = setInterval(() => {
-      setSlideAtual((current) => (current + 1) % carouselItems.length);
+      setAnimalSlideAtual((current) => (current + 1) % animais.length);
     }, 6000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [animais.length]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setDestaqueAtual((current) => (current + 1) % destaquesInfo.length);
+    }, 7000);
+
+    return () => clearInterval(timer);
+  }, [destaquesInfo.length]);
 
   useEffect(() => {
     const elementosAnimados = document.querySelectorAll(".scroll-reveal");
@@ -74,18 +84,9 @@ function Home() {
     return () => observer.disconnect();
   }, [animais]);
 
-  const irParaSlideAnterior = () => {
-    setSlideAtual((current) => (
-      current === 0 ? carouselItems.length - 1 : current - 1
-    ));
-  };
-
-  const irParaProximoSlide = () => {
-    setSlideAtual((current) => (current + 1) % carouselItems.length);
-  };
+  const destaqueInfo = destaquesInfo[destaqueAtual] || destaqueExemplo;
 
   return (
-    
     <div className="main">
       <section className="hero">
         <img
@@ -112,72 +113,36 @@ function Home() {
 
       <section className="about-section scroll-reveal" id="sobre">
         <div className="about-content">
-          <span className="section-kicker">Sobre Nós</span>
-          <h2>ACAPRA: O que somos e Onde estamos?
-          </h2>
-          <p>
-            Que somos uma ONG sem fins lucrativos feita de voluntários a gente sempre diz.
-            Mas o que você tem que saber é que <strong>ACAPRA SOMOS TODOS NÓS </strong>
-            que gostamos e ajudamos os animais que precisam.
-
-            Simples né? Então eu sou, e você também é ou já foi ACAPRA em algum momento.
-
-            Quando você resgata um bichinho jogado na rua, quando você ajuda a encontrar
-            um lar para eles, quando doa dinheiro para um atendimento. Quando você doa
-            ração você é ACAPRA!
-
-            ...
-
-            Ah é a minha casa, a sua casa. É todo lugar que os bichinhos são acolhidos!
-
-          </p>
-        </div>
-      </section>
-
-      <section className="home-carousel scroll-reveal" aria-label="Destaques da Acapra">
-        <div className="carousel-viewport">
-          {carouselItems.map((item, index) => (
-            <Link
-              className={`carousel-slide ${index === slideAtual ? "active" : ""}`}
-              to={item.link}
-              key={item.title}
-              aria-hidden={index !== slideAtual}
-            >
-              <img src={item.image} alt={item.alt} />
-              <div className="carousel-content">
-                <span>{item.action}</span>
-                <h2>{item.title}</h2>
-                <p>{item.description}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        <div className="carousel-controls">
-          <button type="button" onClick={irParaSlideAnterior} aria-label="Slide anterior">
-            ‹
-          </button>
-
-          <div className="carousel-dots" aria-label="Selecionar destaque">
-            {carouselItems.map((item, index) => (
-              <button
-                className={index === slideAtual ? "active" : ""}
-                type="button"
-                onClick={() => setSlideAtual(index)}
-                aria-label={`Ir para ${item.title}`}
-                key={item.title}
-              />
-            ))}
+          <div className="about-heading">
+            <span className="section-kicker">Sobre Nós</span>
+            <h2>ACAPRA somos todos nós</h2>
           </div>
 
-          <button type="button" onClick={irParaProximoSlide} aria-label="Próximo slide">
-            ›
-          </button>
+          <div className="about-body">
+            <p className="about-text">
+              A ACAPRA é uma ONG sem fins lucrativos fundada em São Joaquim (SC) com a missão de resgatar, cuidar e encontrar lares para animais em situação de vulnerabilidade.{" "}
+              <strong>Somos movidos pelo voluntariado e pela solidariedade da comunidade.</strong>{" "}
+              Atuamos no resgate de animais abandonados e vítimas de maus-tratos, na realização de castrações para controle populacional e na promoção da adoção responsável — tudo isso com transparência e prestação de contas à sociedade.
+            </p>
+
+            {indicadores.length > 0 && (
+              <div className="about-stats">
+                {indicadores.map((ind) => (
+                  <div className="about-stat" key={ind.id}>
+                    <span className="about-stat-valor">
+                      {Number(ind.valor).toLocaleString("pt-BR")}
+                    </span>
+                    <span className="about-stat-rotulo">{ind.chave_display}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
       <section className="adote-section scroll-reveal" id="adote">
-        <div className="section-heading scroll-reveal">
+        <div className="section-heading">
           <span className="section-kicker">Adote</span>
           <h2>Animais esperando por uma família</h2>
           <p>
@@ -185,49 +150,141 @@ function Home() {
           </p>
         </div>
 
-        <div className="animal-grid">
-          {carregandoAnimais && (
-            <p className="section-status">Carregando animais para adoção...</p>
-          )}
+        {carregandoAnimais && (
+          <p className="section-status">Carregando animais para adoção...</p>
+        )}
 
-          {!carregandoAnimais && animais.length === 0 && (
-            <p className="section-status">
-              Nenhum animal disponível para adoção no momento.
-            </p>
-          )}
+        {!carregandoAnimais && animais.length === 0 && (
+          <p className="section-status">
+            Nenhum animal disponível para adoção no momento.
+          </p>
+        )}
 
-          {animais.map((animal) => (
-            <Link className="home-animal-card scroll-reveal" to={`/adocao/${animal.id}`} key={animal.id}>
-              <img
-                src={animal.foto || animal.fotos?.[0] || "/adocao-cachorro.png"}
-                alt={animal.nome_animal || "Animal para adoção"}
-              />
+        {!carregandoAnimais && animais.length > 0 && (
+          <div className="animal-carousel">
+            <div className="carousel-viewport">
+              {animais.map((animal, index) => (
+                <Link
+                  className={`home-animal-card ${index === animalSlideAtual ? "active" : ""}`}
+                  to={`/adocao/${animal.id}`}
+                  key={animal.id}
+                >
+                  <img
+                    src={animal.foto || animal.fotos?.[0] || "/adocao-cachorro.png"}
+                    alt={animal.nome_animal || "Animal para adoção"}
+                  />
 
-              <div className="home-animal-card-content">
-                <span>{animal.especie}</span>
-                <h3>{animal.nome_animal}</h3>
-                <p>
-                  {animal.descricao ||
-                    "Animal acolhido pela Acapra e pronto para encontrar um novo lar."}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
+                  <div className="home-animal-card-content">
+                    <span>{animal.especie}</span>
+                    <h3>{animal.nome_animal}</h3>
+                    <p>
+                      {animal.descricao ||
+                        "Animal acolhido pela Acapra e pronto para encontrar um novo lar."}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {animais.length > 1 && (
+              <>
+                <div className="carousel-dots">
+                  {animais.map((_, index) => (
+                    <button
+                      key={index}
+                      className={index === animalSlideAtual ? "active" : ""}
+                      onClick={() => setAnimalSlideAtual(index)}
+                      aria-label={`Ir para animal ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </section>
 
       <section className="produtos-section scroll-reveal" id="produtos">
-        <div className="produtos-content">
-          <span className="section-kicker">Produtos solidários</span>
-          <h2>Compre e ajude a manter o cuidado com os animais</h2>
-          <p>
-            Todo o valor arrecadado com os produtos da Acapra é reutilizado na
-            ONG para apoiar resgates, alimentação, medicação, castrações e a
-            manutenção dos animais acolhidos.
-          </p>
-          <Link to="/produtos" className="link produtos-link">
-            Conheça nossos produtos
+        <div className="produtos-layout">
+          <div className="produtos-content">
+            <span className="section-kicker">Produtos solidários</span>
+            <h2>Compre e ajude a manter o cuidado com os animais</h2>
+            <p>
+              Todo o valor arrecadado com os produtos da Acapra é reutilizado na
+              ONG para apoiar resgates, alimentação, medicação, castrações e a
+              manutenção dos animais acolhidos.
+            </p>
+            <Link to="/produtos" className="link produtos-link">
+              Conheça nossos produtos
+            </Link>
+          </div>
+
+          <div className="produtos-image">
+            <img
+              src="/produtos-solidarios.png"
+              alt="Gato com carrinho de compras representando produtos solidários"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="fresh-news-section scroll-reveal" aria-label="Informações recentes em destaque">
+        <div className="fresh-news-wrapper">
+          <Link
+            className="fresh-news-banner"
+            to={destaqueInfo.id === "exemplo"
+              ? "/noticias"
+              : `/noticias/${destaqueInfo.id}`}
+          >
+            <div className="fresh-news-image">
+              <img
+                src={destaqueInfo.foto?.startsWith("/")
+                  ? destaqueInfo.foto
+                  : getMediaURL(destaqueInfo.foto)}
+                alt={destaqueInfo.titulo}
+              />
+            </div>
+
+            <div className="fresh-news-copy">
+              <span>Notícias da Acapra!</span>
+              <h2>{destaqueInfo.titulo}</h2>
+              <p>{destaqueInfo.resumo}</p>
+              <strong>{destaqueInfo.categoria_display || "Informação"}</strong>
+            </div>
           </Link>
+
+          {destaquesInfo.length > 1 && (
+            <>
+              <div className="carousel-controls">
+                <button
+                  type="button"
+                  onClick={() => setDestaqueAtual((current) => (current === 0 ? destaquesInfo.length - 1 : current - 1))}
+                  aria-label="Publicação anterior"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDestaqueAtual((current) => (current + 1) % destaquesInfo.length)}
+                  aria-label="Próxima publicação"
+                >
+                  ›
+                </button>
+              </div>
+
+              <div className="fresh-news-dots" aria-label="Publicações recentes">
+                {destaquesInfo.map((item, index) => (
+                  <button
+                    className={index === destaqueAtual ? "active" : ""}
+                    type="button"
+                    onClick={() => setDestaqueAtual(index)}
+                    aria-label={`Mostrar ${item.titulo}`}
+                    key={`${item.id}-${item.titulo}`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </section>
     </div>

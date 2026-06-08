@@ -23,6 +23,7 @@ const MODULOS_RAPIDOS = [
   { id: "campanhas", titulo: "Campanhas", descricao: "Gerenciar campanhas", rota: "/campanhas" },
   { id: "vendas", titulo: "Produtos", descricao: "Gerenciar loja solidária", rota: "/produtos" },
   { id: "voluntariado", titulo: "Voluntários", descricao: "Ver cadastros do Faça Parte", rota: "/voluntariado" },
+  { id: "denuncias", titulo: "Denúncias", descricao: "Ver denúncias recebidas", rota: "/denuncias" },
 ];
 
 function Dashboard() {

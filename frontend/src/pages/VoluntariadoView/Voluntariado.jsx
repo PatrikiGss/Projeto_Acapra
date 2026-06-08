@@ -1,7 +1,12 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
 import { formatBrazilianPhone, toBrazilianPhoneE164 } from "../../utils/phone";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import EmptyState from "../../components/ui/EmptyState";
+import ConfirmModal from "../../components/ui/ConfirmModal";
+import { getResponseItems } from "../../utils/collection";
+import { getApiErrorMessage } from "../../utils/errorUtils";
 import "./Voluntariado.css";
 
 const initialForm = {
@@ -34,8 +39,10 @@ function Voluntariado() {
   const [voluntarios, setVoluntarios] = useState([]);
   const [loadingLista, setLoadingLista] = useState(false);
   const [erroLista, setErroLista] = useState("");
+  const [erroAcao, setErroAcao] = useState("");
+  const [voluntarioParaExclusao, setVoluntarioParaExclusao] = useState(null);
 
-  const carregarVoluntarios = () => {
+  const carregarVoluntarios = useCallback(() => {
     if (!podeEditar) return;
 
     setLoadingLista(true);
@@ -44,17 +51,45 @@ function Voluntariado() {
     api
       .get("/api/voluntariado/voluntarios/")
       .then((response) => {
-        setVoluntarios(response.data || []);
+        setVoluntarios(getResponseItems(response.data));
       })
       .catch((erro) => {
         console.error(erro);
         setErroLista("Não foi possível carregar os voluntários cadastrados.");
       })
       .finally(() => setLoadingLista(false));
-  };
+  }, [podeEditar]);
 
   useEffect(() => {
-    carregarVoluntarios();
+    let ativo = true;
+
+    const carregar = async () => {
+      if (!podeEditar) return;
+
+      setLoadingLista(true);
+      setErroLista("");
+
+      try {
+        const response = await api.get("/api/voluntariado/voluntarios/");
+        if (!ativo) return;
+
+        setVoluntarios(getResponseItems(response.data));
+      } catch (erro) {
+        if (!ativo) return;
+        console.error(erro);
+        setErroLista("Não foi possível carregar os voluntários cadastrados.");
+      } finally {
+        if (ativo) {
+          setLoadingLista(false);
+        }
+      }
+    };
+
+    void carregar();
+
+    return () => {
+      ativo = false;
+    };
   }, [podeEditar]);
 
   const handleChange = (event) => {
@@ -97,15 +132,20 @@ function Voluntariado() {
   };
 
   const excluirVoluntario = async (voluntario) => {
-    const confirmado = window.confirm(`Remover o cadastro de "${voluntario.nome}"?`);
-    if (!confirmado) return;
+    setVoluntarioParaExclusao(voluntario);
+  };
+
+  const confirmarExclusao = async () => {
+    if (!voluntarioParaExclusao) return;
 
     try {
-      await api.delete(`/api/voluntariado/voluntarios/${voluntario.id}/`);
-      setVoluntarios((lista) => lista.filter((item) => item.id !== voluntario.id));
+      await api.delete(`/api/voluntariado/voluntarios/${voluntarioParaExclusao.id}/`);
+      setVoluntarios((lista) => lista.filter((item) => item.id !== voluntarioParaExclusao.id));
     } catch (erro) {
       console.error(erro);
-      alert("Não foi possível remover o cadastro.");
+      setErroAcao(getApiErrorMessage(erro, "Não foi possível remover o cadastro."));
+    } finally {
+      setVoluntarioParaExclusao(null);
     }
   };
 
@@ -200,18 +240,20 @@ function Voluntariado() {
               <p>Lista de pessoas que se inscreveram pelo Faça Parte.</p>
             </div>
 
-            {loadingLista && (
-              <p className="voluntariado-admin-message">Carregando cadastros...</p>
-            )}
+            {loadingLista && <LoadingSpinner label="Carregando cadastros..." />}
 
             {!loadingLista && erroLista && (
-              <p className="voluntariado-admin-message error">{erroLista}</p>
+              <EmptyState
+                title="Não foi possível carregar os cadastros."
+                description={erroLista}
+              />
             )}
 
             {!loadingLista && !erroLista && voluntarios.length === 0 && (
-              <p className="voluntariado-admin-message">
-                Nenhum voluntário cadastrado até o momento.
-              </p>
+              <EmptyState
+                title="Nenhum voluntário cadastrado até o momento."
+                description="Os cadastros enviados aparecerão aqui."
+              />
             )}
 
             {!loadingLista && !erroLista && voluntarios.length > 0 && (
@@ -257,6 +299,17 @@ function Voluntariado() {
                 ))}
               </div>
             )}
+
+            {erroAcao && <p className="voluntariado-admin-message error">{erroAcao}</p>}
+
+            <ConfirmModal
+              open={Boolean(voluntarioParaExclusao)}
+              title="Remover cadastro"
+              message={`Tem certeza que deseja remover "${voluntarioParaExclusao?.nome || ""}"?`}
+              confirmLabel="Remover"
+              onClose={() => setVoluntarioParaExclusao(null)}
+              onConfirm={confirmarExclusao}
+            />
           </section>
         )}
       </section>

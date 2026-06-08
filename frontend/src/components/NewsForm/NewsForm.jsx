@@ -2,12 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api, { getMediaURL } from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
+import LoadingSpinner from "../ui/LoadingSpinner";
+import { getApiErrorMessage } from "../../utils/errorUtils";
 import "./NewsForm.css";
 
 const categoriaLabels = {
-  noticias: "Notícias",
   resgates: "Resgates",
   campanhas: "Campanhas",
+  desaparecidos: "Desaparecidos",
 };
 
 const formVazio = {
@@ -21,6 +23,7 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
   const navigate = useNavigate();
   const { id } = useParams();
   const { podeEditar } = useAdminAccess(categoria);
+  const rotaCategoria = `/noticias/${categoria}`;
   const [loading, setLoading] = useState(mode === "edit");
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
@@ -35,22 +38,21 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
   );
 
   useEffect(() => {
-    let ignorado = false;
+    const controller = new AbortController();
 
     if (mode !== "edit" || !id) {
       return () => {
-        ignorado = true;
+        controller.abort();
       };
     }
 
-    Promise.resolve().then(async () => {
-      if (ignorado) return;
-
+    const carregar = async () => {
       setLoading(true);
 
       try {
-        const response = await api.get(`/api/noticias/publicacoes/${id}/`);
-        if (ignorado) return;
+        const response = await api.get(`/api/noticias/publicacoes/${id}/`, {
+          signal: controller.signal,
+        });
 
         const data = response.data || null;
         setItem(data);
@@ -61,18 +63,20 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
           ativo: Boolean(data?.ativo ?? true),
         });
       } catch (error) {
-        if (ignorado) return;
+        if (controller.signal.aborted) return;
         console.error(error);
         setErro("Não foi possível carregar a publicação.");
       } finally {
-        if (!ignorado) {
+        if (!controller.signal.aborted) {
           setLoading(false);
         }
       }
-    });
+    };
+
+    carregar();
 
     return () => {
-      ignorado = true;
+      controller.abort();
     };
   }, [id, mode]);
 
@@ -107,23 +111,19 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
   };
 
   const extrairMensagemErro = (errorResponse) => {
-    const data = errorResponse.response?.data;
-
-    if (!data) return "Não foi possível salvar a publicação.";
-    if (typeof data === "string") return data;
-
-    if (typeof data === "object") {
-      const mensagens = Object.values(data).flat().filter(Boolean);
-      if (mensagens.length > 0) return mensagens.join(" ");
-    }
-
-    return "Não foi possível salvar a publicação.";
+    return getApiErrorMessage(errorResponse, "Não foi possível salvar a publicação.");
   };
 
   const enviarFormulario = async (event) => {
     event.preventDefault();
-    setSalvando(true);
     setErro("");
+
+    if (mode === "create" && !fotoFile && !item?.foto) {
+      setErro("Adicione uma foto para a publicação.");
+      return;
+    }
+
+    setSalvando(true);
 
     const payload = new FormData();
     payload.append("categoria", categoria);
@@ -145,7 +145,7 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
         response = await api.post("/api/noticias/publicacoes/", payload);
       }
 
-      navigate(`/${categoria}/${response.data.id}`);
+      navigate(`/noticias/${response.data.id}`);
     } catch (error) {
       setErro(extrairMensagemErro(error));
     } finally {
@@ -169,7 +169,7 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
     return (
       <section className="news-form-page">
         <div className="news-form-shell">
-          <div className="news-form-message">Carregando publicação...</div>
+          <LoadingSpinner label="Carregando publicação..." />
         </div>
       </section>
     );
@@ -219,7 +219,6 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
               type="file"
               accept="image/*"
               onChange={(event) => lidarComFoto(event.target.files?.[0] || null)}
-              required={mode === "create" && !item?.foto}
             />
           </label>
 

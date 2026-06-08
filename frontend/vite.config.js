@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite'
-import react, { reactCompilerPreset } from '@vitejs/plugin-react'
-import babel from '@rolldown/plugin-babel'
+import react from '@vitejs/plugin-react'
 
 const backendTarget = "http://127.0.0.1:8000"
 
@@ -60,7 +59,6 @@ function blockSensitiveFiles() {
 export default defineConfig({
   plugins: [
     react(),
-    babel({ presets: [reactCompilerPreset()] }),
     blockSensitiveFiles(),
   ],
 

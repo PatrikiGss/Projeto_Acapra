@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import api, { getMediaURL } from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
-import { isMaster } from "../../utils/permissions";
+import ConfirmModal from "../../components/ui/ConfirmModal";
 import "./Transparencia.css";
 
-const metricas = [
-  { valor: "—", rotulo: "Animais resgatados", descricao: "animais tirados das ruas e maus-tratos" },
-  { valor: "—", rotulo: "Castrações realizadas", descricao: "procedimentos realizados em parceria com clínicas locais" },
-  { valor: "—", rotulo: "Adoções bem-sucedidas", descricao: "animais que encontraram um lar amoroso" },
-];
+const descricaoIndicador = {
+  animais_resgatados: "animais tirados das ruas e maus-tratos",
+  castracoes: "procedimentos realizados em parceria com clínicas locais",
+  adocoes: "animais que encontraram um lar amoroso",
+};
 
 const parceiros = [
   { nome: "Clínicas Veterinárias Parceiras", descricao: "Estabelecimentos que oferecem atendimento com desconto ou gratuito" },
@@ -35,8 +35,15 @@ const formMovVazio = { categoria: "", descricao: "", valor: "", data: "", ativo:
 const formDocVazio = { nome: "", descricao: "", ativo: true, ordem: 0 };
 
 function Transparencia() {
-  const { podeEditar, usuario } = useAdminAccess("transparencia");
-  const ehMaster = isMaster(usuario);
+  const { podeEditar } = useAdminAccess("transparencia");
+
+  // --- Indicadores de impacto ---
+  const [indicadores, setIndicadores] = useState([]);
+  const [loadingInd, setLoadingInd] = useState(true);
+  const [modalInd, setModalInd] = useState({ aberto: false, dados: null });
+  const [valorInd, setValorInd] = useState(0);
+  const [salvandoInd, setSalvandoInd] = useState(false);
+  const [erroInd, setErroInd] = useState("");
 
   // --- Categorias / Movimentos ---
   const [categorias, setCategorias] = useState([]);
@@ -66,6 +73,7 @@ function Transparencia() {
   const [arquivoFile, setArquivoFile] = useState(null);
   const [removerArquivo, setRemoverArquivo] = useState(false);
   const [salvandoDoc, setSalvandoDoc] = useState(false);
+  const [confirmacaoTransp, setConfirmacaoTransp] = useState(null);
   const [erroDoc, setErroDoc] = useState("");
 
   // ---- Loaders ----
@@ -87,9 +95,19 @@ function Transparencia() {
       .finally(() => setLoadingDocs(false));
   };
 
+  const carregarIndicadores = () => {
+    setLoadingInd(true);
+    api
+      .get("/api/transparencia/indicadores/")
+      .then((res) => { setIndicadores(res.data || []); })
+      .catch(() => setIndicadores([]))
+      .finally(() => setLoadingInd(false));
+  };
+
   useEffect(() => {
     carregarCategorias();
     carregarDocumentos();
+    carregarIndicadores();
   }, []);
 
   const entradas = useMemo(() => categorias.filter((c) => c.tipo === "entrada"), [categorias]);
@@ -137,11 +155,9 @@ function Transparencia() {
     } finally { setSalvandoCat(false); }
   };
 
-  const excluirCategoria = async (cat, e) => {
+  const excluirCategoria = (cat, e) => {
     e.stopPropagation();
-    if (!window.confirm(`Remover a categoria "${cat.nome}" e todos os seus registros?`)) return;
-    try { await api.delete(`/api/transparencia/categorias/${cat.id}/`); carregarCategorias(); }
-    catch { alert("Não foi possível remover a categoria."); }
+    setConfirmacaoTransp({ tipo: "categoria", item: cat, mensagem: `Remover a categoria "${cat.nome}" e todos os seus registros?` });
   };
 
   // ---- Movimento ----
@@ -188,11 +204,9 @@ function Transparencia() {
     } finally { setSalvandoMov(false); }
   };
 
-  const excluirMovimento = async (mov, e) => {
+  const excluirMovimento = (mov, e) => {
     e.stopPropagation();
-    if (!window.confirm(`Remover o registro "${mov.descricao}"?`)) return;
-    try { await api.delete(`/api/transparencia/movimentos/${mov.id}/`); carregarCategorias(); }
-    catch { alert("Não foi possível remover o registro."); }
+    setConfirmacaoTransp({ tipo: "movimento", item: mov, mensagem: `Remover o registro "${mov.descricao}"?` });
   };
 
   // ---- Documento Institucional ----
@@ -236,10 +250,42 @@ function Transparencia() {
     } finally { setSalvandoDoc(false); }
   };
 
-  const excluirDocumento = async (doc) => {
-    if (!window.confirm(`Remover o documento "${doc.nome}"?`)) return;
-    try { await api.delete(`/api/transparencia/documentos/${doc.id}/`); carregarDocumentos(); }
-    catch { alert("Não foi possível remover o documento."); }
+  const excluirDocumento = (doc) => {
+    setConfirmacaoTransp({ tipo: "documento", item: doc, mensagem: `Remover o documento "${doc.nome}"?` });
+  };
+
+  // ---- Indicador de impacto ----
+  const abrirEditarIndicador = (ind) => {
+    setValorInd(ind.valor);
+    setErroInd("");
+    setModalInd({ aberto: true, dados: ind });
+  };
+
+  const fecharModalInd = () => { setModalInd((p) => ({ ...p, aberto: false })); setSalvandoInd(false); };
+
+  const confirmarAcaoTransp = async () => {
+    if (!confirmacaoTransp) return;
+    const { tipo, item } = confirmacaoTransp;
+    try {
+      if (tipo === "categoria") { await api.delete(`/api/transparencia/categorias/${item.id}/`); carregarCategorias(); }
+      if (tipo === "movimento") { await api.delete(`/api/transparencia/movimentos/${item.id}/`); carregarCategorias(); }
+      if (tipo === "documento") { await api.delete(`/api/transparencia/documentos/${item.id}/`); carregarDocumentos(); }
+    } catch { /* silencioso — o modal fecha de qualquer forma */ }
+    setConfirmacaoTransp(null);
+  };
+
+  const salvarIndicador = async (e) => {
+    e.preventDefault();
+    setSalvandoInd(true);
+    setErroInd("");
+    try {
+      await api.patch(`/api/transparencia/indicadores/${modalInd.dados.id}/`, { valor: valorInd });
+      carregarIndicadores();
+      fecharModalInd();
+    } catch (err) {
+      const data = err.response?.data;
+      setErroInd(data && typeof data === "object" ? Object.values(data).flat().join(" ") : "Erro ao salvar indicador.");
+    } finally { setSalvandoInd(false); }
   };
 
   // ---- Render helpers ----
@@ -320,20 +366,7 @@ function Transparencia() {
 
   return (
     <div className="transp-page">
-      <section className="transp-hero">
-        <div className="transp-hero-inner">
-          <span className="transp-hero-tag">Transparência</span>
-          <h1>Cada centavo importa. E você merece saber onde vai.</h1>
-          <p>
-            A ACAPRA existe porque pessoas como você escolhem acreditar que animais
-            merecem uma chance. Por isso, abrimos nossas contas, nossos documentos
-            e nossos números para que você veja, com clareza, o caminho da sua doação:
-            da sua mão à tigela de ração, à cirurgia que salvou uma vida, ao lar
-            que adotou com amor.
-          </p>
-          <p>Agimos com responsabilidade contábil e com o coração aberto. Consulte, questione e fiscalize — isso nos torna mais fortes.</p>
-        </div>
-      </section>
+      
 
       <div className="transp-content">
 
@@ -342,11 +375,18 @@ function Transparencia() {
           <h2 id="impacto-titulo" className="transp-section-title">Nosso impacto</h2>
           <p className="transp-section-sub">Números atualizados pela equipe da ACAPRA</p>
           <div className="transp-metricas">
-            {metricas.map((m) => (
-              <article key={m.rotulo} className="transp-metrica-card">
-                <span className="transp-metrica-valor">{m.valor}</span>
-                <strong className="transp-metrica-rotulo">{m.rotulo}</strong>
-                <p className="transp-metrica-desc">{m.descricao}</p>
+            {indicadores.map((ind) => (
+              <article key={ind.id} className="transp-metrica-card">
+                <span className="transp-metrica-valor">
+                  {loadingInd ? "—" : Number(ind.valor).toLocaleString("pt-BR")}
+                </span>
+                <strong className="transp-metrica-rotulo">{ind.chave_display}</strong>
+                <p className="transp-metrica-desc">{descricaoIndicador[ind.chave] || ""}</p>
+                {podeEditar && (
+                  <button type="button" className="transp-metrica-btn" onClick={() => abrirEditarIndicador(ind)}>
+                    Editar
+                  </button>
+                )}
               </article>
             ))}
           </div>
@@ -377,7 +417,7 @@ function Transparencia() {
               <h2 id="institucional-titulo">Documentos Institucionais</h2>
               <p>Comprove nossa legalidade e governança</p>
             </div>
-            {ehMaster && (
+            {podeEditar && (
               <button type="button" className="transp-header-btn" onClick={abrirCriarDocumento}>
                 + Novo documento
               </button>
@@ -386,7 +426,7 @@ function Transparencia() {
 
           {loadingDocs && <p className="transp-estado">Carregando documentos...</p>}
           {!loadingDocs && erroDocs && <p className="transp-estado erro">Não foi possível carregar os documentos.</p>}
-          {!loadingDocs && !erroDocs && documentos.length === 0 && !ehMaster && (
+          {!loadingDocs && !erroDocs && documentos.length === 0 && !podeEditar && (
             <p className="transp-estado">Nenhum documento publicado ainda.</p>
           )}
 
@@ -406,7 +446,7 @@ function Transparencia() {
                     ) : (
                       <span className="transp-doc-badge em-breve">Em breve</span>
                     )}
-                    {ehMaster && (
+                    {podeEditar && (
                       <>
                         <button type="button" className="transp-doc-btn" onClick={() => abrirEditarDocumento(doc)}>Editar</button>
                         <button type="button" className="transp-doc-btn danger" onClick={() => excluirDocumento(doc)}>Excluir</button>
@@ -529,7 +569,7 @@ function Transparencia() {
       )}
 
       {/* MODAL DOCUMENTO INSTITUCIONAL */}
-      {modalDoc.aberto && ehMaster && (
+      {modalDoc.aberto && podeEditar && (
         <div className="transp-modal-backdrop" onClick={fecharModalDoc}>
           <div className="transp-modal" onClick={(e) => e.stopPropagation()}>
             <div className="transp-modal-header">
@@ -568,6 +608,44 @@ function Transparencia() {
           </div>
         </div>
       )}
+
+      {/* MODAL INDICADOR DE IMPACTO */}
+      {modalInd.aberto && podeEditar && (
+        <div className="transp-modal-backdrop" onClick={fecharModalInd}>
+          <div className="transp-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="transp-modal-header">
+              <h2>Editar indicador</h2>
+              <button type="button" className="transp-modal-close" onClick={fecharModalInd}>Fechar</button>
+            </div>
+            <form className="transp-form" onSubmit={salvarIndicador}>
+              <label>{modalInd.dados?.chave_display}
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={valorInd}
+                  onChange={(e) => setValorInd(e.target.value)}
+                  required
+                />
+              </label>
+              {erroInd && <p className="transp-form-erro">{erroInd}</p>}
+              <div className="transp-modal-footer">
+                <button type="button" className="secondary" onClick={fecharModalInd}>Cancelar</button>
+                <button type="submit" disabled={salvandoInd}>{salvandoInd ? "Salvando..." : "Salvar"}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <ConfirmModal
+        open={Boolean(confirmacaoTransp)}
+        title="Confirmar remoção"
+        message={confirmacaoTransp?.mensagem || ""}
+        confirmLabel="Remover"
+        onConfirm={confirmarAcaoTransp}
+        onClose={() => setConfirmacaoTransp(null)}
+      />
     </div>
   );
 }

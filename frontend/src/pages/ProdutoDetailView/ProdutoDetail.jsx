@@ -1,6 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../../services/api";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import "./ProdutoDetail.css";
 
 function ProdutoDetail() {
@@ -22,6 +23,14 @@ function ProdutoDetail() {
             })
             .finally(() => setLoading(false));
     }, [id]);
+
+    const WHATSAPP_ACAPRA = "5549999999999";
+
+    const linkWhatsApp = useMemo(() => {
+        if (!produto) return null;
+        const mensagem = `Olá! Tenho interesse no produto "${produto.nome}".`;
+        return `https://wa.me/${WHATSAPP_ACAPRA}?text=${encodeURIComponent(mensagem)}`;
+    }, [produto]);
 
     const formatarPreco = (preco) => {
         return Number(preco).toLocaleString("pt-BR", {
@@ -62,7 +71,9 @@ function ProdutoDetail() {
     if (loading) {
         return (
             <main className="produto-detail-page">
-                <div className="produto-detail-message">Carregando produto...</div>
+                <div className="produto-detail-message">
+                    <LoadingSpinner label="Carregando produto..." />
+                </div>
             </main>
         );
     }
@@ -84,7 +95,7 @@ function ProdutoDetail() {
                     <div className="produto-main-image">
                         {fotoAtual ? (
                             <>
-                                <img src={fotoAtual} alt={produto.nome} />
+                                <img src={fotoAtual} alt={produto.nome} width="1200" height="900" />
 
                                 {fotos.length > 1 && (
                                     <>
@@ -128,10 +139,7 @@ function ProdutoDetail() {
                 </div>
 
                 <div className="produto-summary">
-                    
                     <h1>{produto.nome}</h1>
-                    <p className="detail-code">Código #{String(produto.id).padStart(4, "0")}</p>
-
                     <p className="detail-price">{formatarPreco(produto.preco)}</p>
 
                     <dl className="product-specs">
@@ -145,9 +153,14 @@ function ProdutoDetail() {
                         </div>
                     </dl>
 
-                    <button className="interest-button" type="button">
+                    <a
+                        className="interest-button"
+                        href={linkWhatsApp}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
                         Tenho interesse
-                    </button>
+                    </a>
 
                     {produto.descricao && (
                         <section className="description-panel">

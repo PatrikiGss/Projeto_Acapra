@@ -3,14 +3,16 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from gerenciamento.permissions import IsMaster, require_module
+from gerenciamento.permissions import require_module
 
-from .models import Categoria, DocumentoInstitucional, Movimento
+from .models import Categoria, DocumentoInstitucional, Indicador, Movimento
 from .serializers import (
     CategoriaReadSerializer,
     CategoriaWriteSerializer,
     DocumentoInstitucionalReadSerializer,
     DocumentoInstitucionalWriteSerializer,
+    IndicadorReadSerializer,
+    IndicadorWriteSerializer,
     MovimentoReadSerializer,
     MovimentoWriteSerializer,
 )
@@ -140,7 +142,7 @@ class DocumentosInstitucionaisView(APIView):
     def get_permissions(self):
         if self.request.method == "GET":
             return [AllowAny()]
-        return [IsAuthenticated(), IsMaster()]
+        return [IsAuthenticated(), require_module("transparencia")()]
 
     def get(self, request):
         qs = DocumentoInstitucional.objects.all()
@@ -162,7 +164,7 @@ class DocumentoInstitucionalDetailView(APIView):
     def get_permissions(self):
         if self.request.method == "GET":
             return [AllowAny()]
-        return [IsAuthenticated(), IsMaster()]
+        return [IsAuthenticated(), require_module("transparencia")()]
 
     def get_object(self, pk):
         return get_object_or_404(DocumentoInstitucional, pk=pk)
@@ -192,3 +194,34 @@ class DocumentoInstitucionalDetailView(APIView):
             {"detail": f"Documento {pk} removido."},
             status=status.HTTP_204_NO_CONTENT,
         )
+
+
+class IndicadoresView(APIView):
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+        return [IsAuthenticated(), require_module("transparencia")()]
+
+    def get(self, request):
+        # Garante que os três indicadores existam para leitura/edição.
+        for chave in Indicador.Chave.values:
+            Indicador.objects.get_or_create(chave=chave)
+        qs = Indicador.objects.all()
+        return Response(IndicadorReadSerializer(qs, many=True).data)
+
+
+class IndicadorDetailView(APIView):
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+        return [IsAuthenticated(), require_module("transparencia")()]
+
+    def get_object(self, pk):
+        return get_object_or_404(Indicador, pk=pk)
+
+    def patch(self, request, pk):
+        indicador = self.get_object(pk)
+        serializer = IndicadorWriteSerializer(indicador, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        indicador = serializer.save()
+        return Response(IndicadorReadSerializer(indicador).data)

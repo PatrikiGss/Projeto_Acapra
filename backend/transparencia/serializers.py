@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Categoria, DocumentoInstitucional, Movimento
+from .models import Categoria, DocumentoInstitucional, Indicador, Movimento
 
 
 class MovimentoReadSerializer(serializers.ModelSerializer):
@@ -63,3 +63,18 @@ class DocumentoInstitucionalWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = DocumentoInstitucional
         fields = ["id", "nome", "descricao", "arquivo", "ativo", "ordem"]
+
+
+class IndicadorReadSerializer(serializers.ModelSerializer):
+    chave_display = serializers.CharField(source="get_chave_display", read_only=True)
+
+    class Meta:
+        model = Indicador
+        fields = ["id", "chave", "chave_display", "valor", "updated_at"]
+        read_only_fields = fields
+
+
+class IndicadorWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Indicador
+        fields = ["id", "chave", "valor"]

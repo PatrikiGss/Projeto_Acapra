@@ -21,6 +21,32 @@ const authClient = axios.create({
 
 let refreshPromise = null;
 
+function shouldSkipAuthRedirect(url = "") {
+  return [
+    "/api/gerenciamento/auth/login/",
+    "/api/gerenciamento/auth/register/",
+    "/api/gerenciamento/auth/refresh/",
+  ].some((path) => String(url).includes(path));
+}
+
+function redirectToLogin() {
+  if (window.location.pathname === "/login") {
+    return;
+  }
+
+  window.location.assign("/login");
+}
+
+function handleAuthFailure(originalRequest) {
+  if (originalRequest && shouldSkipAuthRedirect(originalRequest.url)) {
+    return false;
+  }
+
+  clearAuthSession();
+  redirectToLogin();
+  return true;
+}
+
 async function refreshAccessToken() {
   const refresh = localStorage.getItem("refresh");
 
@@ -101,12 +127,12 @@ api.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return api(originalRequest);
       } catch {
-        clearAuthSession();
+        handleAuthFailure(originalRequest);
       }
     }
 
     if (status === 401) {
-      clearAuthSession();
+      handleAuthFailure(originalRequest);
     }
 
     return Promise.reject(error);

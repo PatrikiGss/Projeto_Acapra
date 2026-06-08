@@ -33,9 +33,6 @@
 
 .transp-hero h1 {
   margin: 0 0 1.2rem;
-  font-size: clamp(1.8rem, 4vw, 2.8rem);
-  font-weight: 800;
-  line-height: 1.15;
 }
 
 .transp-hero p {
@@ -141,6 +138,25 @@
   font-size: 0.88rem;
   color: #545454;
   line-height: 1.5;
+}
+
+.transp-metrica-btn {
+  align-self: flex-start;
+  margin-top: 0.5rem;
+  padding: 0.3rem 0.8rem;
+  border: 1px solid rgba(232, 119, 34, 0.45);
+  border-radius: 6px;
+  background: transparent;
+  color: #e87722;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.transp-metrica-btn:hover {
+  background: #fff3e8;
 }
 
 /* FINANCEIRO */

@@ -112,7 +112,8 @@
 .animal-card {
     display: flex;
     flex-direction: column;
-    min-height: 100%;
+    height: 100%;
+    min-height: 30rem;
     overflow: hidden;
     border: 1px solid rgba(224, 224, 224, 0.85);
     border-radius: 8px;
@@ -143,7 +144,7 @@
 .animal-card-admin {
     display: flex;
     flex-direction: column;
-    min-height: 100%;
+    min-height: 32rem;
     overflow: hidden;
     border: 1px solid rgba(224, 224, 224, 0.85);
     border-radius: 8px;
@@ -179,7 +180,9 @@
 
 .animal-card-image {
     width: 100%;
-    aspect-ratio: 4 / 3;
+    height: 16rem;
+    flex-shrink: 0;
+    overflow: hidden;
     background: #f2f2f2;
 }
 
@@ -239,7 +242,7 @@
 
 .animal-card-info .name {
     display: -webkit-box;
-    min-height: 3.5rem;
+    height: 2.5rem;
     margin: 0;
     overflow: hidden;
     color: #000;
@@ -251,11 +254,32 @@
 }
 
 .animal-card-info .owner {
-    margin: auto 0 0;
-    padding-top: 0.9rem;
+    margin: 0;
+    padding-top: 0.4rem;
     color: #cf6510;
     font-size: 0.9rem;
     font-weight: 700;
+}
+
+.animal-card-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 2.65rem;
+    margin-top: auto;
+    border-radius: 8px;
+    background: #e87722;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.animal-card:hover .animal-card-cta,
+.animal-card:focus-visible .animal-card-cta {
+    background: #d96c1b;
 }
 
 /* ── Ações admin ───────────────────────────────────────── */
@@ -297,6 +321,12 @@
     color: #545454;
     text-align: center;
     box-shadow: 0 12px 28px rgba(26, 26, 26, 0.06);
+}
+
+.adocao-action-error {
+    margin-top: 1rem;
+    color: #8a1f1f;
+    font-weight: 700;
 }
 
 /* ── Responsivo ────────────────────────────────────────── */

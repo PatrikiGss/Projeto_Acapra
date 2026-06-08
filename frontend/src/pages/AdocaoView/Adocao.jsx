@@ -4,6 +4,10 @@ import "./Adocao.css";
 import api, { getMediaURL } from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
 import { formatBrazilianPhone, toBrazilianPhoneE164 } from "../../utils/phone";
+import EmptyState from "../../components/ui/EmptyState";
+import ConfirmModal from "../../components/ui/ConfirmModal";
+import { getResponseItems } from "../../utils/collection";
+import { getApiErrorMessage } from "../../utils/errorUtils";
 
 const formVazio = {
     nome_animal: "",
@@ -28,10 +32,12 @@ function Adocao() {
     const [fotosAdicionais, setFotosAdicionais] = useState([]);
     const [salvando, setSalvando] = useState(false);
     const [erroFormulario, setErroFormulario] = useState("");
+    const [erroAcao, setErroAcao] = useState("");
+    const [animalParaExclusao, setAnimalParaExclusao] = useState(null);
 
     const carregarAnimais = () => {
         api.get("/api/adocao/animais/")
-            .then((response) => setAnimais(response.data))
+            .then((response) => setAnimais(getResponseItems(response.data)))
             .catch((error) => console.error(error));
     };
 
@@ -132,14 +138,7 @@ function Adocao() {
     };
 
     const extrairMensagemErro = (error) => {
-        const data = error.response?.data;
-        if (!data) return "Não foi possível salvar o animal.";
-        if (typeof data === "string") return data;
-        if (typeof data === "object") {
-            const mensagens = Object.values(data).flat().filter(Boolean);
-            if (mensagens.length > 0) return mensagens.join(" ");
-        }
-        return "Não foi possível salvar o animal.";
+        return getApiErrorMessage(error, "Não foi possível salvar o animal.");
     };
 
     const lidarComFotoPrincipal = (file) => {
@@ -212,14 +211,19 @@ function Adocao() {
     };
 
     const excluirAnimal = async (animal) => {
-        const confirmado = window.confirm(`Excluir o animal "${animal.nome_animal}"?`);
-        if (!confirmado) return;
+        setAnimalParaExclusao(animal);
+    };
+
+    const confirmarExclusao = async () => {
+        if (!animalParaExclusao) return;
 
         try {
-            await api.delete(`/api/adocao/animais/${animal.id}/`);
+            await api.delete(`/api/adocao/animais/${animalParaExclusao.id}/`);
             await carregarAnimais();
         } catch (error) {
-            alert(extrairMensagemErro(error));
+            setErroAcao(getApiErrorMessage(error, "Não foi possível excluir o animal."));
+        } finally {
+            setAnimalParaExclusao(null);
         }
     };
 
@@ -231,7 +235,12 @@ function Adocao() {
                 <Link className="animal-card" to={`/adocao/${animal.id}`} key={animal.id}>
                     <div className="animal-card-image">
                         {imagem ? (
-                            <img src={getMediaURL(imagem)} alt={animal.nome_animal} />
+                            <img
+                                src={getMediaURL(imagem)}
+                                alt={animal.nome_animal}
+                                width="640"
+                                height="480"
+                            />
                         ) : (
                             <div className="animal-placeholder">ACAPRA</div>
                         )}
@@ -243,6 +252,7 @@ function Adocao() {
                         </div>
                         <h2 className="name">{animal.nome_animal}</h2>
                         <p className="owner">Doador: {animal.nome_doador}</p>
+                        <span className="animal-card-cta">Ver animal</span>
                     </div>
                 </Link>
             );
@@ -254,7 +264,12 @@ function Adocao() {
                     <Link to={`/adocao/${animal.id}`} className="animal-card-main-link">
                         <div className="animal-card-image">
                             {imagem ? (
-                                <img src={getMediaURL(imagem)} alt={animal.nome_animal} />
+                                <img
+                                    src={getMediaURL(imagem)}
+                                    alt={animal.nome_animal}
+                                    width="640"
+                                    height="480"
+                                />
                             ) : (
                                 <div className="animal-placeholder">ACAPRA</div>
                             )}
@@ -266,6 +281,7 @@ function Adocao() {
                             </div>
                             <h2 className="name">{animal.nome_animal}</h2>
                             <p className="owner">Doador: {animal.nome_doador}</p>
+                            <span className="animal-card-cta">Ver animal</span>
                         </div>
                     </Link>
                 </div>
@@ -328,11 +344,14 @@ function Adocao() {
                     {animaisFiltrados.map((animal) => renderAnimalCard(animal))}
 
                     {animaisFiltrados.length === 0 && (
-                        <div className="empty-state">
-                            Nenhum animal encontrado para este filtro.
-                        </div>
+                        <EmptyState
+                            title="Nenhum animal encontrado para este filtro."
+                            description="Tente selecionar outra espécie ou cadastre um novo animal."
+                        />
                     )}
                 </div>
+
+                {erroAcao && <p className="adocao-action-error">{erroAcao}</p>}
             </section>
 
             {modalAberto && (
@@ -489,6 +508,15 @@ function Adocao() {
                     </div>
                 </div>
             )}
+
+            <ConfirmModal
+                open={Boolean(animalParaExclusao)}
+                title="Excluir animal"
+                message={`Tem certeza que deseja excluir "${animalParaExclusao?.nome_animal || ""}"?`}
+                confirmLabel="Excluir"
+                onClose={() => setAnimalParaExclusao(null)}
+                onConfirm={confirmarExclusao}
+            />
         </div>
     );
 }

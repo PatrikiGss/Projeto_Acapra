@@ -10,8 +10,8 @@ urlpatterns = [
 
     path('api/core/',          include('core.urls',          namespace='core')),
     path('api/adocao/',        include('adocao.urls',        namespace='adocao')),
-    path('api/denuncias/',     include('denuncias.urls',     namespace='denuncias')),
     path('api/doacoes/',       include('doacoes.urls',       namespace='doacoes')),
+    path('api/denuncias/',     include('denuncias.urls',     namespace='denuncias')),
     path('api/gerenciamento/', include('gerenciamento.urls', namespace='gerenciamento')),
     path('api/noticias/',      include('noticias.urls',      namespace='noticias')),
     path('api/resgates/',      include('resgates.urls',      namespace='resgates')),

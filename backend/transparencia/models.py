@@ -68,3 +68,22 @@ class DocumentoInstitucional(models.Model):
 
     def __str__(self):
         return self.nome
+
+
+class Indicador(models.Model):
+    class Chave(models.TextChoices):
+        ANIMAIS = "animais_resgatados", "Animais resgatados"
+        CASTRACOES = "castracoes", "Castrações realizadas"
+        ADOCOES = "adocoes", "Adoções bem-sucedidas"
+
+    chave = models.CharField(max_length=30, choices=Chave.choices, unique=True)
+    valor = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Indicador de impacto"
+        verbose_name_plural = "Indicadores de impacto"
+        ordering = ["chave"]
+
+    def __str__(self):
+        return f"{self.get_chave_display()}: {self.valor}"

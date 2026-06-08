@@ -26,6 +26,7 @@ const ResgatesDetail = lazy(() => import("./pages/ResgatesDetailView/ResgatesDet
 const CampanhasDetail = lazy(() => import("./pages/CampanhasDetailView/CampanhasDetail"));
 const Dashboard = lazy(() => import("./pages/DashboardView/Dashboard"));
 const Transparencia = lazy(() => import("./pages/TransparenciaView/Transparencia"));
+const Denuncias = lazy(() => import("./pages/DenunciasView/Denuncias"));
 
 function App() {
   return (
@@ -55,6 +56,7 @@ function App() {
           <Route path="/produtos/:id" element={<ProdutoDetail />} />
           <Route path="/voluntariado" element={<Voluntariado />} />
           <Route path="/transparencia" element={<Transparencia />} />
+          <Route path="/denuncias" element={<Denuncias />} />
           <Route
             path="/dashboard"
             element={(

@@ -72,6 +72,7 @@ class PerfilAdministrativo(models.Model):
 
     class Nivel(models.TextChoices):
         USUARIO = "usuario", "Usuário sem vínculo"
+        ADMIN = "admin", "Administrador"
         DOACOES = "doacoes", "Doações"
         FINANCEIRO = "financeiro", "Financeiro"
         MASTER = "master", "Diretor Acapra"

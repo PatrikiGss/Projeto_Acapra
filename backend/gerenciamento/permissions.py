@@ -2,7 +2,6 @@ from rest_framework.permissions import BasePermission
 
 from .models import PerfilAdministrativo
 
-
 MODULOS_POR_NIVEL = {
     PerfilAdministrativo.Nivel.MASTER: {
         "doacoes",
@@ -55,6 +54,11 @@ def get_modulos_usuario(user):
 class IsMaster(BasePermission):
     def has_permission(self, request, view):
         return get_nivel_usuario(request.user) == PerfilAdministrativo.Nivel.MASTER
+
+
+class TemAcessoDashboard(BasePermission):
+    def has_permission(self, request, view):
+        return request.user and request.user.is_authenticated
 
 
 def require_module(modulo):

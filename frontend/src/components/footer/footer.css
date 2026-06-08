@@ -1,8 +1,125 @@
-footer {
+.site-footer {
+  display: grid;
+  grid-template-columns: 1.4fr 1.8fr 1fr;
+  align-items: start;
+  gap: 2rem;
+  padding: 2.5rem clamp(1rem, 4vw, 3.5rem);
+  background: #fbfaf8;
+  color: #242424;
+  border-top: 1px solid #eee7df;
+}
+
+.footer-brand {
   display: flex;
-  justify-content: center;
   align-items: center;
-  padding: 12px 0;
-  background: #f8f8f8;
-  border-top: 1px solid #ddd;
+  gap: 0.9rem;
+}
+
+.footer-brand img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.footer-brand strong {
+  display: block;
+  color: #e87722;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+}
+
+.footer-brand p {
+  margin: 0;
+  color: #777;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.footer-nav {
+  display: flex;
+  gap: 2rem;
+}
+
+.footer-nav-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.footer-nav-heading {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #999;
+  margin-bottom: 0.25rem;
+}
+
+.footer-nav-col a {
+  color: #444;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color 0.18s ease;
+}
+
+.footer-nav-col a:hover {
+  color: #e87722;
+}
+
+.footer-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-items: flex-end;
+}
+
+.footer-contact a {
+  color: #242424;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-contact a:hover {
+  color: #e87722;
+}
+
+.footer-copy {
+  margin: 0.5rem 0 0;
+  color: #aaa;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 900px) {
+  .site-footer {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .footer-contact {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 600px) {
+  .site-footer {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .footer-brand {
+    justify-content: center;
+  }
+
+  .footer-nav {
+    justify-content: space-between;
+  }
+
+  .footer-contact {
+    align-items: center;
+  }
+
+  .footer-copy {
+    text-align: center;
+  }
 }

@@ -24,9 +24,10 @@ DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = config(
     "ALLOWED_HOSTS",
-    default="127.0.0.1,localhost",
+    default="localhost,127.0.0.1,[::1]",
     cast=Csv()
 )
+
 AUTH_USER_MODEL = 'gerenciamento.Usuario'
 
 # =========================================================
@@ -52,8 +53,8 @@ INSTALLED_APPS = [
     # Apps do projeto
     "core.apps.CoreConfig",
     "adocao.apps.AdocaoConfig",
-    "denuncias.apps.DenunciasConfig",
     "doacoes.apps.DoacoesConfig",
+    "denuncias.apps.DenunciasConfig",
     "gerenciamento.apps.GerenciamentoConfig",
     "noticias.apps.NoticiasConfig",
     "resgates.apps.ResgatesConfig",
@@ -78,6 +79,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "core.middleware.SecurityHeadersMiddleware",
 ]
 
 
@@ -183,6 +185,9 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE":20,
+    "DEFAULT_THROTTLE_RATES": {
+        "public_animals": "60/min",
+    },
 }
 
 
@@ -190,8 +195,8 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 
-    "ROTATE_REFRESH_TOKENS": False,
-    "BLACKLIST_AFTER_ROTATION": False,
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
 
     "UPDATE_LAST_LOGIN": False,
 
@@ -208,9 +213,24 @@ SIMPLE_JWT = {
 
 CORS_ALLOWED_ORIGINS = config(
     "CORS_ALLOWED_ORIGINS",
-    default="http://localhost:3000",
+    default=(
+        "http://localhost:5173,"
+        "http://127.0.0.1:5173,"
+        "http://localhost:3000,"
+        "http://127.0.0.1:3000"
+    ),
     cast=Csv()
 )
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https?://localhost(?::\d+)?$",
+    r"^https?://127\.0\.0\.1(?::\d+)?$",
+    r"^https?://\[::1\](?::\d+)?$",
+    r"^https?://10(?:\.\d{1,3}){3}(?::\d+)?$",
+    r"^https?://192\.168(?:\.\d{1,3}){2}(?::\d+)?$",
+    r"^https?://172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2}(?::\d+)?$",
+    r"^https://[a-z0-9-]+\.trycloudflare\.com$",
+]
 
 
 # =========================================================
@@ -218,3 +238,19 @@ CORS_ALLOWED_ORIGINS = config(
 # =========================================================
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# =========================================================
+# HTTP SECURITY HEADERS
+# =========================================================
+
+X_FRAME_OPTIONS = "DENY"
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+if not DEBUG:
+    SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=True, cast=bool)
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True

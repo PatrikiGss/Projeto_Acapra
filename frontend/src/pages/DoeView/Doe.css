@@ -140,16 +140,18 @@
 }
 
 .pix-copy-button {
-    min-height: 2.6rem;
-    margin-top: 0.75rem;
-    padding: 0 0.95rem;
+    min-height: 2.2rem;
+    margin-top: 0.9rem;
+    padding: 0 1.2rem;
     border: 0;
-    border-radius: 10px;
+    border-radius: 6px;
     background: #e87722;
     color: #fff;
     font: inherit;
+    font-size: 0.85rem;
     font-weight: 800;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 .pix-copy-feedback {

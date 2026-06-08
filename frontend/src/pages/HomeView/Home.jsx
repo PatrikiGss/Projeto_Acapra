@@ -90,7 +90,6 @@ function Home() {
   const destaqueInfo = destaquesInfo[destaqueAtual] || destaqueExemplo;
 
   return (
-    
     <div className="main">
       <section className="hero">
         <img
@@ -117,29 +116,20 @@ function Home() {
 
       <section className="about-section scroll-reveal" id="sobre">
         <div className="about-content">
-          <span className="section-kicker">Sobre Nós</span>
-          <h2>ACAPRA: O que somos e Onde estamos?
-          </h2>
-          <p>
-            Que somos uma ONG sem fins lucrativos feita de voluntários a gente sempre diz.
-            Mas o que você tem que saber é que <strong>ACAPRA SOMOS TODOS NÓS </strong>
-            que gostamos e ajudamos os animais que precisam.
+          <div className="about-heading">
+            <span className="section-kicker">Sobre Nós</span>
+            <h2>ACAPRA somos todos nós</h2>
+          </div>
 
-            Simples né? Então eu sou, e você também é ou já foi ACAPRA em algum momento.
-
-            Quando você resgata um bichinho jogado na rua, quando você ajuda a encontrar
-            um lar para eles, quando doa dinheiro para um atendimento. Quando você doa
-            ração você é ACAPRA!
-
-            ...
-
-            Ah é a minha casa, a sua casa. É todo lugar que os bichinhos são acolhidos!
-
+          <p className="about-text">
+            Somos uma ONG sem fins lucrativos movida por voluntários — mas, na prática,{" "}
+            <strong>ACAPRA é qualquer pessoa que ajuda um animal</strong>. Quando você
+            resgata um bichinho jogado na rua, quando ajuda a encontrar um lar para eles,
+            quando doa dinheiro para um atendimento ou doa ração — você é ACAPRA.
+            Nossa casa é todo lugar onde os bichinhos são acolhidos.
           </p>
         </div>
       </section>
-
- 
 
       <section className="adote-section scroll-reveal" id="adote">
         <div className="section-heading">

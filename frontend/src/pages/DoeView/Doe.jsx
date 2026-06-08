@@ -300,11 +300,12 @@ function Doe() {
             <div className="pix-key-box">
               <strong>Chave PIX</strong>
               <span>{dadosDoacao.chave_pix}</span>
-              <button type="button" className="pix-copy-button" onClick={copiarChavePix}>
-                Copiar chave PIX
-              </button>
-              {copiado && <span className="pix-copy-feedback">Copiado!</span>}
             </div>
+
+            <button type="button" className="pix-copy-button" onClick={copiarChavePix}>
+              Copiar chave PIX
+            </button>
+            {copiado && <span className="pix-copy-feedback">Copiado!</span>}
           </article>
 
           <article className="donation-card bank-card">

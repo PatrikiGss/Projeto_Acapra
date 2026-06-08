@@ -26,7 +26,13 @@ import NoticiasDetail from "./pages/NoticiasDetailView/NoticiasDetail";
 import ResgatesDetail from "./pages/ResgatesDetailView/ResgatesDetail";
 import CampanhasDetail from "./pages/CampanhasDetailView/CampanhasDetail";
 import Dashboard from "./pages/DashboardView/Dashboard";
+import Denuncias from "./pages/DenunciasView/Denuncias";
+import Desaparecidos from "./pages/DesaparecidosView/Desaparecidos";
+import DesaparecidosNova from "./pages/DesaparecidosView/DesaparecidosNova";
+import DesaparecidosEditar from "./pages/DesaparecidosView/DesaparecidosEditar";
+import DesaparecidosDetail from "./pages/DesaparecidosDetailView/DesaparecidosDetail";
 import Transparencia from "./pages/TransparenciaView/Transparencia";
+import NotFound from "./pages/NotFoundView/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 
 function App() {
@@ -45,9 +51,9 @@ function App() {
           <Route path="/informacoes/:categoria/:id/editar" element={<InformacoesEditar />} />
           <Route path="/informacoes/:categoria/:id" element={<InformacoesDetail />} />
           <Route path="/noticias" element={<Noticias />} />
-          <Route path="/noticias/nova" element={<NoticiasNova />} />
-          <Route path="/noticias/:id/editar" element={<NoticiasEditar />} />
           <Route path="/noticias/:id" element={<NoticiasDetail />} />
+          <Route path="/noticias/:categoria/nova" element={<NoticiasNova />} />
+          <Route path="/noticias/:categoria/:id/editar" element={<NoticiasEditar />} />
           <Route path="/resgates" element={<Resgates />} />
           <Route path="/resgates/nova" element={<ResgatesNova />} />
           <Route path="/resgates/:id/editar" element={<ResgatesEditar />} />
@@ -59,6 +65,11 @@ function App() {
           <Route path="/produtos" element={<Vendas />} />
           <Route path="/produtos/:id" element={<ProdutoDetail />} />
           <Route path="/voluntariado" element={<Voluntariado />} />
+          <Route path="/denuncias" element={<Denuncias />} />
+          <Route path="/desaparecidos" element={<Desaparecidos />} />
+          <Route path="/desaparecidos/nova" element={<DesaparecidosNova />} />
+          <Route path="/desaparecidos/:id/editar" element={<DesaparecidosEditar />} />
+          <Route path="/desaparecidos/:id" element={<DesaparecidosDetail />} />
           <Route path="/transparencia" element={<Transparencia />} />
           <Route
             path="/dashboard"
@@ -68,6 +79,7 @@ function App() {
               </ProtectedRoute>
             )}
           />
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
     </BrowserRouter>

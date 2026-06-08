@@ -4,10 +4,10 @@ import "./Informacoes.css";
 
 const abas = [
   {
-    id: "noticias",
-    label: "Notícias",
-    titulo: "Notícias",
-    subtitulo: "Atualizações, comunicados e boas histórias da ACAPRA.",
+    id: null,
+    label: "Todas",
+    titulo: null,
+    subtitulo: null,
   },
   {
     id: "resgates",
@@ -21,10 +21,16 @@ const abas = [
     titulo: "Campanhas",
     subtitulo: "Ações, mobilizações e chamadas para ajudar os animais.",
   },
+  {
+    id: "desaparecidos",
+    label: "Desaparecidos",
+    titulo: "Animais Desaparecidos",
+    subtitulo: "Ajude a encontrar animais perdidos em São Joaquim e região.",
+  },
 ];
 
 function Informacoes() {
-  const [abaAtiva, setAbaAtiva] = useState("noticias");
+  const [abaAtiva, setAbaAtiva] = useState(null);
 
   const abaSelecionada = useMemo(
     () => abas.find((aba) => aba.id === abaAtiva) || abas[0],
@@ -34,8 +40,8 @@ function Informacoes() {
   return (
     <div className="informacoes-page">
       <header className="informacoes-header">
-        <span className="section-kicker">Informações</span>
-        <h1>Novidades, resgates e campanhas</h1>
+     
+        <h1>Notícias da ACAPRA!</h1>
         <p>
           Acompanhe em um só lugar as principais publicações da ACAPRA.
         </p>
@@ -49,7 +55,7 @@ function Informacoes() {
             role="tab"
             aria-selected={aba.id === abaAtiva}
             onClick={() => setAbaAtiva(aba.id)}
-            key={aba.id}
+            key={String(aba.id)}
           >
             {aba.label}
           </button>
@@ -61,6 +67,7 @@ function Informacoes() {
         titulo={abaSelecionada.titulo}
         subtitulo={abaSelecionada.subtitulo}
         basePath="/informacoes"
+        linkBase="/noticias"
         embedded
       />
     </div>

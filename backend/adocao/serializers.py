@@ -73,7 +73,7 @@ class GetAnimalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Animal
-        fields = ['id','nome_animal', 'nome_doador','especie','sexo','foto','fotos','descricao']
+        fields = ['id','nome_animal', 'nome_doador','telefone','especie','sexo','foto','fotos','descricao']
 
     def get_foto(self, obj):
         request = self.context.get('request')

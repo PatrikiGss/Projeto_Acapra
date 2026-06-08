@@ -7,9 +7,9 @@ import { getApiErrorMessage } from "../../utils/errorUtils";
 import "./NewsForm.css";
 
 const categoriaLabels = {
-  noticias: "Notícias",
   resgates: "Resgates",
   campanhas: "Campanhas",
+  desaparecidos: "Desaparecidos",
 };
 
 const formVazio = {
@@ -19,11 +19,11 @@ const formVazio = {
   ativo: true,
 };
 
-function NewsForm({ categoria, backPath, mode = "create", basePath }) {
+function NewsForm({ categoria, backPath, mode = "create" }) {
   const navigate = useNavigate();
   const { id } = useParams();
   const { podeEditar } = useAdminAccess(categoria);
-  const rotaCategoria = basePath ? `${basePath}/${categoria}` : `/${categoria}`;
+  const rotaCategoria = `/noticias/${categoria}`;
   const [loading, setLoading] = useState(mode === "edit");
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
@@ -145,7 +145,7 @@ function NewsForm({ categoria, backPath, mode = "create", basePath }) {
         response = await api.post("/api/noticias/publicacoes/", payload);
       }
 
-      navigate(`${rotaCategoria}/${response.data.id}`);
+      navigate(`/noticias/${response.data.id}`);
     } catch (error) {
       setErro(extrairMensagemErro(error));
     } finally {

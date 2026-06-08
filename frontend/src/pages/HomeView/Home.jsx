@@ -18,6 +18,7 @@ function Home() {
   const [animalSlideAtual, setAnimalSlideAtual] = useState(0);
   const [destaquesInfo, setDestaquesInfo] = useState([destaqueExemplo]);
   const [destaqueAtual, setDestaqueAtual] = useState(0);
+  const [indicadores, setIndicadores] = useState([]);
 
   useEffect(() => {
     api.get("/api/adocao/animais/")
@@ -28,6 +29,12 @@ function Home() {
         setAnimais([]);
       })
       .finally(() => setCarregandoAnimais(false));
+  }, []);
+
+  useEffect(() => {
+    api.get("/api/transparencia/indicadores/")
+      .then((res) => setIndicadores(res.data || []))
+      .catch(() => setIndicadores([]));
   }, []);
 
   useEffect(() => {
@@ -77,16 +84,6 @@ function Home() {
     return () => observer.disconnect();
   }, [animais]);
 
-  const irParaAnimalAnterior = () => {
-    setAnimalSlideAtual((current) => (
-      current === 0 ? animais.length - 1 : current - 1
-    ));
-  };
-
-  const irParaProximoAnimal = () => {
-    setAnimalSlideAtual((current) => (current + 1) % animais.length);
-  };
-
   const destaqueInfo = destaquesInfo[destaqueAtual] || destaqueExemplo;
 
   return (
@@ -121,13 +118,26 @@ function Home() {
             <h2>ACAPRA somos todos nós</h2>
           </div>
 
-          <p className="about-text">
-            Somos uma ONG sem fins lucrativos movida por voluntários — mas, na prática,{" "}
-            <strong>ACAPRA é qualquer pessoa que ajuda um animal</strong>. Quando você
-            resgata um bichinho jogado na rua, quando ajuda a encontrar um lar para eles,
-            quando doa dinheiro para um atendimento ou doa ração — você é ACAPRA.
-            Nossa casa é todo lugar onde os bichinhos são acolhidos.
-          </p>
+          <div className="about-body">
+            <p className="about-text">
+              A ACAPRA é uma ONG sem fins lucrativos fundada em São Joaquim (SC) com a missão de resgatar, cuidar e encontrar lares para animais em situação de vulnerabilidade.{" "}
+              <strong>Somos movidos pelo voluntariado e pela solidariedade da comunidade.</strong>{" "}
+              Atuamos no resgate de animais abandonados e vítimas de maus-tratos, na realização de castrações para controle populacional e na promoção da adoção responsável — tudo isso com transparência e prestação de contas à sociedade.
+            </p>
+
+            {indicadores.length > 0 && (
+              <div className="about-stats">
+                {indicadores.map((ind) => (
+                  <div className="about-stat" key={ind.id}>
+                    <span className="about-stat-valor">
+                      {Number(ind.valor).toLocaleString("pt-BR")}
+                    </span>
+                    <span className="about-stat-rotulo">{ind.chave_display}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
@@ -178,23 +188,6 @@ function Home() {
 
             {animais.length > 1 && (
               <>
-                <div className="carousel-controls">
-                  <button
-                    type="button"
-                    onClick={irParaAnimalAnterior}
-                    aria-label="Animal anterior"
-                  >
-                    ‹
-                  </button>
-                  <button
-                    type="button"
-                    onClick={irParaProximoAnimal}
-                    aria-label="Próximo animal"
-                  >
-                    ›
-                  </button>
-                </div>
-
                 <div className="carousel-dots">
                   {animais.map((_, index) => (
                     <button
@@ -240,8 +233,8 @@ function Home() {
           <Link
             className="fresh-news-banner"
             to={destaqueInfo.id === "exemplo"
-              ? "/informacoes"
-              : `/informacoes/${destaqueInfo.categoria}/${destaqueInfo.id}`}
+              ? "/noticias"
+              : `/noticias/${destaqueInfo.id}`}
           >
             <div className="fresh-news-image">
               <img
@@ -253,7 +246,7 @@ function Home() {
             </div>
 
             <div className="fresh-news-copy">
-              <span>Boas notícias saindo do forno</span>
+              <span>Notícias da Acapra!</span>
               <h2>{destaqueInfo.titulo}</h2>
               <p>{destaqueInfo.resumo}</p>
               <strong>{destaqueInfo.categoria_display || "Informação"}</strong>
@@ -261,17 +254,36 @@ function Home() {
           </Link>
 
           {destaquesInfo.length > 1 && (
-            <div className="fresh-news-dots" aria-label="Publicações recentes">
-              {destaquesInfo.map((item, index) => (
+            <>
+              <div className="carousel-controls">
                 <button
-                  className={index === destaqueAtual ? "active" : ""}
                   type="button"
-                  onClick={() => setDestaqueAtual(index)}
-                  aria-label={`Mostrar ${item.titulo}`}
-                  key={`${item.id}-${item.titulo}`}
-                />
-              ))}
-            </div>
+                  onClick={() => setDestaqueAtual((current) => (current === 0 ? destaquesInfo.length - 1 : current - 1))}
+                  aria-label="Publicação anterior"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDestaqueAtual((current) => (current + 1) % destaquesInfo.length)}
+                  aria-label="Próxima publicação"
+                >
+                  ›
+                </button>
+              </div>
+
+              <div className="fresh-news-dots" aria-label="Publicações recentes">
+                {destaquesInfo.map((item, index) => (
+                  <button
+                    className={index === destaqueAtual ? "active" : ""}
+                    type="button"
+                    onClick={() => setDestaqueAtual(index)}
+                    aria-label={`Mostrar ${item.titulo}`}
+                    key={`${item.id}-${item.titulo}`}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </div>
       </section>

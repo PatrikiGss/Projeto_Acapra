@@ -27,15 +27,17 @@ function resumirTexto(texto) {
   return `${limpo.slice(0, 220).trimEnd()}...`;
 }
 
-function NewsFeed({ categoria, titulo, subtitulo, basePath, embedded = false }) {
+function NewsFeed({ categoria, titulo, subtitulo, basePath, embedded = false, linkBase }) {
   const navigate = useNavigate();
   const [itens, setItens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [acaoErro, setAcaoErro] = useState("");
   const [confirmacao, setConfirmacao] = useState(null);
-  const { podeEditar } = useAdminAccess(categoria);
-  const rotaCategoria = basePath ? `${basePath}/${categoria}` : `/${categoria}`;
+  const { podeEditar } = useAdminAccess(categoria || "");
+
+  const rotaCategoria = basePath && categoria ? `${basePath}/${categoria}` : (basePath || `/${categoria || ""}`);
+  const resolverLinkItem = (id) => linkBase ? `${linkBase}/${id}` : `${rotaCategoria}/${id}`;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -45,8 +47,9 @@ function NewsFeed({ categoria, titulo, subtitulo, basePath, embedded = false }) 
       setAcaoErro("");
 
       try {
+        const params = categoria ? { categoria } : {};
         const response = await api.get("/api/noticias/publicacoes/", {
-          params: { categoria },
+          params,
           signal: controller.signal,
         });
 
@@ -106,7 +109,7 @@ function NewsFeed({ categoria, titulo, subtitulo, basePath, embedded = false }) 
               <p>{subtitulo}</p>
             </div>
 
-            {podeEditar && (
+            {podeEditar && categoria && (
               <button type="button" className="news-admin-button" onClick={abrirCriacao}>
                 Nova publicação
               </button>
@@ -134,7 +137,7 @@ function NewsFeed({ categoria, titulo, subtitulo, basePath, embedded = false }) 
           <div className="news-list">
             {itens.map((item) => (
               <article className="news-row" key={item.id}>
-                <Link className="news-row-link" to={`${rotaCategoria}/${item.id}`}>
+                <Link className="news-row-link" to={resolverLinkItem(item.id)}>
                   <div className="news-row-image">
                     {item.foto ? (
                       <img src={getMediaURL(item.foto)} alt={item.titulo} width="560" height="315" />
@@ -193,4 +196,3 @@ function NewsFeed({ categoria, titulo, subtitulo, basePath, embedded = false }) 
 }
 
 export default NewsFeed;
-

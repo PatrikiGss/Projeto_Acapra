@@ -293,7 +293,25 @@ function Doe() {
               {dadosDoacao.qr_code ? (
                 <img src={dadosDoacao.qr_code} alt="QR Code PIX da ACAPRA" />
               ) : (
-                <div className="qr-placeholder">Sem imagem</div>
+                <div className="qr-placeholder" aria-label="QR Code não cadastrado">
+                  <svg viewBox="0 0 64 64" width="96" height="96" fill="none" aria-hidden="true">
+                    <rect x="4" y="4" width="24" height="24" rx="2" stroke="currentColor" strokeWidth="3" fill="none"/>
+                    <rect x="10" y="10" width="12" height="12" rx="1" fill="currentColor"/>
+                    <rect x="36" y="4" width="24" height="24" rx="2" stroke="currentColor" strokeWidth="3" fill="none"/>
+                    <rect x="42" y="10" width="12" height="12" rx="1" fill="currentColor"/>
+                    <rect x="4" y="36" width="24" height="24" rx="2" stroke="currentColor" strokeWidth="3" fill="none"/>
+                    <rect x="10" y="42" width="12" height="12" rx="1" fill="currentColor"/>
+                    <rect x="36" y="36" width="6" height="6" fill="currentColor"/>
+                    <rect x="46" y="36" width="6" height="6" fill="currentColor"/>
+                    <rect x="56" y="36" width="4" height="6" fill="currentColor"/>
+                    <rect x="36" y="46" width="6" height="6" fill="currentColor"/>
+                    <rect x="46" y="46" width="14" height="6" fill="currentColor"/>
+                    <rect x="36" y="56" width="6" height="4" fill="currentColor"/>
+                    <rect x="46" y="56" width="6" height="4" fill="currentColor"/>
+                    <rect x="56" y="52" width="4" height="8" fill="currentColor"/>
+                  </svg>
+                  <span>QR Code não cadastrado</span>
+                </div>
               )}
             </div>
 

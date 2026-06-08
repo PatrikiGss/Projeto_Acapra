@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import api from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
 import { formatBrazilianPhone, toBrazilianPhoneE164 } from "../../utils/phone";
+import ConfirmModal from "../../components/ui/ConfirmModal";
 import "./Denuncias.css";
 
 const GRAVIDADE_OPCOES = [
@@ -56,6 +57,8 @@ function Denuncias() {
   const [denuncias, setDenuncias] = useState([]);
   const [loadingLista, setLoadingLista] = useState(false);
   const [erroLista, setErroLista] = useState("");
+  const [erroAcao, setErroAcao] = useState("");
+  const [confirmacao, setConfirmacao] = useState(null);
 
   const carregarDenuncias = () => {
     if (!podeEditar) return;
@@ -126,21 +129,25 @@ function Denuncias() {
           lista.map((d) => (d.id === id ? { ...d, ...res.data } : d))
         );
       })
-      .catch(() => alert("Não foi possível atualizar o status."));
+      .catch(() => setErroAcao("Não foi possível atualizar o status."));
   };
 
   const excluirDenuncia = (denuncia) => {
-    const confirmado = window.confirm(
-      `Remover a denúncia "${denuncia.titulo}"?`
-    );
-    if (!confirmado) return;
+    setConfirmacao(denuncia);
+  };
 
+  const confirmarExclusao = () => {
+    if (!confirmacao) return;
     api
-      .delete(`/api/denuncias/denuncias/${denuncia.id}/`)
-      .then(() =>
-        setDenuncias((lista) => lista.filter((d) => d.id !== denuncia.id))
-      )
-      .catch(() => alert("Não foi possível remover a denúncia."));
+      .delete(`/api/denuncias/denuncias/${confirmacao.id}/`)
+      .then(() => {
+        setDenuncias((lista) => lista.filter((d) => d.id !== confirmacao.id));
+        setConfirmacao(null);
+      })
+      .catch(() => {
+        setErroAcao("Não foi possível remover a denúncia.");
+        setConfirmacao(null);
+      });
   };
 
   return (
@@ -351,6 +358,17 @@ function Denuncias() {
           </section>
         )}
       </section>
+
+      {erroAcao && <p style={{ color: "#8a1f1f", padding: "0 1.5rem 1rem", fontSize: "0.9rem" }}>{erroAcao}</p>}
+
+      <ConfirmModal
+        open={Boolean(confirmacao)}
+        title="Remover denúncia"
+        message={`Tem certeza que deseja remover a denúncia "${confirmacao?.titulo || ""}"?`}
+        confirmLabel="Remover"
+        onConfirm={confirmarExclusao}
+        onClose={() => setConfirmacao(null)}
+      />
     </div>
   );
 }

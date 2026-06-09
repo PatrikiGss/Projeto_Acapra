@@ -25,7 +25,6 @@
 .dashboard-header h1 {
   margin: 0 0 0.75rem;
   color: #1a1a1a;
-  font-size: clamp(2rem, 4vw, 2.6rem);
 }
 
 .dashboard-subtitle {

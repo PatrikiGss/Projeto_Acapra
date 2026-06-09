@@ -62,8 +62,8 @@
 
 .transp-section-title {
   margin: 0 0 0.35rem;
-  font-size: 1.8rem;
-  font-weight: 800;
+  font-size: clamp(2rem, 4.2vw, 3.6rem);
+  font-weight: 900;
 }
 
 .transp-section-sub {

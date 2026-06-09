@@ -33,6 +33,7 @@ import DesaparecidosEditar from "./pages/DesaparecidosView/DesaparecidosEditar";
 import DesaparecidosDetail from "./pages/DesaparecidosDetailView/DesaparecidosDetail";
 import Transparencia from "./pages/TransparenciaView/Transparencia";
 import NotFound from "./pages/NotFoundView/NotFound";
+import MetaConfig from "./pages/MetaConfigView/MetaConfig";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 
 function App() {
@@ -76,6 +77,14 @@ function App() {
             element={(
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            )}
+          />
+          <Route
+            path="/meta/configurar"
+            element={(
+              <ProtectedRoute>
+                <MetaConfig />
               </ProtectedRoute>
             )}
           />

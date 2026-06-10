@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from gerenciamento.permissions import require_module
 
 from .models import Voluntario
 from .serializers import (
@@ -29,7 +30,7 @@ class VoluntariosView(APIView):
         """
         # GET autenticado (apenas admin)
         if self.request.method == 'GET':
-            return [IsAuthenticated()]
+            return [IsAuthenticated(), require_module("voluntariado")()]
 
         # POST público
         return [AllowAny()]
@@ -79,7 +80,8 @@ class VoluntarioDetailView(APIView):
         Remove voluntário (autenticado)
     """
 
-    permission_classes = [IsAuthenticated]
+    def get_permissions(self):
+        return [IsAuthenticated(), require_module("voluntariado")()]
 
     def get_object(self, pk):
         """

@@ -11,7 +11,7 @@ Sistema web da Acapra, organizado em uma API backend com Django e uma interface 
 - Django REST Framework
 - Django CORS Headers
 - Simple JWT
-- SQLite em ambiente local
+- SQLite em ambiente local, com suporte a PostgreSQL em producao
 
 ### Frontend
 
@@ -28,7 +28,6 @@ Projeto_Acapra/
 |   +-- Acapra/              # Configuracoes principais do Django
 |   +-- adocao/
 |   +-- core/
-|   +-- denuncias/
 |   +-- doacoes/
 |   +-- gerenciamento/
 |   +-- resgates/
@@ -70,7 +69,7 @@ Instale as dependencias Python:
 pip install -r requirements.txt
 ```
 
-Crie o arquivo `.env` na raiz do projeto ou na pasta usada pela configuracao local. Use `backend/.env.example` como referencia:
+Crie o arquivo `.env` na raiz do projeto ou na pasta usada pela configuracao local. Use `.env.example` como referencia:
 
 ```env
 SECRET_KEY=sua_secret_key_aqui
@@ -79,6 +78,8 @@ ALLOWED_HOSTS=127.0.0.1,localhost
 CORS_ALLOWED_ORIGINS=http://localhost:3000
 DB_ENGINE=django.db.backends.sqlite3
 DB_NAME=db.sqlite3
+VITE_API_BASE_URL=http://127.0.0.1:8000
+VITE_MEDIA_BASE_URL=http://127.0.0.1:8000
 ```
 
 Para gerar uma `SECRET_KEY`, execute:
@@ -192,3 +193,20 @@ git checkout -b seu-nome-ou-feature
 
 - Backend: `backend/README.md`
 - Frontend: `frontend/README.md`
+
+## Banco de dados em producao
+
+Para ambiente de producao, a recomendacao e usar PostgreSQL. O projeto ja aceita a troca por
+variaveis de ambiente:
+
+```env
+DB_ENGINE=django.db.backends.postgresql
+DB_NAME=acapra
+DB_USER=acapra
+DB_PASSWORD=senha_forte
+DB_HOST=localhost
+DB_PORT=5432
+```
+
+Depois disso, rode as migrations novamente e ajuste `SECRET_KEY`, `ALLOWED_HOSTS` e
+`CORS_ALLOWED_ORIGINS` conforme o ambiente real.

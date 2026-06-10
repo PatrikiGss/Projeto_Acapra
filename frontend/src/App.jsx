@@ -33,8 +33,10 @@ import DesaparecidosEditar from "./pages/DesaparecidosView/DesaparecidosEditar";
 import DesaparecidosDetail from "./pages/DesaparecidosDetailView/DesaparecidosDetail";
 import Transparencia from "./pages/TransparenciaView/Transparencia";
 import NotFound from "./pages/NotFoundView/NotFound";
+import Contato from "./pages/ContatoView/Contato";
 import MetaConfig from "./pages/MetaConfigView/MetaConfig";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
+
 
 function App() {
   return (
@@ -72,6 +74,7 @@ function App() {
           <Route path="/desaparecidos/:id/editar" element={<DesaparecidosEditar />} />
           <Route path="/desaparecidos/:id" element={<DesaparecidosDetail />} />
           <Route path="/transparencia" element={<Transparencia />} />
+          <Route path="/contato" element={<Contato />} />
           <Route
             path="/dashboard"
             element={(

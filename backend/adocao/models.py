@@ -14,14 +14,10 @@ class SexoAnimal(models.TextChoices):
 
 
 class Animal(models.Model):
-    nome_animal = models.CharField(
-    max_length=100,
-    blank=True,
-    null=True
-)
-
-    nome_doador = models.CharField(max_length=100)
-
+    nome_animal = models.CharField(max_length=30)
+    
+    nome_doador = models.CharField(max_length=30)
+    
     telefone = PhoneNumberField(unique=True)
 
     especie = models.CharField(
@@ -34,6 +30,8 @@ class Animal(models.Model):
         choices=SexoAnimal.choices
     )
 
+
+
     foto = models.ImageField(
         upload_to='fotos/%Y/%m/%d',
         blank=True,
@@ -45,9 +43,27 @@ class Animal(models.Model):
         blank=True,
         null=True
     )
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.nome_animal} - {self.especie}"
+        return f"{self.nome_doador} - {self.especie}"
+
+
+class AnimalImagem(models.Model):
+    animal = models.ForeignKey(
+        Animal,
+        related_name="imagens",
+        on_delete=models.CASCADE,
+    )
+    imagem = models.ImageField(
+        upload_to="fotos/%Y/%m/%d",
+    )
+    ordem = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["ordem", "id"]
+        verbose_name = "Foto do animal"
+        verbose_name_plural = "Fotos dos animais"
+
+    def __str__(self):
+        return f"Foto de {self.animal.nome_animal}"

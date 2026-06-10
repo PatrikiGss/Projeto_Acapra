@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from gerenciamento.permissions import require_module
 
 from django.shortcuts import get_object_or_404
 
@@ -34,13 +35,18 @@ class ProdutosView(APIView):
             return [AllowAny()]
 
         # POST autenticado
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), require_module("vendas")()]
 
     def get(self, request):
         """
         Retorna lista pública de produtos ativos.
         """
-        produtos = Produto.objects.filter(ativo=True).order_by('-id')
+        queryset = Produto.objects.prefetch_related('imagens')
+
+        if request.user.is_authenticated:
+            produtos = queryset.order_by('-id')
+        else:
+            produtos = queryset.filter(ativo=True).order_by('-id')
 
         serializer = GetProdutoSerializer(
             produtos,
@@ -85,13 +91,13 @@ class ProdutoDetailView(APIView):
         if self.request.method == 'GET':
             return [AllowAny()]
 
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), require_module("vendas")()]
 
     def get_object(self, pk):
         """
         Busca produto pelo ID.
         """
-        return get_object_or_404(Produto, pk=pk)
+        return get_object_or_404(Produto.objects.prefetch_related('imagens'), pk=pk)
 
     def get(self, request, pk):
         """
@@ -157,7 +163,12 @@ class ProdutosPorTipoView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        produtos = Produto.objects.filter(tipo=tipo, ativo=True).order_by('-id')
+        queryset = Produto.objects.prefetch_related('imagens').filter(tipo=tipo)
+
+        if request.user.is_authenticated:
+            produtos = queryset.order_by('-id')
+        else:
+            produtos = queryset.filter(ativo=True).order_by('-id')
 
         serializer = GetProdutoSerializer(
             produtos,

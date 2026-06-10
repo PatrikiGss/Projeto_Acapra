@@ -1,0 +1,426 @@
+.doe-page {
+    min-height: calc(100vh - 125px);
+    padding: clamp(1.2rem, 3vw, 2rem) clamp(1rem, 4vw, 3rem);
+    background: #fbfaf8;
+    color: #1a1a1a;
+}
+
+.doe-header {
+    max-width: 900px;
+    margin: 0 auto clamp(1rem, 2.5vw, 1.6rem);
+    text-align: center;
+}
+
+.card-label {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.9rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 8px;
+    background: #fbfaf8;
+    color: #cf6510;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.doe-header h1 {
+    margin: 0.75rem 0 0.55rem;
+}
+
+.doe-header p {
+    margin: 0;
+    color: #545454;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.doe-admin-button {
+    min-height: 2.8rem;
+    margin-top: 1rem;
+    padding: 0 1rem;
+    border: 0;
+    border-radius: 8px;
+    background: #1a1a1a;
+    color: #fff;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 10px 22px rgba(26, 26, 26, 0.12);
+}
+
+.donation-grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.95fr) minmax(320px, 1.05fr);
+    gap: clamp(1rem, 3vw, 1.8rem);
+    width: min(100%, 1040px);
+    margin: 0 auto;
+    align-items: stretch;
+}
+
+.donation-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: clamp(1rem, 2.5vw, 1.5rem);
+    border: 1px solid rgba(224, 224, 224, 0.85);
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 12px 28px rgba(26, 26, 26, 0.08);
+}
+
+.donation-card h2 {
+    margin: 0.7rem 0 0;
+    font-size: clamp(1.7rem, 4vw, 2.8rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0;
+}
+
+.pix-card {
+    align-items: center;
+    text-align: center;
+}
+
+.qr-code-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: min(42vw, 230px);
+    aspect-ratio: 1;
+    margin: clamp(1rem, 3vw, 1.4rem) 0;
+    padding: 1rem;
+    border: 8px solid #fff;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px rgba(26, 26, 26, 0.12), 0 12px 24px rgba(26, 26, 26, 0.12);
+}
+
+.qr-code-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.qr-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    background: #ffe5c7;
+    color: #cf6510;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-align: center;
+}
+
+.pix-key-box {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border-radius: 8px;
+    background: #fbfaf8;
+    color: #545454;
+}
+
+.pix-key-box strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: #cf6510;
+    font-size: 0.78rem;
+    letter-spacing: 1px;
+}
+
+.pix-key-box span {
+    overflow-wrap: anywhere;
+    color: #1a1a1a;
+    font-weight: 700;
+}
+
+.pix-copy-button {
+    min-height: 2.2rem;
+    margin-top: 0.9rem;
+    padding: 0 1.2rem;
+    border: 0;
+    border-radius: 6px;
+    background: #e87722;
+    color: #fff;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.pix-copy-feedback {
+    display: block;
+    margin-top: 0.45rem;
+    color: #0f7b3c;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.bank-data {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 1.1rem 0 0;
+}
+
+.bank-data div {
+    min-height: 4.2rem;
+    padding: 0.85rem;
+    border-radius: 8px;
+    background: #fbfaf8;
+}
+
+.bank-data dt {
+    margin-bottom: 0.25rem;
+    color: #cf6510;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.bank-data dd {
+    margin: 0;
+    color: #1a1a1a;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.bank-empty,
+.donation-message {
+    margin: 1.1rem 0 0;
+    color: #545454;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.donation-message {
+    width: min(100%, 560px);
+    margin: 0 auto;
+    padding: 1.5rem;
+    border-radius: 8px;
+    background: #fff;
+    text-align: center;
+    box-shadow: 0 12px 28px rgba(26, 26, 26, 0.08);
+}
+
+.doe-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.48);
+}
+
+.doe-modal {
+    position: relative;
+    z-index: 2001;
+    width: min(100%, 760px);
+    max-height: min(92vh, 920px);
+    overflow: auto;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+}
+
+.doe-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid rgba(224, 224, 224, 0.9);
+}
+
+.doe-modal-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+.doe-modal-close {
+    min-height: 2.4rem;
+    padding: 0 0.9rem;
+    border: 0;
+    border-radius: 8px;
+    background: #f2f2f2;
+    color: #1a1a1a;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.doe-form {
+    display: grid;
+    gap: 1rem;
+    padding: 1.2rem;
+}
+
+.doe-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+}
+
+.doe-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    color: #000;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.doe-form input,
+.doe-form select,
+.doe-form textarea {
+    width: 100%;
+    min-height: 2.8rem;
+    padding: 0.65rem 0.8rem;
+    border: 1px solid rgba(232, 119, 34, 0.28);
+    border-radius: 8px;
+    background: #fff7ed;
+    color: #1a1a1a;
+    font: inherit;
+}
+
+.doe-form textarea {
+    min-height: 7rem;
+    resize: vertical;
+}
+
+.doe-form input:focus-visible,
+.doe-form select:focus-visible,
+.doe-form textarea:focus-visible {
+    outline: 2px solid #e87722;
+    outline-offset: 2px;
+}
+
+.doe-form-full {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.doe-form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: space-between;
+}
+
+.doe-form-upload {
+    flex: 1 1 280px;
+}
+
+.doe-form-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.8rem;
+    padding-top: 1.2rem;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.doe-form-check input {
+    width: auto;
+    min-height: auto;
+}
+
+.doe-preview {
+    display: flex;
+    justify-content: center;
+    padding: 0.8rem;
+    border: 1px solid rgba(224, 224, 224, 0.9);
+    border-radius: 8px;
+    background: #fff;
+}
+
+.doe-preview img {
+    display: block;
+    max-width: 100%;
+    max-height: 280px;
+    object-fit: contain;
+}
+
+.doe-form-error {
+    margin: 0;
+    color: #8a1f1f;
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.doe-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.doe-form-button {
+    min-height: 2.8rem;
+    padding: 0 1rem;
+    border: 0;
+    border-radius: 8px;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.doe-form-button.secondary {
+    background: #f2f2f2;
+    color: #1a1a1a;
+}
+
+.doe-form-button.primary {
+    background: #e87722;
+    color: #fff;
+}
+
+.doe-form-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.75;
+}
+
+@media (max-width: 820px) {
+    .doe-page {
+        min-height: auto;
+    }
+
+    .donation-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .qr-code-image {
+        width: min(62vw, 220px);
+    }
+
+    .doe-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .doe-form-actions {
+        flex-direction: column-reverse;
+    }
+}
+
+@media (max-width: 460px) {
+    .bank-data {
+        grid-template-columns: 1fr;
+    }
+}

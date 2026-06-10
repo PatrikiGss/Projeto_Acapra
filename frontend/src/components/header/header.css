@@ -1,7 +1,7 @@
 .site-header {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1100;
 
   height: 75px;
 
@@ -9,8 +9,8 @@
   align-items: center;
   justify-content: space-between;
 
-  gap: 1.5rem;
-  padding: 0 clamp(1rem, 4vw, 3.5rem);
+  gap: 0.5rem;
+  padding: 0 clamp(0.1rem, 1vw, 1rem);
 
   background-color: rgba(255, 255, 255, 0.9);
   border-bottom: 1.5px solid rgba(224, 224, 224, 0.85);
@@ -36,7 +36,6 @@
 .site-brand-name {
   margin: 0;
 
-  font-family: 'Compacta', 'Bebas Neue', sans-serif;
   font-size: 1.7rem;
   font-weight: 800;
   letter-spacing: 1px;
@@ -55,22 +54,131 @@
 .site-nav {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.2rem;
+  margin-right: 1px;
+}
+
+.site-news-dropdown {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.site-dropdown-toggle {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.site-dropdown-toggle::after {
+  pointer-events: none;
+}
+
+.site-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  min-width: 0;
+  width: max-content;
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.3rem;
+  border: 1px solid rgba(224, 224, 224, 0.92);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 10px 24px rgba(26, 26, 26, 0.1);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  z-index: 1300;
+}
+
+.site-news-dropdown.open .site-dropdown-menu {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.site-dropdown-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.2rem;
+  padding: 0.3rem 0.9rem;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #1a1a1a;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.site-dropdown-link:hover,
+.site-dropdown-link:focus-visible {
+  background: #fff3e8;
+  color: #cf6510;
+}
+
+.site-user-menu {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: 0.25rem;
+  padding-left: 1rem;
+  border-left: 1px solid rgba(224, 224, 224, 0.9);
+}
+
+.site-user-link {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  color: #1a1a1a;
+  text-decoration: none;
+}
+
+.site-user-label {
+  color: #cf6510;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.site-user-link strong {
+  font-size: 0.95rem;
+  line-height: 1.1;
+}
+
+.site-logout-button {
+  min-height: 2.4rem;
+  padding: 0 0.9rem;
+  border: 0;
+  border-radius: 8px;
+  background: #1a1a1a;
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
 }
 
 .site-nav-link {
   position: relative;
+  display: inline-flex;
+  align-items: center;
 
-  font-family: 'Compacta', sans-serif;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   line-height: 1;
 
   color: #e87722;
 
   text-decoration: none;
-  text-transform: uppercase;
 
   transition:
     color 0.2s ease,
@@ -110,6 +218,65 @@
   width: 100%;
 }
 
+/* ÍCONE DE LOGIN (USUÁRIO) */
+
+.site-login-link {
+  padding: 4px;
+}
+
+.site-login-link::after {
+  display: none;
+}
+
+.site-login-icon {
+  display: block;
+}
+
+/* ÍCONE DE WHATSAPP */
+
+.site-nav-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-left: 0.4rem;
+  border-left: 1px solid rgba(224, 224, 224, 0.9);
+}
+
+.site-user-menu .site-whatsapp-link {
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+.site-whatsapp-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  color: #e87722;
+  text-decoration: none;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.site-whatsapp-link:hover,
+.site-whatsapp-link:focus-visible {
+  color: #cf6510;
+  transform: translateY(-1px);
+}
+
+.site-whatsapp-link:focus-visible {
+  outline: 2px solid #e87722;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.site-whatsapp-link::after {
+  display: none;
+}
+
+.site-whatsapp-icon {
+  display: block;
+}
+
 /* BOTÃO HAMBÚRGUER */
 
 .menu-toggle {
@@ -131,24 +298,13 @@
   transform: scale(1.05);
 }
 
-/* TABLET */
+/* MOBILE / TABLET */
 
 @media (max-width: 1024px) {
-  .site-nav {
-    gap: 1.2rem;
-  }
-
-  .site-nav-link {
-    font-size: 0.85rem;
-  }
-}
-
-/* MOBILE */
-
-@media (max-width: 768px) {
 
   .site-header {
     height: 75px;
+    padding-left: 1rem;
   }
 
   .menu-toggle {
@@ -160,8 +316,12 @@
 
     top: 75px;
     left: 0;
+    z-index: 1200;
 
     width: 100%;
+    max-height: calc(100vh - 75px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
 
     background: rgba(255, 255, 255, 0.97);
 
@@ -201,6 +361,68 @@
     font-size: 1rem;
   }
 
+  .site-news-dropdown {
+    display: flex;
+    width: min(100%, 320px);
+    flex-direction: column;
+  }
+
+  .site-dropdown-toggle {
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .site-dropdown-menu {
+    width: 100%;
+    min-width: 0;
+    margin-top: 0.35rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    display: none;
+  }
+
+  .site-news-dropdown.open .site-dropdown-menu {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .site-dropdown-link {
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.92);
+  }
+
+  .site-user-menu {
+    width: min(100%, 320px);
+    flex-direction: column;
+    padding: 1rem;
+    margin: 0;
+    border-left: 0;
+    border-top: 1px solid rgba(224, 224, 224, 0.9);
+  }
+
+  .site-nav-icons {
+    width: min(100%, 320px);
+    flex-direction: row;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem;
+    margin: 0;
+    border-left: 0;
+    border-top: 1px solid rgba(224, 224, 224, 0.9);
+  }
+
+  .site-logout-button {
+    width: 100%;
+  }
+
   .site-nav-link::after {
     bottom: -4px;
   }
@@ -236,5 +458,9 @@
 
   .site-nav-link {
     font-size: 0.95rem;
+  }
+
+  .site-user-link strong {
+    text-align: center;
   }
 }

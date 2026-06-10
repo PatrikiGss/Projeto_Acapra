@@ -58,3 +58,24 @@ class Produto(models.Model):
     
     def __str__(self):
         return f"{self.nome} ({self.get_tipo_display()})"
+
+
+class ProdutoImagem(models.Model):
+    produto = models.ForeignKey(
+        Produto,
+        related_name="imagens",
+        on_delete=models.CASCADE,
+    )
+    imagem = models.ImageField(
+        upload_to="produtos/%Y/%m/%d",
+    )
+    ordem = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["ordem", "id"]
+        verbose_name = "Foto do produto"
+        verbose_name_plural = "Fotos dos produtos"
+
+    def __str__(self):
+        return f"Foto de {self.produto.nome}"

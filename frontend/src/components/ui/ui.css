@@ -1,0 +1,120 @@
+.acapra-spinner,
+.acapra-empty-state,
+.acapra-confirm-modal {
+  color: #1a1a1a;
+}
+
+.acapra-spinner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  color: #cf6510;
+  font-weight: 800;
+}
+
+.acapra-spinner__ring {
+  width: 1.35rem;
+  height: 1.35rem;
+  border: 2px solid rgba(232, 119, 34, 0.22);
+  border-top-color: #e87722;
+  border-radius: 999px;
+  animation: acapra-spin 0.85s linear infinite;
+}
+
+@keyframes acapra-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.acapra-empty-state {
+  display: grid;
+  gap: 0.45rem;
+  grid-column: 1 / -1;
+  padding: 1.5rem;
+  border: 1px solid rgba(232, 119, 34, 0.22);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(26, 26, 26, 0.06);
+  text-align: center;
+}
+
+.acapra-empty-state__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.acapra-empty-state__description {
+  margin: 0;
+  color: #545454;
+  line-height: 1.6;
+}
+
+.acapra-confirm-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(12, 12, 12, 0.52);
+}
+
+.acapra-confirm-modal__panel {
+  width: min(100%, 520px);
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+}
+
+.acapra-confirm-modal__title {
+  margin: 0 0 0.45rem;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.acapra-confirm-modal__message {
+  margin: 0;
+  color: #545454;
+  line-height: 1.6;
+}
+
+.acapra-confirm-modal__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+}
+
+.acapra-confirm-modal__button {
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.acapra-confirm-modal__button--secondary {
+  background: #f1f1f1;
+  color: #1a1a1a;
+}
+
+.acapra-confirm-modal__button--primary {
+  background: #8a1f1f;
+  color: #fff;
+}
+
+@media (max-width: 560px) {
+  .acapra-confirm-modal__actions {
+    flex-direction: column-reverse;
+  }
+
+  .acapra-confirm-modal__button {
+    width: 100%;
+  }
+}

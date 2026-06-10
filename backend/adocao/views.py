@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -5,14 +7,21 @@ from rest_framework.permissions import (
     IsAuthenticated,
     AllowAny
 )
+from rest_framework.throttling import ScopedRateThrottle
+from gerenciamento.permissions import require_module
 
 from django.shortcuts import get_object_or_404
 
 from .models import Animal
 from .serializers import (AnimalSerializer,GetAnimalSerializer,UpdateAnimalSerializer)
 
+logger = logging.getLogger(__name__)
+
 
 class AnimaisView(APIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "public_animals"
+
     """
     Endpoint responsável por:
 
@@ -34,14 +43,14 @@ class AnimaisView(APIView):
             return [AllowAny()]
 
         # POST autenticado
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), require_module("adocao")()]
 
     def get(self, request):
         """
         Retorna lista pública de animais.
         """
 
-        animais = Animal.objects.all().order_by('-id')
+        animais = Animal.objects.prefetch_related('imagens').all().order_by('-id')
 
         serializer = GetAnimalSerializer(
             animais,
@@ -55,6 +64,15 @@ class AnimaisView(APIView):
         serializer = AnimalSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         animal = serializer.save()
+
+        publicar = request.data.get('publicar_redes', 'true') == 'true'
+        if publicar:
+            try:
+                from meta_integration.services import auto_post_animal
+                auto_post_animal(animal)
+            except Exception as exc:
+                logger.error("Erro ao publicar animal nas redes sociais: %s", exc)
+
         return Response(
             GetAnimalSerializer(animal, context={'request': request}).data,
             status=status.HTTP_201_CREATED,
@@ -62,6 +80,9 @@ class AnimaisView(APIView):
 
 
 class AnimalDetailView(APIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "public_animals"
+
     """
     Endpoint responsável por:
 
@@ -84,14 +105,14 @@ class AnimalDetailView(APIView):
         if self.request.method == 'GET':
             return [AllowAny()]
 
-        return [IsAuthenticated()]
+        return [IsAuthenticated(), require_module("adocao")()]
 
     def get_object(self, pk):
         """
         Busca animal pelo ID.
         """
 
-        return get_object_or_404(Animal, pk=pk)
+        return get_object_or_404(Animal.objects.prefetch_related('imagens'), pk=pk)
 
     def get(self, request, pk):
         """

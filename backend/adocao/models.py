@@ -14,7 +14,14 @@ class SexoAnimal(models.TextChoices):
 
 
 class Animal(models.Model):
+    nome_animal = models.CharField(
+    max_length=100,
+    blank=True,
+    null=True
+)
+
     nome_doador = models.CharField(max_length=100)
+
     telefone = PhoneNumberField(unique=True)
 
     especie = models.CharField(
@@ -39,8 +46,8 @@ class Animal(models.Model):
         null=True
     )
     
-    created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.nome_doador} - {self.especie}"
+        return f"{self.nome_animal} - {self.especie}"

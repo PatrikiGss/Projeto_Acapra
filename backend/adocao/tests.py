@@ -10,7 +10,6 @@ from .serializers import (
     UpdateAnimalSerializer,
 )
 
-
 User = get_user_model()
 
 
@@ -22,6 +21,7 @@ class AnimalModelTests(APITestCase):
 
     def setUp(self):
         self.animal = Animal.objects.create(
+            nome_animal="Rex",
             nome_doador="João Silva",
             telefone="+5511999999999",
             especie=EspecieAnimal.CACHORRO,
@@ -31,29 +31,33 @@ class AnimalModelTests(APITestCase):
 
     def test_criacao_animal(self):
         """Animal é criado com os campos obrigatórios."""
+        self.assertEqual(self.animal.nome_animal, "Rex")
         self.assertEqual(self.animal.nome_doador, "João Silva")
         self.assertEqual(self.animal.especie, "cachorro")
         self.assertEqual(self.animal.sexo, "macho")
         self.assertEqual(Animal.objects.count(), 1)
 
     def test_str_animal(self):
-        """__str__ retorna 'nome_doador - especie'."""
-        self.assertEqual(str(self.animal), "João Silva - cachorro")
+        """__str__ retorna 'nome_animal - especie'."""
+        self.assertEqual(str(self.animal), "Rex - cachorro")
 
     def test_campos_opcionais_aceitam_nulo(self):
         """foto e descricao podem ser nulos."""
         animal = Animal.objects.create(
+            nome_animal="Mimi",
             nome_doador="Maria",
             telefone="+5511988888888",
             especie=EspecieAnimal.GATO,
             sexo=SexoAnimal.FEMEA,
         )
+
         self.assertIsNone(animal.descricao)
         self.assertFalse(animal.foto)
 
     def test_choices_especie(self):
         """EspecieAnimal expõe cachorro, gato e outros."""
         valores = [c[0] for c in EspecieAnimal.choices]
+
         self.assertIn("cachorro", valores)
         self.assertIn("gato", valores)
         self.assertIn("outros", valores)
@@ -61,6 +65,7 @@ class AnimalModelTests(APITestCase):
     def test_choices_sexo(self):
         """SexoAnimal expõe macho e femea."""
         valores = [c[0] for c in SexoAnimal.choices]
+
         self.assertIn("macho", valores)
         self.assertIn("femea", valores)
 
@@ -73,6 +78,7 @@ class AnimalSerializerTests(APITestCase):
 
     def setUp(self):
         self.dados_validos = {
+            "nome_animal": "Bolt",
             "nome_doador": "Carlos",
             "telefone": "+5511977777777",
             "especie": EspecieAnimal.CACHORRO,
@@ -82,41 +88,62 @@ class AnimalSerializerTests(APITestCase):
 
     def test_animal_serializer_aceita_dados_validos(self):
         serializer = AnimalSerializer(data=self.dados_validos)
+
         self.assertTrue(serializer.is_valid(), serializer.errors)
 
     def test_animal_serializer_recusa_sem_telefone(self):
         dados = self.dados_validos.copy()
         dados.pop("telefone")
+
         serializer = AnimalSerializer(data=dados)
+
         self.assertFalse(serializer.is_valid())
         self.assertIn("telefone", serializer.errors)
 
-    def test_animal_serializer_recusa_sem_nome(self):
+    def test_animal_serializer_recusa_sem_nome_doador(self):
         dados = self.dados_validos.copy()
         dados.pop("nome_doador")
+
         serializer = AnimalSerializer(data=dados)
+
         self.assertFalse(serializer.is_valid())
         self.assertIn("nome_doador", serializer.errors)
+
+    def test_animal_serializer_recusa_sem_nome_animal(self):
+        dados = self.dados_validos.copy()
+        dados.pop("nome_animal")
+
+        serializer = AnimalSerializer(data=dados)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("nome_animal", serializer.errors)
 
     def test_animal_serializer_recusa_especie_invalida(self):
         dados = self.dados_validos.copy()
         dados["especie"] = "peixe"
+
         serializer = AnimalSerializer(data=dados)
+
         self.assertFalse(serializer.is_valid())
         self.assertIn("especie", serializer.errors)
 
     def test_animal_serializer_recusa_telefone_invalido(self):
         dados = self.dados_validos.copy()
         dados["telefone"] = "abc"
+
         serializer = AnimalSerializer(data=dados)
+
         self.assertFalse(serializer.is_valid())
         self.assertIn("telefone", serializer.errors)
 
     def test_get_serializer_oculta_telefone(self):
-        """GetAnimalSerializer não deve expor telefone (privacidade)."""
+        """GetAnimalSerializer não deve expor telefone."""
         animal = Animal.objects.create(**self.dados_validos)
+
         serializer = GetAnimalSerializer(animal)
+
         self.assertNotIn("telefone", serializer.data)
+        self.assertIn("nome_animal", serializer.data)
         self.assertIn("nome_doador", serializer.data)
         self.assertIn("especie", serializer.data)
 
@@ -138,8 +165,11 @@ class AnimaisViewTests(APITestCase):
             nome="Usuário Teste",
             telefone="+5511966666666",
         )
+
         self.url = reverse("adocao:animais")
+
         self.dados = {
+            "nome_animal": "Mia",
             "nome_doador": "Fernanda",
             "telefone": "+5511955555555",
             "especie": EspecieAnimal.GATO,
@@ -150,62 +180,81 @@ class AnimaisViewTests(APITestCase):
     def test_get_lista_publica(self):
         """GET na lista é público (200)."""
         Animal.objects.create(**self.dados)
+
         resp = self.client.get(self.url)
+
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(len(resp.data), 1)
 
     def test_get_lista_vazia(self):
         resp = self.client.get(self.url)
+
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(resp.data, [])
 
     def test_get_lista_oculta_telefone(self):
         Animal.objects.create(**self.dados)
+
         resp = self.client.get(self.url)
+
         self.assertNotIn("telefone", resp.data[0])
 
     def test_get_lista_ordenada_por_id_desc(self):
         Animal.objects.create(
+            nome_animal="Bidu",
             nome_doador="A",
             telefone="+5511944444444",
             especie=EspecieAnimal.CACHORRO,
             sexo=SexoAnimal.MACHO,
         )
+
         Animal.objects.create(
+            nome_animal="Luna",
             nome_doador="B",
             telefone="+5511933333333",
             especie=EspecieAnimal.GATO,
             sexo=SexoAnimal.FEMEA,
         )
+
         resp = self.client.get(self.url)
-        self.assertEqual(resp.data[0]["nome_doador"], "B")
-        self.assertEqual(resp.data[1]["nome_doador"], "A")
+
+        self.assertEqual(resp.data[0]["nome_animal"], "Luna")
+        self.assertEqual(resp.data[1]["nome_animal"], "Bidu")
 
     def test_post_sem_autenticacao_retorna_401(self):
         resp = self.client.post(self.url, self.dados, format="json")
+
         self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(Animal.objects.count(), 0)
 
     def test_post_autenticado_cria_animal(self):
         self.client.force_authenticate(user=self.user)
+
         resp = self.client.post(self.url, self.dados, format="json")
+
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Animal.objects.count(), 1)
-        self.assertEqual(Animal.objects.first().nome_doador, "Fernanda")
+        self.assertEqual(Animal.objects.first().nome_animal, "Mia")
 
     def test_post_autenticado_dados_invalidos_retorna_400(self):
         self.client.force_authenticate(user=self.user)
+
         dados = self.dados.copy()
         dados["especie"] = "invalido"
+
         resp = self.client.post(self.url, dados, format="json")
+
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(Animal.objects.count(), 0)
 
     def test_post_autenticado_sem_telefone_retorna_400(self):
         self.client.force_authenticate(user=self.user)
+
         dados = self.dados.copy()
         dados.pop("telefone")
+
         resp = self.client.post(self.url, dados, format="json")
+
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
 
@@ -222,17 +271,21 @@ class AnimalDetailViewTests(APITestCase):
             nome="Outro Usuário",
             telefone="+5511922222222",
         )
+
         self.animal = Animal.objects.create(
+            nome_animal="Rex",
             nome_doador="Pedro",
             telefone="+5511911111111",
             especie=EspecieAnimal.CACHORRO,
             sexo=SexoAnimal.MACHO,
             descricao="Cão pequeno",
         )
+
         self.url = reverse(
             "adocao:animal_detail",
             kwargs={"pk": self.animal.pk},
         )
+
         self.url_inexistente = reverse(
             "adocao:animal_detail",
             kwargs={"pk": 99999},
@@ -241,68 +294,91 @@ class AnimalDetailViewTests(APITestCase):
     # ---------- GET ----------
     def test_get_detalhes_publico(self):
         resp = self.client.get(self.url)
+
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(resp.data["nome_doador"], "Pedro")
+        self.assertEqual(resp.data["nome_animal"], "Rex")
 
     def test_get_detalhes_oculta_telefone(self):
         resp = self.client.get(self.url)
+
         self.assertNotIn("telefone", resp.data)
 
     def test_get_pk_inexistente_retorna_404(self):
         resp = self.client.get(self.url_inexistente)
+
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
-        # ---------- PATCH ----------
+    # ---------- PATCH ----------
     def test_patch_sem_autenticacao_retorna_401(self):
-        resp = self.client.patch(          # <-- put → patch
+        resp = self.client.patch(
             self.url,
             {"nome_doador": "Atualizado"},
             format="json",
         )
+
         self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_patch_autenticado_atualiza_animal(self):
         self.client.force_authenticate(user=self.user)
-        resp = self.client.patch(          # <-- put → patch
-           self.url,
-            {"nome_doador": "Pedro Editado"},
+
+        resp = self.client.patch(
+            self.url,
+            {"nome_animal": "Thor"},
             format="json",
         )
+
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
         self.animal.refresh_from_db()
-        self.assertEqual(self.animal.nome_doador, "Pedro Editado")
+
+        self.assertEqual(self.animal.nome_animal, "Thor")
 
     def test_patch_autenticado_dados_invalidos_retorna_400(self):
         self.client.force_authenticate(user=self.user)
-        resp = self.client.patch(          # <-- put → patch
+
+        resp = self.client.patch(
             self.url,
             {"especie": "invalido"},
-           format="json",
+            format="json",
         )
+
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_patch_pk_inexistente_retorna_404(self):
         self.client.force_authenticate(user=self.user)
-        resp = self.client.patch(          # <-- put → patch
+
+        resp = self.client.patch(
             self.url_inexistente,
             {"nome_doador": "X"},
             format="json",
         )
+
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     # ---------- DELETE ----------
     def test_delete_sem_autenticacao_retorna_401(self):
         resp = self.client.delete(self.url)
+
         self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertTrue(Animal.objects.filter(pk=self.animal.pk).exists())
+
+        self.assertTrue(
+            Animal.objects.filter(pk=self.animal.pk).exists()
+        )
 
     def test_delete_autenticado_remove_animal(self):
         self.client.force_authenticate(user=self.user)
+
         resp = self.client.delete(self.url)
+
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(Animal.objects.filter(pk=self.animal.pk).exists())
+
+        self.assertFalse(
+            Animal.objects.filter(pk=self.animal.pk).exists()
+        )
 
     def test_delete_pk_inexistente_retorna_404(self):
         self.client.force_authenticate(user=self.user)
+
         resp = self.client.delete(self.url_inexistente)
+
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)

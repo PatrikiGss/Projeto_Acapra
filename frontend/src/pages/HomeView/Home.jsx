@@ -106,6 +106,9 @@ function Home() {
 
           <div className="hero-links">
             <Link to="/adocao" className="link">Quero Adotar!</Link>
+            <Link to="/contato" className="link">Outros Serviços</Link>
+
+
           </div>
         </div>
       </section>

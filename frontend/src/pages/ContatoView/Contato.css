@@ -1,0 +1,27 @@
+.contato-page {
+    min-height: 100vh;
+    background: #fbfaf8;
+    color: #1a1a1a;
+}
+.contato-content {
+    width: min(100%, 1120px);
+    margin: 0 auto;
+    padding: clamp(2rem, 4vw, 3.5rem) clamp(1rem, 4vw, 2rem) 4rem;
+    justify-content: center;
+}
+.contato-heading {
+    max-width: 760px;
+    margin-bottom: 1.5rem;
+}
+.contato-heading h1 {
+    margin: 0 0 0.6rem;
+}
+.contato-heading p {
+    max-width: 560px;
+    color: #545454;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+.contato-layout{
+    border: black solid 1px;
+}

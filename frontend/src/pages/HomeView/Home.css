@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 /* =====================
    RESET & BASE
@@ -151,11 +150,17 @@ body {
 
 /* Doe button — outline variant */
 .hero-links .link:last-child {
-  background: e87722;
-  color: white;
+  background: transparent;
+  color: var(--orange);
   border: 2px solid var(--orange-35);
+  box-shadow: none;
 }
 
+.hero-links .link:last-child:hover {
+  background: rgba(232, 119, 34, 0.06);
+  border-color: var(--orange);
+  transform: translateY(-2px);
+}
 
 
 /* =====================

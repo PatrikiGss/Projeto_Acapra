@@ -43,6 +43,11 @@ class Animal(models.Model):
         blank=True,
         null=True
     )
+    
+    disponivel = models.BooleanField(
+        default="True",
+        help_text="Define se um animal está disponível para adoção ou já foi adotado"
+    )
 
     def __str__(self):
         return f"{self.nome_doador} - {self.especie}"
@@ -57,6 +62,7 @@ class AnimalImagem(models.Model):
     imagem = models.ImageField(
         upload_to="fotos/%Y/%m/%d",
     )
+    
     ordem = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 

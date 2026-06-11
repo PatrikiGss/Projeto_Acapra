@@ -1,6 +1,29 @@
 from django.db import models
 
 
+class DoacaoItem(models.Model):
+    nome = models.CharField(max_length=100, help_text="Nome do doador")
+    telefone = models.CharField(max_length=20, help_text="Telefone de contato")
+    email = models.EmailField(
+        blank=True,
+        null=True,
+        help_text="E-mail de contato (opcional)",
+    )
+    descricao = models.TextField(
+        max_length=1000,
+        help_text="Descrição do item ou serviço a ser doado",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Doação de Item"
+        verbose_name_plural = "Doações de Itens"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.nome} — {self.created_at:%d/%m/%Y}"
+
+
 class DadosPix(models.Model):
     """
     Modelo para armazenar os dados de doacao da organizacao.

@@ -15,6 +15,10 @@ MODULOS_POR_NIVEL = {
         "transparencia",
         "denuncias",
     },
+    PerfilAdministrativo.Nivel.FINANCEIRO: {
+        "doacoes",
+        "transparencia",
+    },
     PerfilAdministrativo.Nivel.ADMIN: {
         "doacoes",
         "noticias",

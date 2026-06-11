@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import api from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
+import { formatBrazilianPhone, toBrazilianPhoneE164 } from "../../utils/phone";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import EmptyState from "../../components/ui/EmptyState";
+import ConfirmModal from "../../components/ui/ConfirmModal";
 import { getResponseItems } from "../../utils/collection";
 import { getApiErrorMessage } from "../../utils/errorUtils";
 import "./Doe.css";
@@ -28,6 +30,24 @@ const formVazio = {
   ativo: true,
 };
 
+const itemFormVazio = {
+  nome: "",
+  telefone: "",
+  email: "",
+  descricao: "",
+};
+
+function formatarData(valor) {
+  if (!valor) return "";
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(valor));
+}
+
 function Doe() {
   const [dadosList, setDadosList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,16 +64,27 @@ function Doe() {
   const [erroFormulario, setErroFormulario] = useState("");
   const [copiado, setCopiado] = useState(false);
 
+  // --- Doação de itens ---
+  const [itemForm, setItemForm] = useState(itemFormVazio);
+  const [itemEnviando, setItemEnviando] = useState(false);
+  const [itemSucesso, setItemSucesso] = useState("");
+  const [itemErro, setItemErro] = useState("");
+
+  const [itens, setItens] = useState([]);
+  const [itensLoading, setItensLoading] = useState(false);
+  const [itensErro, setItensErro] = useState("");
+  const [itemParaExclusao, setItemParaExclusao] = useState(null);
+  const [erroExclusao, setErroExclusao] = useState("");
+
+  // --- Pix data ---
   useEffect(() => {
     let ativo = true;
 
     const carregar = async () => {
       setLoading(true);
-
       try {
         const response = await api.get("/api/doacoes/pix/");
         if (!ativo) return;
-
         setDadosList(getResponseItems(response.data));
         setError(false);
       } catch (erro) {
@@ -61,30 +92,39 @@ function Doe() {
         console.error(erro);
         setError(true);
       } finally {
-        if (ativo) {
-          setLoading(false);
-        }
+        if (ativo) setLoading(false);
       }
     };
 
     void carregar();
-
-    return () => {
-      ativo = false;
-    };
+    return () => { ativo = false; };
   }, []);
 
+  // --- Carrega itens doados (apenas admin) ---
+  const carregarItens = useCallback(() => {
+    if (!podeEditar) return;
+    setItensLoading(true);
+    setItensErro("");
+    api
+      .get("/api/doacoes/itens/")
+      .then((res) => setItens(res.data || []))
+      .catch(() => setItensErro("Não foi possível carregar as doações de itens."))
+      .finally(() => setItensLoading(false));
+  }, [podeEditar]);
+
+  useEffect(() => {
+    carregarItens();
+  }, [carregarItens]);
+
+  // --- Blob cleanup ---
   useEffect(() => {
     return () => {
-      if (previewQrCode.startsWith("blob:")) {
-        URL.revokeObjectURL(previewQrCode);
-      }
+      if (previewQrCode.startsWith("blob:")) URL.revokeObjectURL(previewQrCode);
     };
   }, [previewQrCode]);
 
   useEffect(() => {
     if (!copiado) return undefined;
-
     const timer = window.setTimeout(() => setCopiado(false), 2000);
     return () => window.clearTimeout(timer);
   }, [copiado]);
@@ -96,7 +136,6 @@ function Doe() {
 
   const atualizarLista = async () => {
     setLoading(true);
-
     try {
       const response = await api.get("/api/doacoes/pix/");
       setDadosList(getResponseItems(response.data));
@@ -110,9 +149,7 @@ function Doe() {
   };
 
   const limparPreview = () => {
-    if (previewQrCode.startsWith("blob:")) {
-      URL.revokeObjectURL(previewQrCode);
-    }
+    if (previewQrCode.startsWith("blob:")) URL.revokeObjectURL(previewQrCode);
     setPreviewQrCode("");
   };
 
@@ -129,7 +166,6 @@ function Doe() {
 
   const abrirEdicao = () => {
     if (!dadosDoacao) return;
-
     setModoFormulario("editar");
     setDadosEditando(dadosDoacao);
     setFormulario({
@@ -161,19 +197,11 @@ function Doe() {
     setSalvando(false);
   };
 
-  const extrairMensagemErro = (errorResponse) => {
-    return getApiErrorMessage(errorResponse, "Não foi possível salvar os dados de doação.");
-  };
-
   const alterarCampo = (event) => {
     const { name, value, type, checked } = event.target;
     const novoValor =
       type === "checkbox" ? checked : name === "ativo" ? value === "true" : value;
-
-    setFormulario((atual) => ({
-      ...atual,
-      [name]: novoValor,
-    }));
+    setFormulario((atual) => ({ ...atual, [name]: novoValor }));
   };
 
   const lidarComQrCode = (file) => {
@@ -193,13 +221,11 @@ function Doe() {
 
   const copiarChavePix = async () => {
     if (!dadosDoacao?.chave_pix) return;
-
     try {
       await navigator.clipboard.writeText(dadosDoacao.chave_pix);
       setCopiado(true);
-    } catch (error) {
-      console.error(error);
-      setErroFormulario("Não foi possível copiar a chave PIX.");
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -218,14 +244,8 @@ function Doe() {
     payload.append("cnpj", formulario.cnpj);
     payload.append("favorecido", formulario.favorecido);
     payload.append("ativo", formulario.ativo ? "true" : "false");
-
-    if (qrCodeFile) {
-      payload.append("qr_code", qrCodeFile);
-    }
-
-    if (removerQrCode) {
-      payload.append("remover_qr_code", "true");
-    }
+    if (qrCodeFile) payload.append("qr_code", qrCodeFile);
+    if (removerQrCode) payload.append("remover_qr_code", "true");
 
     try {
       if (modoFormulario === "editar" && dadosEditando) {
@@ -233,14 +253,69 @@ function Doe() {
       } else {
         await api.post("/api/doacoes/pix/", payload);
       }
-
       await atualizarLista();
       fecharModal();
     } catch (errorResponse) {
-      setErroFormulario(extrairMensagemErro(errorResponse));
+      setErroFormulario(getApiErrorMessage(errorResponse, "Não foi possível salvar os dados de doação."));
     } finally {
       setSalvando(false);
     }
+  };
+
+  // --- Handlers de doação de itens ---
+  const alterarItemCampo = (event) => {
+    const { name, value } = event.target;
+    setItemForm((atual) => ({
+      ...atual,
+      [name]: name === "telefone" ? formatBrazilianPhone(value) : value,
+    }));
+  };
+
+  const enviarItemForm = (event) => {
+    event.preventDefault();
+    setItemEnviando(true);
+    setItemSucesso("");
+    setItemErro("");
+
+    const payload = {
+      nome: itemForm.nome,
+      telefone: toBrazilianPhoneE164(itemForm.telefone),
+      descricao: itemForm.descricao,
+    };
+    if (itemForm.email) payload.email = itemForm.email;
+
+    api
+      .post("/api/doacoes/itens/", payload)
+      .then((res) => {
+        setItemSucesso(res.data.detail || "Doação registrada com sucesso!");
+        setItemForm(itemFormVazio);
+        carregarItens();
+      })
+      .catch((err) => {
+        const data = err.response?.data;
+        const msg =
+          data?.detail ||
+          data?.telefone?.[0] ||
+          data?.descricao?.[0] ||
+          data?.nome?.[0] ||
+          "Não foi possível registrar a doação. Verifique os dados e tente novamente.";
+        setItemErro(msg);
+      })
+      .finally(() => setItemEnviando(false));
+  };
+
+  const confirmarExclusaoItem = () => {
+    if (!itemParaExclusao) return;
+    api
+      .delete(`/api/doacoes/itens/${itemParaExclusao.id}/`)
+      .then(() => {
+        setItens((lista) => lista.filter((i) => i.id !== itemParaExclusao.id));
+        setItemParaExclusao(null);
+      })
+      .catch(() => {
+        setErroExclusao(getApiErrorMessage(null, "Não foi possível remover a doação."));
+        setItemParaExclusao(null);
+      });
   };
 
   const hasCurrentQr = Boolean(qrCodeAtual) && !removerQrCode;
@@ -346,6 +421,152 @@ function Doe() {
         </section>
       )}
 
+      {/* ── Seção: Doação de itens ─────────────────────── */}
+      <section className="doe-item-section">
+        <div className="doe-item-heading">
+          <h2>Doe itens ou serviços</h2>
+          <p>
+            Além do dinheiro, você também pode contribuir com ração, remédios,
+            materiais de limpeza, serviços veterinários ou qualquer outro recurso.
+            Preencha o formulário e entraremos em contato.
+          </p>
+        </div>
+
+        <form className="doe-item-form" onSubmit={enviarItemForm}>
+          <label>
+            Nome *
+            <input
+              name="nome"
+              type="text"
+              value={itemForm.nome}
+              onChange={alterarItemCampo}
+              required
+              maxLength="100"
+              placeholder="Seu nome completo"
+            />
+          </label>
+
+          <div className="doe-item-form-row">
+            <label>
+              Telefone *
+              <input
+                name="telefone"
+                type="tel"
+                value={itemForm.telefone}
+                onChange={alterarItemCampo}
+                required
+                inputMode="tel"
+                autoComplete="tel-national"
+                placeholder="(49) 99999-9999"
+                maxLength="15"
+              />
+            </label>
+
+            <label>
+              E-mail
+              <input
+                name="email"
+                type="email"
+                value={itemForm.email}
+                onChange={alterarItemCampo}
+                placeholder="Opcional"
+              />
+            </label>
+          </div>
+
+          <label>
+            O que você deseja doar? *
+            <textarea
+              name="descricao"
+              value={itemForm.descricao}
+              onChange={alterarItemCampo}
+              required
+              minLength="10"
+              rows="5"
+              placeholder="Descreva o item, quantidade, condição (se aplicável) e qualquer informação relevante..."
+            />
+          </label>
+
+          {itemSucesso && <p className="doe-item-message success">{itemSucesso}</p>}
+          {itemErro && <p className="doe-item-message error">{itemErro}</p>}
+
+          <button type="submit" disabled={itemEnviando}>
+            {itemEnviando ? "Enviando..." : "Enviar doação"}
+          </button>
+        </form>
+
+        {/* ── Lista de doações recebidas (admin) ─────── */}
+        {podeEditar && (
+          <div className="doe-item-admin">
+            <div className="doe-item-admin-header">
+              <h2>Doações de itens recebidas</h2>
+              <p>Lista de pessoas que ofereceram itens ou serviços.</p>
+            </div>
+
+            {itensLoading && <LoadingSpinner label="Carregando doações..." />}
+
+            {!itensLoading && itensErro && (
+              <EmptyState
+                title="Não foi possível carregar as doações."
+                description={itensErro}
+              />
+            )}
+
+            {!itensLoading && !itensErro && itens.length === 0 && (
+              <EmptyState
+                title="Nenhuma doação de itens recebida até o momento."
+                description="As doações enviadas pelo formulário aparecerão aqui."
+              />
+            )}
+
+            {!itensLoading && !itensErro && itens.length > 0 && (
+              <div className="doe-item-list">
+                {itens.map((item) => (
+                  <article className="doe-item-card" key={item.id}>
+                    <div className="doe-item-card-header">
+                      <div>
+                        <h3>{item.nome}</h3>
+                        <p>{formatarData(item.created_at)}</p>
+                      </div>
+                      <button
+                        type="button"
+                        className="doe-item-delete-button"
+                        onClick={() => setItemParaExclusao(item)}
+                      >
+                        Remover
+                      </button>
+                    </div>
+
+                    <dl className="doe-item-card-details">
+                      <div>
+                        <dt>Telefone</dt>
+                        <dd>{item.telefone}</dd>
+                      </div>
+                      {item.email && (
+                        <div>
+                          <dt>E-mail</dt>
+                          <dd>{item.email}</dd>
+                        </div>
+                      )}
+                    </dl>
+
+                    <div className="doe-item-card-descricao">
+                      <span>O que deseja doar</span>
+                      <p>{item.descricao}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+
+            {erroExclusao && (
+              <p className="doe-item-admin-message error">{erroExclusao}</p>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* ── Modal PIX/banco ───────────────────────────── */}
       {modalVisivel && (
         <div className="doe-modal-backdrop" onClick={fecharModal}>
           <div className="doe-modal" onClick={(event) => event.stopPropagation()}>
@@ -360,68 +581,32 @@ function Doe() {
               <div className="doe-form-grid">
                 <label>
                   Chave PIX
-                  <input
-                    name="chave_pix"
-                    value={formulario.chave_pix}
-                    onChange={alterarCampo}
-                    required
-                  />
+                  <input name="chave_pix" value={formulario.chave_pix} onChange={alterarCampo} required />
                 </label>
-
                 <label>
                   Banco
-                  <input
-                    name="banco"
-                    value={formulario.banco}
-                    onChange={alterarCampo}
-                  />
+                  <input name="banco" value={formulario.banco} onChange={alterarCampo} />
                 </label>
-
                 <label>
                   Agência
-                  <input
-                    name="agencia"
-                    value={formulario.agencia}
-                    onChange={alterarCampo}
-                  />
+                  <input name="agencia" value={formulario.agencia} onChange={alterarCampo} />
                 </label>
-
                 <label>
                   Conta
-                  <input
-                    name="conta"
-                    value={formulario.conta}
-                    onChange={alterarCampo}
-                  />
+                  <input name="conta" value={formulario.conta} onChange={alterarCampo} />
                 </label>
-
                 <label>
                   Tipo de conta
-                  <input
-                    name="tipo_conta"
-                    value={formulario.tipo_conta}
-                    onChange={alterarCampo}
-                  />
+                  <input name="tipo_conta" value={formulario.tipo_conta} onChange={alterarCampo} />
                 </label>
-
                 <label>
                   CNPJ
-                  <input
-                    name="cnpj"
-                    value={formulario.cnpj}
-                    onChange={alterarCampo}
-                  />
+                  <input name="cnpj" value={formulario.cnpj} onChange={alterarCampo} />
                 </label>
-
                 <label>
                   Favorecido
-                  <input
-                    name="favorecido"
-                    value={formulario.favorecido}
-                    onChange={alterarCampo}
-                  />
+                  <input name="favorecido" value={formulario.favorecido} onChange={alterarCampo} />
                 </label>
-
                 <label>
                   Status
                   <select name="ativo" value={formulario.ativo ? "true" : "false"} onChange={alterarCampo}>
@@ -433,12 +618,7 @@ function Doe() {
 
               <label className="doe-form-full">
                 Descrição
-                <textarea
-                  name="descricao"
-                  rows="4"
-                  value={formulario.descricao}
-                  onChange={alterarCampo}
-                />
+                <textarea name="descricao" rows="4" value={formulario.descricao} onChange={alterarCampo} />
               </label>
 
               <div className="doe-form-row">
@@ -450,7 +630,6 @@ function Doe() {
                     onChange={(event) => lidarComQrCode(event.target.files?.[0] || null)}
                   />
                 </label>
-
                 <label className="doe-form-check">
                   <input
                     type="checkbox"
@@ -481,6 +660,15 @@ function Doe() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        open={Boolean(itemParaExclusao)}
+        title="Remover doação"
+        message={`Tem certeza que deseja remover a doação de "${itemParaExclusao?.nome || ""}"?`}
+        confirmLabel="Remover"
+        onConfirm={confirmarExclusaoItem}
+        onClose={() => setItemParaExclusao(null)}
+      />
     </div>
   );
 }

@@ -5,8 +5,8 @@ from gerenciamento.permissions import require_module
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import DadosPix
-from .serializers import DadosPixWriteSerializer, GetDadosPixSerializer
+from .models import DadosPix, DoacaoItem
+from .serializers import DadosPixWriteSerializer, GetDadosPixSerializer, DoacaoItemSerializer, GetDoacaoItemSerializer
 
 
 class DadosPixView(APIView):
@@ -102,5 +102,48 @@ class DadosPixDetailView(APIView):
         dados_pix.delete()
         return Response(
             {"detail": f"Dado Pix {pk} removido com sucesso."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
+
+class DoacoesItemView(APIView):
+    """
+    GET  — lista doações de itens (requer financeiro ou master)
+    POST — registra nova doação de item (público)
+    """
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [IsAuthenticated(), require_module("doacoes")()]
+        return [AllowAny()]
+
+    def get(self, request):
+        itens = DoacaoItem.objects.all()
+        serializer = GetDoacaoItemSerializer(itens, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = DoacaoItemSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {"detail": "Doação registrada com sucesso! Entraremos em contato em breve."},
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class DoacaoItemDetailView(APIView):
+    """
+    DELETE — remove doação de item (requer financeiro ou master)
+    """
+
+    def get_permissions(self):
+        return [IsAuthenticated(), require_module("doacoes")()]
+
+    def delete(self, request, pk):
+        item = get_object_or_404(DoacaoItem, pk=pk)
+        item.delete()
+        return Response(
+            {"detail": f"Doação {pk} removida com sucesso."},
             status=status.HTTP_204_NO_CONTENT,
         )

@@ -105,8 +105,8 @@ function Home() {
           </p>
 
           <div className="hero-links">
-            <Link to="/adocao" className="link">Adotar</Link>
-            <Link to="/doe" className="link">Doar</Link>
+            <Link to="/adocao" className="link">Adote</Link>
+            <Link to="/doe" className="link">Ajude</Link>
           </div>
         </div>
       </section>

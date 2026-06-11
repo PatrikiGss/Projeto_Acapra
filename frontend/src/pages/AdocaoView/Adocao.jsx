@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import "./Adocao.css";
 import api, { getMediaURL } from "../../services/api";
@@ -16,7 +16,7 @@ const formVazio = {
     especie: "cachorro",
     sexo: "macho",
     descricao: "",
-    ativo: true,
+    disponivel: true,
 };
 
 function Adocao() {
@@ -59,9 +59,24 @@ function Adocao() {
         };
     }, [previewFotoPrincipal, fotosAdicionais]);
 
+    const { totalDisponiveis, totalAdotados } = useMemo(() => ({
+        totalDisponiveis: animais.filter((a) => a.disponivel !== false).length,
+        totalAdotados: animais.filter((a) => a.disponivel === false).length,
+    }), [animais]);
+
     const animaisFiltrados = useMemo(() => {
-        if (filtroEspecie === "todos") return animais;
-        return animais.filter((animal) => animal.especie === filtroEspecie);
+        if (filtroEspecie === "adotados") {
+            return animais.filter((a) => a.disponivel === false);
+        }
+
+        let lista = filtroEspecie === "todos"
+            ? [...animais]
+            : animais.filter((a) => a.especie === filtroEspecie);
+
+        return lista.sort((a, b) => {
+            if (a.disponivel === b.disponivel) return 0;
+            return a.disponivel ? -1 : 1;
+        });
     }, [animais, filtroEspecie]);
 
     const formatarTexto = (texto) => {
@@ -105,7 +120,7 @@ function Adocao() {
             especie: animal.especie || "cachorro",
             sexo: animal.sexo || "macho",
             descricao: animal.descricao || "",
-            ativo: Boolean(animal.ativo ?? true),
+            disponivel: animal.disponivel !== false,
         });
         setFotoPrincipal(null);
         setFotosAdicionais([]);
@@ -185,7 +200,7 @@ function Adocao() {
         payload.append("especie", formulario.especie);
         payload.append("sexo", formulario.sexo);
         payload.append("descricao", formulario.descricao);
-        payload.append("ativo", formulario.ativo ? "true" : "false");
+        payload.append("disponivel", formulario.disponivel ? "true" : "false");
 
         if (fotoPrincipal) {
             payload.append("foto", fotoPrincipal);
@@ -227,12 +242,21 @@ function Adocao() {
         }
     };
 
+    const renderAdotadoBadge = () => (
+        <span className="animal-adotado-badge">Adotado</span>
+    );
+
     const renderAnimalCard = (animal) => {
         const imagem = animal.foto || animal.fotos?.[0];
+        const adotado = animal.disponivel === false;
 
         if (!podeEditar) {
             return (
-                <Link className="animal-card" to={`/adocao/${animal.id}`} key={animal.id}>
+                <Link
+                    className={`animal-card${adotado ? " adotado" : ""}`}
+                    to={`/adocao/${animal.id}`}
+                    key={animal.id}
+                >
                     <div className="animal-card-image">
                         {imagem ? (
                             <img
@@ -244,6 +268,7 @@ function Adocao() {
                         ) : (
                             <div className="animal-placeholder">ACAPRA</div>
                         )}
+                        {adotado && renderAdotadoBadge()}
                     </div>
                     <div className="animal-card-info">
                         <div className="animal-tags">
@@ -252,14 +277,16 @@ function Adocao() {
                         </div>
                         <h2 className="name">{animal.nome_animal}</h2>
                         <p className="owner">Doador: {animal.nome_doador}</p>
-                        <span className="animal-card-cta">Ver animal</span>
+                        <span className="animal-card-cta">
+                            {adotado ? "Ver detalhes" : "Ver animal"}
+                        </span>
                     </div>
                 </Link>
             );
         }
 
         return (
-            <article className="animal-card animal-card-admin" key={animal.id}>
+            <article className={`animal-card animal-card-admin${adotado ? " adotado" : ""}`} key={animal.id}>
                 <div className="animal-card-link">
                     <Link to={`/adocao/${animal.id}`} className="animal-card-main-link">
                         <div className="animal-card-image">
@@ -273,6 +300,7 @@ function Adocao() {
                             ) : (
                                 <div className="animal-placeholder">ACAPRA</div>
                             )}
+                            {adotado && renderAdotadoBadge()}
                         </div>
                         <div className="animal-card-info">
                             <div className="animal-tags">
@@ -306,6 +334,15 @@ function Adocao() {
                         <div>
                             <h1>Encontre seu novo amigo!</h1>
                             <p>Conheça nossos animais disponíveis para adoção.</p>
+                            <div className="adocao-stats">
+                                <span className="adocao-stat">
+                                    <strong>{totalDisponiveis}</strong> disponíveis
+                                </span>
+                                <span className="adocao-stat-divider" aria-hidden="true" />
+                                <span className="adocao-stat adotados">
+                                    <strong>{totalAdotados}</strong> adotados
+                                </span>
+                            </div>
                         </div>
 
                         {podeEditar && (
@@ -338,6 +375,14 @@ function Adocao() {
                     >
                         Gatos
                     </button>
+                    <span className="adocao-toolbar-divider" aria-hidden="true" />
+                    <button
+                        className={`adotados-filter${filtroEspecie === "adotados" ? " active" : ""}`}
+                        type="button"
+                        onClick={() => setFiltroEspecie("adotados")}
+                    >
+                        Adotados
+                    </button>
                 </div>
 
                 <div className="animals">
@@ -345,8 +390,16 @@ function Adocao() {
 
                     {animaisFiltrados.length === 0 && (
                         <EmptyState
-                            title="Nenhum animal encontrado para este filtro."
-                            description="Tente selecionar outra espécie ou cadastre um novo animal."
+                            title={
+                                filtroEspecie === "adotados"
+                                    ? "Nenhum animal adotado ainda."
+                                    : "Nenhum animal encontrado para este filtro."
+                            }
+                            description={
+                                filtroEspecie === "adotados"
+                                    ? "Os animais adotados aparecerão aqui."
+                                    : "Tente selecionar outra espécie ou cadastre um novo animal."
+                            }
                         />
                     )}
                 </div>
@@ -446,12 +499,12 @@ function Adocao() {
 
                                 <label className="product-form-check">
                                     <input
-                                        name="ativo"
+                                        name="disponivel"
                                         type="checkbox"
-                                        checked={formulario.ativo}
+                                        checked={formulario.disponivel}
                                         onChange={alterarCampo}
                                     />
-                                    Animal disponível
+                                    Animal disponível para adoção
                                 </label>
                             </div>
 
@@ -522,6 +575,3 @@ function Adocao() {
 }
 
 export default Adocao;
-
-
-

@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import api from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
 import { formatBrazilianPhone, toBrazilianPhoneE164 } from "../../utils/phone";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import EmptyState from "../../components/ui/EmptyState";
 import ConfirmModal from "../../components/ui/ConfirmModal";
+import { getApiErrorMessage } from "../../utils/errorUtils";
 import "./Denuncias.css";
 
 const GRAVIDADE_OPCOES = [
@@ -145,7 +148,7 @@ function Denuncias() {
         setConfirmacao(null);
       })
       .catch(() => {
-        setErroAcao("Não foi possível remover a denúncia.");
+        setErroAcao(getApiErrorMessage(null, "Não foi possível remover a denúncia."));
         setConfirmacao(null);
       });
   };
@@ -162,124 +165,118 @@ function Denuncias() {
           </p>
         </div>
 
-        {!podeEditar && <form className="denuncias-form" onSubmit={handleSubmit}>
-          <div className="form-field">
-            <label htmlFor="den-titulo">Título <span className="campo-obrigatorio">*</span></label>
-            <input
-              id="den-titulo"
-              name="titulo"
-              type="text"
-              value={form.titulo}
-              onChange={handleChange}
-              required
-              maxLength="100"
-              placeholder="Ex: Animal abandonado na Rua XV"
-            />
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="den-gravidade">Gravidade <span className="campo-obrigatorio">*</span></label>
-            <select
-              id="den-gravidade"
-              name="gravidade"
-              value={form.gravidade}
-              onChange={handleChange}
-              required
-            >
-              <option value="" disabled>
-                Selecione a gravidade
-              </option>
-              {GRAVIDADE_OPCOES.map((op) => (
-                <option key={op.value} value={op.value}>
-                  {op.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="den-descricao">Descrição <span className="campo-obrigatorio">*</span></label>
-            <textarea
-              id="den-descricao"
-              name="descricao"
-              value={form.descricao}
-              onChange={handleChange}
-              required
-              minLength="20"
-              rows="5"
-              placeholder="Descreva a situação com o máximo de detalhes possível (local, horário, estado do animal...)"
-            />
-          </div>
-
-          <div className="form-row">
-            <div className="form-field">
-              <label htmlFor="den-nome">Seu nome</label>
+        {!podeEditar && (
+          <form className="denuncias-form" onSubmit={handleSubmit}>
+            <label>
+              Título <span className="campo-obrigatorio">*</span>
               <input
-                id="den-nome"
-                name="nome"
+                name="titulo"
                 type="text"
-                value={form.nome}
+                value={form.titulo}
                 onChange={handleChange}
+                required
                 maxLength="100"
-                placeholder="Opcional"
+                placeholder="Ex: Animal abandonado na Rua XV"
               />
-            </div>
+            </label>
 
-            <div className="form-field">
-              <label htmlFor="den-telefone">Telefone</label>
-              <input
-                id="den-telefone"
-                name="telefone"
-                type="tel"
-                value={form.telefone}
+            <label>
+              Gravidade <span className="campo-obrigatorio">*</span>
+              <select
+                name="gravidade"
+                value={form.gravidade}
                 onChange={handleChange}
-                inputMode="tel"
-                autoComplete="tel-national"
-                placeholder="(49) 99999-9999 — opcional"
-                maxLength="15"
+                required
+              >
+                <option value="" disabled>Selecione a gravidade</option>
+                {GRAVIDADE_OPCOES.map((op) => (
+                  <option key={op.value} value={op.value}>{op.label}</option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              Descrição <span className="campo-obrigatorio">*</span>
+              <textarea
+                name="descricao"
+                value={form.descricao}
+                onChange={handleChange}
+                required
+                minLength="20"
+                rows="5"
+                placeholder="Descreva a situação com o máximo de detalhes possível (local, horário, estado do animal...)"
               />
+            </label>
+
+            <div className="form-row">
+              <label>
+                Seu nome
+                <input
+                  name="nome"
+                  type="text"
+                  value={form.nome}
+                  onChange={handleChange}
+                  maxLength="100"
+                  placeholder="Opcional"
+                />
+              </label>
+
+              <label>
+                Telefone
+                <input
+                  name="telefone"
+                  type="tel"
+                  value={form.telefone}
+                  onChange={handleChange}
+                  inputMode="tel"
+                  autoComplete="tel-national"
+                  placeholder="(49) 99999-9999 — opcional"
+                  maxLength="15"
+                />
+              </label>
             </div>
-          </div>
 
-          <div className="form-field">
-            <label htmlFor="den-foto">Foto da ocorrência</label>
-            <input
-              ref={fotoInputRef}
-              id="den-foto"
-              name="foto"
-              type="file"
-              accept="image/*"
-              onChange={handleChange}
-            />
-          </div>
+            <label>
+              Foto da ocorrência
+              <input
+                ref={fotoInputRef}
+                name="foto"
+                type="file"
+                accept="image/*"
+                onChange={handleChange}
+              />
+            </label>
 
-          {sucesso && <p className="form-message success">{sucesso}</p>}
-          {erro && <p className="form-message error">{erro}</p>}
+            {sucesso && <p className="form-message success">{sucesso}</p>}
+            {erro && <p className="form-message error">{erro}</p>}
 
-          <button type="submit" disabled={enviando}>
-            {enviando ? "Enviando..." : "Enviar denúncia"}
-          </button>
-        </form>}
+            <button type="submit" disabled={enviando}>
+              {enviando ? "Enviando..." : "Enviar denúncia"}
+            </button>
+          </form>
+        )}
 
         {podeEditar && (
           <section className="denuncias-admin">
             <div className="denuncias-admin-header">
               <h2>Denúncias recebidas</h2>
-              <p>Todas as denúncias enviadas pelos usuários.</p>
+              <p>Lista de denúncias enviadas pelos usuários.</p>
             </div>
 
-            {loadingLista && (
-              <p className="denuncias-admin-message">Carregando...</p>
-            )}
+            {loadingLista && <LoadingSpinner label="Carregando denúncias..." />}
 
             {!loadingLista && erroLista && (
-              <p className="denuncias-admin-message error">{erroLista}</p>
+              <EmptyState
+                title="Não foi possível carregar as denúncias."
+                description={erroLista}
+              />
             )}
 
             {!loadingLista && !erroLista && denuncias.length === 0 && (
-              <p className="denuncias-admin-message">
-                Nenhuma denúncia recebida até o momento.
-              </p>
+              <EmptyState
+                title="Nenhuma denúncia recebida até o momento."
+                description="As denúncias enviadas pelos usuários aparecerão aqui."
+              />
             )}
 
             {!loadingLista && !erroLista && denuncias.length > 0 && (
@@ -289,9 +286,7 @@ function Denuncias() {
                     <div className="denuncia-card-header">
                       <div className="denuncia-card-title-row">
                         <h3>{d.titulo}</h3>
-                        <span
-                          className={`gravidade-badge ${GRAVIDADE_COR[d.gravidade] || ""}`}
-                        >
+                        <span className={`gravidade-badge ${GRAVIDADE_COR[d.gravidade] || ""}`}>
                           {d.gravidade_display}
                         </span>
                       </div>
@@ -302,9 +297,7 @@ function Denuncias() {
                           className="status-select"
                         >
                           {STATUS_OPCOES.map((op) => (
-                            <option key={op.value} value={op.value}>
-                              {op.label}
-                            </option>
+                            <option key={op.value} value={op.value}>{op.label}</option>
                           ))}
                         </select>
                         <button
@@ -355,11 +348,13 @@ function Denuncias() {
                 ))}
               </div>
             )}
+
+            {erroAcao && (
+              <p className="denuncias-admin-message error">{erroAcao}</p>
+            )}
           </section>
         )}
       </section>
-
-      {erroAcao && <p style={{ color: "#8a1f1f", padding: "0 1.5rem 1rem", fontSize: "0.9rem" }}>{erroAcao}</p>}
 
       <ConfirmModal
         open={Boolean(confirmacao)}

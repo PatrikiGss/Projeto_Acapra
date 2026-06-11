@@ -34,6 +34,8 @@ function Dashboard() {
   const [erro, setErro] = useState("");
   const [salvandoId, setSalvandoId] = useState(null);
   const [mensagem, setMensagem] = useState("");
+  const [metaConnections, setMetaConnections] = useState([]);
+  const [iniciandoMeta, setIniciandoMeta] = useState(false);
 
   useEffect(() => {
     let cancelado = false;
@@ -66,6 +68,11 @@ function Dashboard() {
 
         setDashboard(dashboardRes.data);
 
+        const metaRes = await api.get("/api/meta/status/");
+        if (!cancelado) {
+          setMetaConnections(metaRes.data.connections || []);
+        }
+
         if (isMaster(userData)) {
           const usuariosRes = await api.get("/api/gerenciamento/admin/usuarios/");
           if (!cancelado) {
@@ -97,6 +104,29 @@ function Dashboard() {
     () => MODULOS_RAPIDOS.filter((modulo) => podeGerenciar(modulo.id, usuario)),
     [usuario],
   );
+
+  const conectarFacebook = async () => {
+    setIniciandoMeta(true);
+    setErro("");
+    try {
+      const response = await api.post("/api/meta/auth/initiate/");
+      window.location.href = response.data.auth_url;
+    } catch {
+      setErro("Não foi possível iniciar a conexão com o Facebook.");
+      setIniciandoMeta(false);
+    }
+  };
+
+  const desconectarMeta = async (id) => {
+    setErro("");
+    try {
+      await api.delete(`/api/meta/disconnect/${id}/`);
+      setMetaConnections((prev) => prev.filter((c) => c.id !== id));
+      setMensagem("Conexão removida com sucesso.");
+    } catch {
+      setErro("Não foi possível remover a conexão.");
+    }
+  };
 
   const atualizarNivel = async (usuarioId, nivel) => {
     setSalvandoId(usuarioId);
@@ -230,6 +260,49 @@ function Dashboard() {
             ))}
           </div>
         </section>
+
+        {isMaster(usuario) && (
+          <section className="dashboard-section">
+            <div className="dashboard-section-header">
+              <h2>Redes sociais</h2>
+              <p>
+                Publique automaticamente no Facebook e Instagram ao cadastrar
+                um novo animal para adoção.
+              </p>
+            </div>
+
+            {metaConnections.length > 0 ? (
+              <div className="meta-connections-list">
+                {metaConnections.map((conn) => (
+                  <div key={conn.id} className="meta-connection-card">
+                    <div className="meta-connection-info">
+                      <strong>{conn.page_name}</strong>
+                      {conn.instagram_id && (
+                        <span className="meta-connection-badge">
+                          Instagram vinculado
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      className="meta-connection-disconnect"
+                      onClick={() => desconectarMeta(conn.id)}
+                    >
+                      Desconectar
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <button
+                className="dashboard-btn-meta"
+                onClick={conectarFacebook}
+                disabled={iniciandoMeta}
+              >
+                {iniciandoMeta ? "Redirecionando..." : "Conectar Facebook"}
+              </button>
+            )}
+          </section>
+        )}
 
         {isMaster(usuario) && (
           <section className="dashboard-section">

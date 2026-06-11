@@ -20,10 +20,32 @@ from .serializers import (
     UsuarioSerializer,
 )
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
+
+from core.throttling import (
+    LoginRateThrottle,
+    PasswordResetRateThrottle,
+    RefreshRateThrottle,
+    RegisterRateThrottle,
+)
+
+
+class ThrottledLoginView(TokenObtainPairView):
+    """Login JWT com rate limiting por IP (5/min)."""
+    throttle_classes = [LoginRateThrottle]
+
+
+class ThrottledRefreshView(TokenRefreshView):
+    """Refresh de token com rate limiting por IP (10/min)."""
+    throttle_classes = [RefreshRateThrottle]
 
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [RegisterRateThrottle]
     """
     Endpoint público para registro de novos usuários.
 
@@ -109,6 +131,7 @@ class ChangePasswordView(APIView):
     """
 
     permission_classes = [IsAuthenticated]
+    throttle_classes = [PasswordResetRateThrottle]
 
     def post(self, request):
         serializer = ChangePasswordSerializer(

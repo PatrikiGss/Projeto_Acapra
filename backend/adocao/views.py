@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -12,6 +14,8 @@ from django.shortcuts import get_object_or_404
 
 from .models import Animal
 from .serializers import (AnimalSerializer,GetAnimalSerializer,UpdateAnimalSerializer)
+
+logger = logging.getLogger(__name__)
 
 
 class AnimaisView(APIView):
@@ -60,6 +64,15 @@ class AnimaisView(APIView):
         serializer = AnimalSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         animal = serializer.save()
+
+        publicar = request.data.get('publicar_redes', 'true') == 'true'
+        if publicar:
+            try:
+                from meta_integration.services import auto_post_animal
+                auto_post_animal(animal)
+            except Exception as exc:
+                logger.error("Erro ao publicar animal nas redes sociais: %s", exc)
+
         return Response(
             GetAnimalSerializer(animal, context={'request': request}).data,
             status=status.HTTP_201_CREATED,

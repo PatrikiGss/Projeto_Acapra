@@ -1,3 +1,7 @@
+:root {
+  --navbar-h: 75px;
+}
+
 * {
   box-sizing: border-box;
   font-family: "Rubik", sans-serif;

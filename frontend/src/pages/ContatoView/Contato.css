@@ -1,27 +1,235 @@
 .contato-page {
-    min-height: 100vh;
-    background: #fbfaf8;
-    color: #1a1a1a;
+  min-height: 100vh;
+  background: #fbfaf8;
+  color: #1a1a1a;
 }
+
 .contato-content {
-    width: min(100%, 1120px);
-    margin: 0 auto;
-    padding: clamp(2rem, 4vw, 3.5rem) clamp(1rem, 4vw, 2rem) 4rem;
-    justify-content: center;
+  width: min(100%, 860px);
+  margin: 0 auto;
+  padding: clamp(2rem, 4vw, 3.5rem) clamp(1rem, 4vw, 2rem) 4rem;
 }
-.contato-heading {
-    max-width: 760px;
-    margin-bottom: 1.5rem;
+
+.contato-heading-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
 }
-.contato-heading h1 {
-    margin: 0 0 0.6rem;
-}
+
+.contato-heading { flex: 1; }
+.contato-heading h1 { margin: 0 0 0.6rem; }
 .contato-heading p {
-    max-width: 560px;
-    color: #545454;
-    font-size: 1rem;
-    line-height: 1.6;
+  max-width: 560px;
+  color: #545454;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
 }
-.contato-layout{
-    border: black solid 1px;
+
+.contato-carregando { color: #545454; font-size: 1rem; }
+.contato-erro { color: #b42318; font-size: 1rem; margin: 0; }
+
+.contato-grupos { display: flex; flex-direction: column; gap: 2.5rem; }
+
+.contato-grupo-titulo {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #cf6510;
+  margin: 0 0 1rem;
+}
+
+.contato-card-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.2rem;
+}
+
+/* ---- WhatsApp ---- */
+
+.contato-wpp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.contato-wpp-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  background: #f0faf2;
+  border: 1px solid #d4edda;
+  border-radius: 16px;
+  text-decoration: none;
+  color: #1a5c2a;
+  box-shadow: 0 10px 30px rgba(26, 26, 26, 0.04);
+  transition: border-color 0.15s, transform 0.2s, box-shadow 0.2s;
+}
+
+.contato-wpp-card:hover {
+  border-color: #25d366;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(37, 211, 102, 0.15);
+}
+
+.contato-wpp-icon { display: flex; flex-shrink: 0; }
+.contato-wpp-icon svg { width: 28px; height: 28px; color: #25d366; }
+
+.contato-wpp-numero {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a5c2a;
+}
+
+/* ---- Redes sociais ---- */
+
+.contato-redes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.contato-rede-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1.75rem 1rem;
+  border-radius: 16px;
+  border: 1px solid #ece7df;
+  background: #fff;
+  text-decoration: none;
+  color: #1a1a1a;
+  box-shadow: 0 10px 30px rgba(26, 26, 26, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.contato-rede-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 32px rgba(26, 26, 26, 0.1);
+}
+
+.contato-rede-icon { display: flex; }
+.contato-rede-icon svg { width: 32px; height: 32px; }
+
+.contato-rede-label { font-weight: 700; font-size: 0.95rem; }
+
+.contato-rede-valor {
+  font-size: 0.82rem;
+  color: #666;
+  word-break: break-all;
+  text-align: center;
+}
+
+.contato-rede-card--instagram { border-color: #f3d6e8; }
+.contato-rede-card--instagram .contato-rede-icon svg { color: #c13584; }
+.contato-rede-card--instagram:hover { border-color: #c13584; box-shadow: 0 16px 32px rgba(193, 53, 132, 0.12); }
+
+.contato-rede-card--facebook { border-color: #cfe0f7; }
+.contato-rede-card--facebook .contato-rede-icon svg { color: #1877f2; }
+.contato-rede-card--facebook:hover { border-color: #1877f2; box-shadow: 0 16px 32px rgba(24, 119, 242, 0.12); }
+
+.contato-rede-card--email { border-color: #ece7df; }
+.contato-rede-card--email .contato-rede-icon svg { color: #e87722; }
+.contato-rede-card--email:hover { border-color: #e87722; box-shadow: 0 16px 32px rgba(232, 119, 34, 0.12); }
+
+/* ---- Botão editar ---- */
+
+.contato-edit-btn {
+  flex-shrink: 0;
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  border: 1px solid #ece7df;
+  background: #fff;
+  color: #e87722;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.contato-edit-btn:hover { border-color: #e87722; background: rgba(232, 119, 34, 0.05); }
+
+/* ---- Formulário de edição ---- */
+
+.contato-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: clamp(1rem, 2.5vw, 1.75rem);
+  background: #fff;
+  border: 1px solid #ece7df;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(26, 26, 26, 0.04);
+}
+
+.contato-form-desc { margin: 0; color: #888; font-size: 0.9rem; }
+
+.contato-form-group { display: flex; flex-direction: column; gap: 0.85rem; }
+
+.contato-form-field { display: flex; flex-direction: column; gap: 0.35rem; }
+
+.contato-form-field span {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #cf6510;
+}
+
+.contato-form-field input {
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #ddd5c8;
+  border-radius: 10px;
+  font-size: 1rem;
+  color: #1a1a1a;
+  background: #fff;
+  max-width: 420px;
+}
+
+.contato-form-field input:focus { outline: 2px solid #e87722; border-color: #e87722; }
+
+.contato-form-actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
+
+.contato-btn-cancelar {
+  padding: 0.7rem 1.25rem;
+  border-radius: 10px;
+  border: 1px solid #ece7df;
+  background: #fff;
+  color: #555;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.contato-btn-salvar {
+  padding: 0.7rem 1.5rem;
+  border-radius: 10px;
+  border: none;
+  background: #e87722;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.contato-btn-salvar:disabled { opacity: 0.5; cursor: not-allowed; }
+
+@media (max-width: 600px) {
+  .contato-wpp-grid,
+  .contato-redes-grid { grid-template-columns: 1fr; }
+  .contato-form-field input { max-width: 100%; }
+  .contato-form-actions { flex-direction: column-reverse; }
 }

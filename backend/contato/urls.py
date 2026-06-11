@@ -1,7 +1,8 @@
-from rest_framework.routers import DefaultRouter
-from .views import ContatoViewSet
+from django.urls import path
+from .views import ContatoView
 
-router = DefaultRouter()
-router.register(r'contatos', ContatoViewSet)
+app_name = 'contato'
 
-urlpatterns = router.urls
+urlpatterns = [
+    path('', ContatoView.as_view(), name='contato'),
+]

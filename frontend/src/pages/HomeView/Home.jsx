@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api, { getMediaURL } from "../../services/api";
+import { getResponseItems } from "../../utils/collection";
 import "./Home.css";
 
 const destaqueExemplo = {
@@ -40,8 +41,8 @@ function Home() {
   useEffect(() => {
     api.get("/api/noticias/publicacoes/")
       .then((response) => {
-        const publicacoes = response.data?.slice(0, 5);
-        setDestaquesInfo(publicacoes?.length ? publicacoes : [destaqueExemplo]);
+        const publicacoes = getResponseItems(response.data).slice(0, 5);
+        setDestaquesInfo(publicacoes.length ? publicacoes : [destaqueExemplo]);
         setDestaqueAtual(0);
       })
       .catch(() => setDestaquesInfo([destaqueExemplo]));
@@ -49,6 +50,9 @@ function Home() {
 
   useEffect(() => {
     if (animais.length === 0) return;
+    const isMobile = () => window.innerWidth < 768;
+    if (!isMobile()) return;
+
     const timer = setInterval(() => {
       setAnimalSlideAtual((current) => (current + 1) % animais.length);
     }, 6000);
@@ -106,9 +110,7 @@ function Home() {
 
           <div className="hero-links">
             <Link to="/adocao" className="link">Quero Adotar!</Link>
-            <Link to="/contato" className="link">Outros Serviços</Link>
-
-
+            <Link to="/contato" className="link">Entre em Contato</Link>
           </div>
         </div>
       </section>
@@ -117,7 +119,7 @@ function Home() {
         <div className="about-content">
           <div className="about-heading">
             <span className="section-kicker">Sobre Nós</span>
-            <h2>ACAPRA somos todos nós</h2>
+            <h2>ACAPRA somos todos nós!</h2>
           </div>
 
           <div className="about-body">
@@ -189,21 +191,36 @@ function Home() {
             </div>
 
             {animais.length > 1 && (
-              <>
-                <div className="carousel-dots">
-                  {animais.map((_, index) => (
-                    <button
-                      key={index}
-                      className={index === animalSlideAtual ? "active" : ""}
-                      onClick={() => setAnimalSlideAtual(index)}
-                      aria-label={`Ir para animal ${index + 1}`}
-                    />
-                  ))}
-                </div>
-              </>
+              <div className="carousel-dots">
+                {animais.map((_, index) => (
+                  <button
+                    key={index}
+                    className={index === animalSlideAtual ? "active" : ""}
+                    onClick={() => setAnimalSlideAtual(index)}
+                    aria-label={`Ir para animal ${index + 1}`}
+                  />
+                ))}
+              </div>
             )}
           </div>
         )}
+
+        <div className="adote-cta">
+          <Link to="/adocao" className="link adote-ver-todos">Ver todos os animais</Link>
+        </div>
+      </section>
+
+      <section className="doe-section scroll-reveal">
+        <div className="doe-content">
+          <div className="doe-text">
+            <span className="section-kicker">Apoie</span>
+            <h2>Sua doação salva vidas</h2>
+            <p>
+              Cada contribuição vai diretamente para alimentação, medicamentos, castrações e resgate dos animais acolhidos pela ACAPRA.
+            </p>
+          </div>
+          <Link to="/doe" className="link doe-link">Quero Doar</Link>
+        </div>
       </section>
 
       <section className="produtos-section scroll-reveal" id="produtos">
@@ -230,8 +247,27 @@ function Home() {
         </div>
       </section>
 
+      
+
+      <section className="denuncia-cta-section scroll-reveal">
+        <div className="doe-content">
+          <div className="doe-text">
+            <span className="section-kicker">Denuncie</span>
+            <h2>Viu um animal sofrendo? Conte-nos.</h2>
+            <p>
+              Denúncias de maus-tratos e abandono podem salvar vidas. Sua identidade é protegida e agimos o mais rápido possível.
+            </p>
+          </div>
+          <Link to="/denuncias" className="link doe-link">Fazer uma denúncia</Link>
+        </div>
+      </section>
+
       <section className="fresh-news-section scroll-reveal" aria-label="Informações recentes em destaque">
         <div className="fresh-news-wrapper">
+          <div className="section-heading">
+            <span className="section-kicker">Notícias</span>
+            <h2>Últimas da ACAPRA</h2>
+          </div>
           <Link
             className="fresh-news-banner"
             to={destaqueInfo.id === "exemplo"
@@ -289,6 +325,7 @@ function Home() {
           )}
         </div>
       </section>
+
     </div>
   );
 }

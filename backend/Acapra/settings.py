@@ -28,6 +28,9 @@ ALLOWED_HOSTS = config(
     cast=Csv()
 )
 
+if DEBUG:
+    ALLOWED_HOSTS += ['.trycloudflare.com']
+
 AUTH_USER_MODEL = 'gerenciamento.Usuario'
 
 # =========================================================
@@ -53,6 +56,8 @@ INSTALLED_APPS = [
     # Apps do projeto
     "core.apps.CoreConfig",
     "adocao.apps.AdocaoConfig",
+    "meta_integration.apps.MetaIntegrationConfig",
+    "contato.apps.ContatoConfig",
     "doacoes.apps.DoacoesConfig",
     "denuncias.apps.DenunciasConfig",
     "gerenciamento.apps.GerenciamentoConfig",
@@ -238,6 +243,24 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 # =========================================================
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# =========================================================
+# HTTP SECURITY HEADERS
+# =========================================================
+
+# =========================================================
+# META / FACEBOOK INTEGRATION
+# =========================================================
+
+META_APP_ID = config('META_APP_ID', default='')
+META_APP_SECRET = config('META_APP_SECRET', default='')
+META_REDIRECT_URI = config(
+    'META_REDIRECT_URI',
+    default='http://localhost:8000/api/meta/auth/callback/',
+)
+FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:5173')
+SITE_URL = config('SITE_URL', default='http://localhost:8000')
 
 
 # =========================================================

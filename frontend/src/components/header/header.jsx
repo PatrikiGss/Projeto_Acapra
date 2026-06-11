@@ -136,7 +136,7 @@ function Header() {
           </div>
         </div>
 
-        <Link className="site-nav-link" to="/doe" onClick={closeMenu}>Doe</Link>
+        <Link className="site-nav-link" to="/doe" onClick={closeMenu}>Apoie</Link>
         <Link className="site-nav-link" to="/transparencia" onClick={closeMenu}>Transparência</Link>
 
         <div

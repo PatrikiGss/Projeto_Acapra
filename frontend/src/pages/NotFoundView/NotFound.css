@@ -17,8 +17,6 @@
 }
 
 .notfound-title {
-  font-size: clamp(1.4rem, 3vw, 2rem);
-  font-weight: 800;
   color: #1a1a1a;
   margin: 0;
 }

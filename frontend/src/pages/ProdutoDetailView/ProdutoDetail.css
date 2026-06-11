@@ -109,8 +109,6 @@
 .produto-summary h1 {
     margin: 0 0 0.8rem;
     color: black;
-    font-size: clamp(1.6rem, 4vw, 2.2rem);
-    font-weight: 800;
     line-height: 1.1;
 }
 

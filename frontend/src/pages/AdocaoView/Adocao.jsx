@@ -32,6 +32,8 @@ function Adocao() {
     const [fotosAdicionais, setFotosAdicionais] = useState([]);
     const [salvando, setSalvando] = useState(false);
     const [erroFormulario, setErroFormulario] = useState("");
+    const [sucessoFormulario, setSucessoFormulario] = useState("");
+    const [publicarRedes, setPublicarRedes] = useState(true);
     const [erroAcao, setErroAcao] = useState("");
     const [animalParaExclusao, setAnimalParaExclusao] = useState(null);
 
@@ -177,6 +179,7 @@ function Adocao() {
         event.preventDefault();
         setSalvando(true);
         setErroFormulario("");
+        setSucessoFormulario("");
 
         const payload = new FormData();
         payload.append("nome_animal", formulario.nome_animal);
@@ -195,14 +198,20 @@ function Adocao() {
             payload.append("fotos", foto.file);
         });
 
+        const ehCriacao = !(modoFormulario === "editar" && animalEditando);
+        if (ehCriacao) {
+            payload.append("publicar_redes", publicarRedes ? "true" : "false");
+        }
+
         try {
-            if (modoFormulario === "editar" && animalEditando) {
+            if (!ehCriacao) {
                 await api.patch(`/api/adocao/animais/${animalEditando.id}/`, payload);
             } else {
                 await api.post("/api/adocao/animais/", payload);
             }
             await carregarAnimais();
-            fecharModal();
+            setSucessoFormulario("Animal adicionado com sucesso!");
+            setTimeout(() => fecharModal(), 2500);
         } catch (error) {
             setErroFormulario(extrairMensagemErro(error));
         } finally {
@@ -355,15 +364,36 @@ function Adocao() {
             </section>
 
             {modalAberto && (
-                <div className="product-modal-backdrop" onClick={fecharModal}>
+                <div className="product-modal-backdrop" onClick={salvando || sucessoFormulario ? undefined : fecharModal}>
                     <div className="product-modal" onClick={(event) => event.stopPropagation()}>
                         <div className="product-modal-header">
                             <h2>{modoFormulario === "editar" ? "Editar animal" : "Adicionar animal"}</h2>
-                            <button type="button" className="product-modal-close" onClick={fecharModal}>
-                                Fechar
-                            </button>
+                            {!salvando && !sucessoFormulario && (
+                                <button type="button" className="product-modal-close" onClick={fecharModal}>
+                                    Fechar
+                                </button>
+                            )}
                         </div>
 
+                        {salvando && (
+                            <div className="product-form-loading">
+                                <div className="product-form-spinner" />
+                                <p>
+                                    {publicarRedes && modoFormulario !== "editar"
+                                        ? "Salvando e publicando nas redes sociais..."
+                                        : "Salvando..."}
+                                </p>
+                            </div>
+                        )}
+
+                        {!salvando && sucessoFormulario && (
+                            <div className="product-form-success">
+                                <span className="product-form-success-icon">✓</span>
+                                <p>{sucessoFormulario}</p>
+                            </div>
+                        )}
+
+                        {!salvando && !sucessoFormulario && (
                         <form className="product-form" onSubmit={enviarFormulario}>
                             <div className="product-form-grid">
                                 <label>
@@ -453,6 +483,17 @@ function Adocao() {
                                     />
                                     Animal disponível
                                 </label>
+
+                                {modoFormulario !== "editar" && (
+                                    <label className="product-form-check product-form-check--redes">
+                                        <input
+                                            type="checkbox"
+                                            checked={publicarRedes}
+                                            onChange={(e) => setPublicarRedes(e.target.checked)}
+                                        />
+                                        Publicar no Facebook / Instagram
+                                    </label>
+                                )}
                             </div>
 
                             {fotosAtuais.length > 0 && (
@@ -505,6 +546,7 @@ function Adocao() {
                                 </button>
                             </div>
                         </form>
+                        )}
                     </div>
                 </div>
             )}

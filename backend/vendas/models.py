@@ -2,8 +2,8 @@ from django.db import models
 
 
 class TipoVestuario(models.TextChoices):
-    HUMANO = 'humano', 'Vestuário Humano'
-    PET = 'pet', 'Vestuário para Pet'
+    HUMANO = 'humano', 'Para pessoas'
+    PET = 'pet', 'Para pets'
 
 
 class Produto(models.Model):

@@ -48,9 +48,15 @@ class AnimaisView(APIView):
     def get(self, request):
         """
         Retorna lista pública de animais.
+        Suporta filtro ?disponivel=true|false
         """
 
         animais = Animal.objects.prefetch_related('imagens').all().order_by('-id')
+
+        disponivel_param = request.query_params.get('disponivel')
+        if disponivel_param is not None:
+            disponivel = disponivel_param.lower() != 'false'
+            animais = animais.filter(disponivel=disponivel)
 
         serializer = GetAnimalSerializer(
             animais,

@@ -1,6 +1,9 @@
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
+from core.uploads import upload_fotos
+from core.validators import validate_image_upload
+
 
 class GravidadeDenuncia(models.TextChoices):
     BAIXO = "baixo", "Baixo"
@@ -26,10 +29,11 @@ class Denuncia(models.Model):
     nome = models.CharField(max_length=100, blank=True, help_text="Nome do denunciante (opcional)")
     telefone = PhoneNumberField(blank=True, null=True, help_text="Telefone para contato (opcional)")
     foto = models.ImageField(
-        upload_to="fotos/%Y/%m/%d",
+        upload_to=upload_fotos,
         blank=True,
         null=True,
         help_text="Foto da ocorrência (opcional)",
+        validators=[validate_image_upload],
     )
     status = models.CharField(
         max_length=20,

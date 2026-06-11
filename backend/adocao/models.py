@@ -1,6 +1,9 @@
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
+from core.uploads import upload_fotos
+from core.validators import validate_image_upload
+
 
 class EspecieAnimal(models.TextChoices):
     CACHORRO = 'cachorro', 'Cachorro'
@@ -33,9 +36,10 @@ class Animal(models.Model):
 
 
     foto = models.ImageField(
-        upload_to='fotos/%Y/%m/%d',
+        upload_to=upload_fotos,
         blank=True,
-        null=True
+        null=True,
+        validators=[validate_image_upload],
     )
 
     descricao = models.TextField(
@@ -57,7 +61,8 @@ class AnimalImagem(models.Model):
         on_delete=models.CASCADE,
     )
     imagem = models.ImageField(
-        upload_to="fotos/%Y/%m/%d",
+        upload_to=upload_fotos,
+        validators=[validate_image_upload],
     )
     ordem = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)

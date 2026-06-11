@@ -2,6 +2,7 @@ from django.db import transaction
 from django.db.models import Max
 from rest_framework import serializers
 
+from core.validators import validate_image_upload
 from .models import Animal, AnimalImagem
 
 
@@ -49,9 +50,10 @@ def _criar_imagens_animal(animal, fotos):
 
 class AnimalSerializer(serializers.ModelSerializer):
     fotos = serializers.ListField(
-        child=serializers.ImageField(),
+        child=serializers.ImageField(validators=[validate_image_upload]),
         required=False,
         write_only=True,
+        max_length=10,
     )
 
     class Meta:
@@ -96,9 +98,10 @@ class GetAnimalSerializer(serializers.ModelSerializer):
 
 class UpdateAnimalSerializer(serializers.ModelSerializer):
     fotos = serializers.ListField(
-        child=serializers.ImageField(),
+        child=serializers.ImageField(validators=[validate_image_upload]),
         required=False,
         write_only=True,
+        max_length=10,
     )
 
     class Meta:

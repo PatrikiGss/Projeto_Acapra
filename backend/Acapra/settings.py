@@ -20,6 +20,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 SECRET_KEY = config("SECRET_KEY")
 
+# Chave dedicada para criptografia de campos sensíveis em repouso
+# (tokens Meta/Facebook). Separada do SECRET_KEY. Em produção, defina
+# FIELD_ENCRYPTION_KEY no ambiente (gere com:
+#   python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+# ). Sem ela, uma chave é derivada do SECRET_KEY apenas para desenvolvimento.
+FIELD_ENCRYPTION_KEY = config("FIELD_ENCRYPTION_KEY", default="")
+
 DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = config(
@@ -27,9 +34,6 @@ ALLOWED_HOSTS = config(
     default="localhost,127.0.0.1,[::1]",
     cast=Csv()
 )
-
-if DEBUG:
-    ALLOWED_HOSTS += ['.trycloudflare.com']
 
 AUTH_USER_MODEL = 'gerenciamento.Usuario'
 
@@ -190,9 +194,24 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE":20,
+    "PAGE_SIZE": 20,
+    # Handler global de exceções: nunca vaza stack trace/detalhes internos.
+    "EXCEPTION_HANDLER": "core.exceptions.custom_exception_handler",
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
     "DEFAULT_THROTTLE_RATES": {
+        # Limites globais (fallback) por anônimo/usuário.
+        "anon": "120/min",
+        "user": "240/min",
+        # Escopos específicos.
         "public_animals": "60/min",
+        "login": "5/min",
+        "register": "3/min",
+        "refresh": "10/min",
+        "password_reset": "3/min",
+        "public_form": "20/min",
     },
 }
 
@@ -217,6 +236,9 @@ SIMPLE_JWT = {
 # CORS
 # =========================================================
 
+# Origens permitidas vêm exclusivamente de variável de ambiente.
+# Sem wildcards, sem faixas RFC1918, sem domínios de túnel temporário.
+# Em produção, defina CORS_ALLOWED_ORIGINS com os domínios reais do frontend.
 CORS_ALLOWED_ORIGINS = config(
     "CORS_ALLOWED_ORIGINS",
     default=(
@@ -228,15 +250,14 @@ CORS_ALLOWED_ORIGINS = config(
     cast=Csv()
 )
 
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https?://localhost(?::\d+)?$",
-    r"^https?://127\.0\.0\.1(?::\d+)?$",
-    r"^https?://\[::1\](?::\d+)?$",
-    r"^https?://10(?:\.\d{1,3}){3}(?::\d+)?$",
-    r"^https?://192\.168(?:\.\d{1,3}){2}(?::\d+)?$",
-    r"^https?://172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2}(?::\d+)?$",
-    r"^https://[a-z0-9-]+\.trycloudflare\.com$",
-]
+# Regexes opcionais e explícitos, apenas via ambiente (vazio por padrão).
+CORS_ALLOWED_ORIGIN_REGEXES = config(
+    "CORS_ALLOWED_ORIGIN_REGEXES",
+    default="",
+    cast=Csv()
+)
+
+CORS_ALLOW_CREDENTIALS = True
 
 
 # =========================================================
@@ -270,6 +291,15 @@ SITE_URL = config('SITE_URL', default='http://localhost:8000')
 
 X_FRAME_OPTIONS = "DENY"
 SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+
+# Cookies de sessão/CSRF endurecidos (defesa adicional; a API usa JWT).
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
+
+# Confiar no header do proxy/túnel para detectar HTTPS.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 if not DEBUG:
     SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=True, cast=bool)
@@ -278,3 +308,47 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+
+
+# =========================================================
+# LOGGING (redige dados sensíveis)
+# =========================================================
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "filters": {
+        "redact_sensitive": {
+            "()": "core.logging_filters.SensitiveDataFilter",
+        },
+    },
+    "formatters": {
+        "standard": {
+            "format": "[{asctime}] {levelname} {name}: {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "filters": ["redact_sensitive"],
+            "formatter": "standard",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "acapra.security": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}

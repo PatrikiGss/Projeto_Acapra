@@ -2,6 +2,8 @@ import uuid
 from django.db import models
 from django.conf import settings
 
+from core.fields import EncryptedTextField
+
 
 class MetaOAuthState(models.Model):
     state = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
@@ -10,7 +12,7 @@ class MetaOAuthState(models.Model):
         on_delete=models.CASCADE,
         related_name='meta_oauth_states',
     )
-    user_access_token = models.TextField(blank=True)
+    user_access_token = EncryptedTextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -28,7 +30,7 @@ class MetaConnection(models.Model):
     )
     page_id = models.CharField(max_length=50)
     page_name = models.CharField(max_length=100)
-    page_access_token = models.TextField()
+    page_access_token = EncryptedTextField()
     instagram_id = models.CharField(max_length=50, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

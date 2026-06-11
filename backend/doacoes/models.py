@@ -1,5 +1,8 @@
 from django.db import models
 
+from core.uploads import upload_qr_codes
+from core.validators import validate_image_upload
+
 
 class DadosPix(models.Model):
     """
@@ -14,10 +17,11 @@ class DadosPix(models.Model):
     )
 
     qr_code = models.ImageField(
-        upload_to='qr_codes/',
+        upload_to=upload_qr_codes,
         blank=True,
         null=True,
-        help_text="Imagem do QR Code para leitura"
+        help_text="Imagem do QR Code para leitura",
+        validators=[validate_image_upload],
     )
 
     descricao = models.TextField(

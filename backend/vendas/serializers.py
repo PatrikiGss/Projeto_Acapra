@@ -2,6 +2,7 @@ from django.db import transaction
 from django.db.models import Max
 from rest_framework import serializers
 
+from core.validators import validate_image_upload
 from .models import Produto, ProdutoImagem
 
 
@@ -52,9 +53,10 @@ class ProdutoSerializer(serializers.ModelSerializer):
     Serializer para criar/atualizar produtos.
     """
     fotos = serializers.ListField(
-        child=serializers.ImageField(),
+        child=serializers.ImageField(validators=[validate_image_upload]),
         required=False,
         write_only=True,
+        max_length=10,
     )
 
     class Meta:
@@ -109,9 +111,10 @@ class UpdateProdutoSerializer(serializers.ModelSerializer):
     Serializer para atualizar produtos.
     """
     fotos = serializers.ListField(
-        child=serializers.ImageField(),
+        child=serializers.ImageField(validators=[validate_image_upload]),
         required=False,
         write_only=True,
+        max_length=10,
     )
 
     class Meta:

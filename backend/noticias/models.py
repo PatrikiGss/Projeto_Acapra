@@ -1,5 +1,8 @@
 from django.db import models
 
+from core.uploads import upload_noticias
+from core.validators import validate_image_upload
+
 
 class CategoriaNoticia(models.TextChoices):
     NOTICIAS = "noticias", "Notícias"
@@ -16,7 +19,10 @@ class Publicacao(models.Model):
     )
     titulo = models.CharField(max_length=200)
     resumo = models.CharField(max_length=280, blank=True, default="")
-    foto = models.ImageField(upload_to="noticias/%Y/%m/%d")
+    foto = models.ImageField(
+        upload_to=upload_noticias,
+        validators=[validate_image_upload],
+    )
     texto = models.TextField()
     ativo = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

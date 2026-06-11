@@ -212,7 +212,7 @@ function Vendas() {
         }
 
         fotosAdicionais.forEach((foto) => {
-            payload.append("fotos", foto.file);
+            payload.append("fotos[]", foto.file);
         });
 
         try {
@@ -345,8 +345,8 @@ function Vendas() {
                         Tipo
                         <select value={tipo} onChange={(event) => setTipo(event.target.value)}>
                             <option value="todos">Todos</option>
-                            <option value="humano">Vestuário humano</option>
-                            <option value="pet">Vestuário para pet</option>
+                            <option value="humano">Para pessoas</option>
+                            <option value="pet">Para pets</option>
                         </select>
                     </label>
 
@@ -400,8 +400,8 @@ function Vendas() {
                                 <label>
                                     Tipo
                                     <select name="tipo" value={formulario.tipo} onChange={alterarCampo}>
-                                        <option value="humano">Vestuário humano</option>
-                                        <option value="pet">Vestuário para pet</option>
+                                        <option value="humano">Para pessoas</option>
+                                        <option value="pet">Para pets</option>
                                     </select>
                                 </label>
 

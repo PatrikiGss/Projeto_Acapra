@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "transparencia.apps.TransparenciaConfig",
     "vendas.apps.VendasConfig",
     "voluntariado.apps.VoluntariadoConfig",
+    "lares.apps.LaresConfig",
 ]
 
 

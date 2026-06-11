@@ -2,4 +2,6 @@ from django.apps import AppConfig
 
 
 class ContatoConfig(AppConfig):
-    name = "contato"
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'contato'
+    verbose_name = 'Contato'

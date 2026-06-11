@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "core.apps.CoreConfig",
     "adocao.apps.AdocaoConfig",
     "meta_integration.apps.MetaIntegrationConfig",
+    "contato.apps.ContatoConfig",
     "doacoes.apps.DoacoesConfig",
     "denuncias.apps.DenunciasConfig",
     "gerenciamento.apps.GerenciamentoConfig",

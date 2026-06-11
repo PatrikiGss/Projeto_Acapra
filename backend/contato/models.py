@@ -1,24 +1,22 @@
 from django.db import models
-from phonenumber_field.modelfields import PhoneNumberField
 
 
+class ContatoAcapra(models.Model):
+    whatsapp_castracoes = models.CharField(max_length=20, blank=True)
+    whatsapp_doacoes = models.CharField(max_length=20, blank=True)
+    whatsapp_financeiro = models.CharField(max_length=20, blank=True)
+    instagram = models.URLField(max_length=255, blank=True)
+    facebook = models.URLField(max_length=255, blank=True)
+    email = models.EmailField(blank=True)
 
-class Contato(models.Model):
-    telefone1 = PhoneNumberField()
-    telefone2 = PhoneNumberField(blank=True, null=True)
-    telefone3 = PhoneNumberField(blank=True, null=True)
-    
-    instagram_user = models.CharField(max_length=30)
-    instagram_link = models.URLField()
+    class Meta:
+        verbose_name = 'Contato ACAPRA'
 
-    facebook_user = models.CharField(max_length=30)
-    facebook_link = models.URLField()
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
 
-    email = models.EmailField()
-
-def __str__(self):
-    return self.email
-    
-
-
-
+    @classmethod
+    def get_instance(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj

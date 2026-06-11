@@ -19,6 +19,7 @@ urlpatterns = [
     path('api/vendas/',        include('vendas.urls',        namespace='vendas')),
     path('api/voluntariado/',  include('voluntariado.urls',  namespace='voluntariado')),
     path('api/meta/',          include('meta_integration.urls', namespace='meta_integration')),
+    path('api/contato/',       include('contato.urls',          namespace='contato')),
 ]
 
 if settings.DEBUG:

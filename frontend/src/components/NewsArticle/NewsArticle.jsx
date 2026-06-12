@@ -7,6 +7,7 @@ import EmptyState from "../ui/EmptyState";
 import ConfirmModal from "../ui/ConfirmModal";
 import { getApiErrorMessage } from "../../utils/errorUtils";
 import { getResponseItems } from "../../utils/collection";
+import { logError } from "../../utils/logger";
 import "./NewsArticle.css";
 
 const categoriaLabels = {
@@ -71,7 +72,7 @@ function NewsArticle({ backPath }) {
         setError(false);
       } catch (erro) {
         if (controller.signal.aborted) return;
-        console.error(erro);
+        logError("NewsArticle", erro);
         setError(true);
       } finally {
         if (!controller.signal.aborted) {
@@ -100,7 +101,7 @@ function NewsArticle({ backPath }) {
       navigate(backPath || "/noticias");
     } catch (erro) {
       setErroAcao(getApiErrorMessage(erro, "Não foi possível excluir a publicação."));
-      console.error(erro);
+      logError("NewsArticle", erro);
     }
   };
 

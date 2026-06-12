@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import api, { getMediaURL } from "../../services/api";
 import { getResponseItems } from "../../utils/collection";
@@ -20,6 +20,8 @@ function Home() {
   const [destaquesInfo, setDestaquesInfo] = useState([destaqueExemplo]);
   const [destaqueAtual, setDestaqueAtual] = useState(0);
   const [indicadores, setIndicadores] = useState([]);
+  const animalPausado = useRef(false);
+  const noticiasPausada = useRef(false);
 
   useEffect(() => {
     api.get("/api/adocao/animais/")
@@ -54,7 +56,9 @@ function Home() {
     if (!isMobile()) return;
 
     const timer = setInterval(() => {
-      setAnimalSlideAtual((current) => (current + 1) % animais.length);
+      if (!animalPausado.current) {
+        setAnimalSlideAtual((current) => (current + 1) % animais.length);
+      }
     }, 6000);
 
     return () => clearInterval(timer);
@@ -62,7 +66,9 @@ function Home() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setDestaqueAtual((current) => (current + 1) % destaquesInfo.length);
+      if (!noticiasPausada.current) {
+        setDestaqueAtual((current) => (current + 1) % destaquesInfo.length);
+      }
     }, 7000);
 
     return () => clearInterval(timer);
@@ -93,11 +99,12 @@ function Home() {
   return (
     <div className="main">
       <section className="hero">
-        <img
-          className="hero-img"
-          src="/hero-animals.png"
-          alt="Cães da associação"
-        />
+        <div className="hero-collage" aria-hidden="true">
+          <div className="hero-collage-cell"><img src="/hero-animal-1.jpg" alt="" className="hero-collage-img" /></div>
+          <div className="hero-collage-cell"><img src="/hero-animal-2.jpg" alt="" className="hero-collage-img" /></div>
+          <div className="hero-collage-cell"><img src="/hero-animal-3.jpg" alt="" className="hero-collage-img" /></div>
+          <div className="hero-collage-cell"><img src="/hero-animal-5.jpg" alt="" className="hero-collage-img" /></div>
+        </div>
 
         <div className="hero-content">
           <h1 className="hero-text">
@@ -165,13 +172,19 @@ function Home() {
         )}
 
         {!carregandoAnimais && animais.length > 0 && (
-          <div className="animal-carousel">
+          <div
+            className="animal-carousel"
+            onMouseEnter={() => { animalPausado.current = true; }}
+            onMouseLeave={() => { animalPausado.current = false; }}
+          >
             <div className="carousel-viewport">
               {animais.map((animal, index) => (
                 <Link
                   className={`home-animal-card ${index === animalSlideAtual ? "active" : ""}`}
                   to={`/adocao/${animal.id}`}
                   key={animal.id}
+                  aria-hidden={index !== animalSlideAtual ? "true" : undefined}
+                  tabIndex={index !== animalSlideAtual ? -1 : undefined}
                 >
                   <img
                     src={animal.foto || animal.fotos?.[0] || "/adocao-cachorro.png"}
@@ -262,7 +275,12 @@ function Home() {
         </div>
       </section>
 
-      <section className="fresh-news-section scroll-reveal" aria-label="Informações recentes em destaque">
+      <section
+        className="fresh-news-section scroll-reveal"
+        aria-label="Informações recentes em destaque"
+        onMouseEnter={() => { noticiasPausada.current = true; }}
+        onMouseLeave={() => { noticiasPausada.current = false; }}
+      >
         <div className="fresh-news-wrapper">
           <div className="section-heading">
             <span className="section-kicker">Notícias</span>
@@ -285,7 +303,7 @@ function Home() {
 
             <div className="fresh-news-copy">
               <span>Notícias da Acapra!</span>
-              <h2>{destaqueInfo.titulo}</h2>
+              <h3>{destaqueInfo.titulo}</h3>
               <p>{destaqueInfo.resumo}</p>
               <strong>{destaqueInfo.categoria_display || "Informação"}</strong>
             </div>
@@ -299,14 +317,18 @@ function Home() {
                   onClick={() => setDestaqueAtual((current) => (current === 0 ? destaquesInfo.length - 1 : current - 1))}
                   aria-label="Publicação anterior"
                 >
-                  ‹
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
                 </button>
                 <button
                   type="button"
                   onClick={() => setDestaqueAtual((current) => (current + 1) % destaquesInfo.length)}
                   aria-label="Próxima publicação"
                 >
-                  ›
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
                 </button>
               </div>
 

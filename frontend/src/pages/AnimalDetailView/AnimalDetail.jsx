@@ -2,6 +2,7 @@
 import { Link, useParams } from "react-router-dom";
 import api from "../../services/api";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import { logError } from "../../utils/logger";
 import "./AnimalDetail.css";
 
 function AnimalDetail() {
@@ -18,7 +19,7 @@ function AnimalDetail() {
                 setError(false);
             })
             .catch((erro) => {
-                console.error(erro);
+                logError("AnimalDetail", erro);
                 setError(true);
             })
             .finally(() => setLoading(false));

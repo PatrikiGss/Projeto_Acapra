@@ -8,12 +8,14 @@ import {
   setAuthSession,
   subscribeToAuthChanges,
 } from "../../utils/auth";
+import { safeInternalPath } from "../../utils/url";
 import "./Login.css";
 
 function Login() {
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from || "/";
+  // Garante redirecionamento apenas para rotas internas (anti open-redirect).
+  const from = safeInternalPath(location.state?.from, "/");
   const [form, setForm] = useState({ email: "", password: "" });
   const [erro, setErro] = useState(null);
   const [loading, setLoading] = useState(false);

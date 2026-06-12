@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import api from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
 import { formatBrazilianPhone, toBrazilianPhoneE164 } from "../../utils/phone";
+import { validateImageFile, IMAGE_ACCEPT } from "../../utils/upload";
 import ConfirmModal from "../../components/ui/ConfirmModal";
 import "../VoluntariadoView/Voluntariado.css";
 import "./Denuncias.css";
@@ -79,7 +80,17 @@ function Denuncias() {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === "foto") {
-      setForm((f) => ({ ...f, foto: files[0] || null }));
+      const file = files[0] || null;
+      if (file) {
+        const erroValidacao = validateImageFile(file);
+        if (erroValidacao) {
+          setErro(erroValidacao);
+          e.target.value = "";
+          return;
+        }
+      }
+      setErro("");
+      setForm((f) => ({ ...f, foto: file }));
     } else if (name === "telefone") {
       setForm((f) => ({ ...f, telefone: formatBrazilianPhone(value) }));
     } else {
@@ -236,7 +247,7 @@ function Denuncias() {
                 ref={fotoInputRef}
                 name="foto"
                 type="file"
-                accept="image/*"
+                accept={IMAGE_ACCEPT}
                 onChange={handleChange}
               />
             </label>

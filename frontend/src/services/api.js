@@ -11,12 +11,17 @@ const apiBaseURL = envBaseURL
     ? ""
     : `${window.location.protocol}//${window.location.hostname}:8000`;
 
+// Timeout evita requisições penduradas (resource exhaustion / UX travada).
+const REQUEST_TIMEOUT = 30000;
+
 const api = axios.create({
   baseURL: apiBaseURL,
+  timeout: REQUEST_TIMEOUT,
 });
 
 const authClient = axios.create({
   baseURL: apiBaseURL,
+  timeout: REQUEST_TIMEOUT,
 });
 
 let refreshPromise = null;

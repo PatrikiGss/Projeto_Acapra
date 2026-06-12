@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../services/api";
+import { safeExternalUrl } from "../../utils/url";
 import "./footer.css";
 
 function toWhatsAppHref(numero) {
@@ -21,6 +22,11 @@ function Footer() {
     contato?.whatsapp_doacoes ||
     contato?.whatsapp_financeiro ||
     null;
+
+  // URLs definidas por admin: só renderiza se forem http(s) seguras
+  // (bloqueia javascript:, data:, etc.).
+  const instagramUrl = safeExternalUrl(contato?.instagram);
+  const facebookUrl = safeExternalUrl(contato?.facebook);
 
   return (
     <footer className="site-footer" id="contato">
@@ -58,17 +64,17 @@ function Footer() {
           <a href={`mailto:${contato.email}`}>{contato.email}</a>
         )}
         {primeiroWhatsApp && (
-          <a href={toWhatsAppHref(primeiroWhatsApp)} target="_blank" rel="noreferrer">
+          <a href={toWhatsAppHref(primeiroWhatsApp)} target="_blank" rel="noopener noreferrer">
             {primeiroWhatsApp}
           </a>
         )}
-        {contato?.instagram && (
-          <a href={contato.instagram} target="_blank" rel="noreferrer">
+        {instagramUrl && (
+          <a href={instagramUrl} target="_blank" rel="noopener noreferrer">
             Instagram
           </a>
         )}
-        {contato?.facebook && (
-          <a href={contato.facebook} target="_blank" rel="noreferrer">
+        {facebookUrl && (
+          <a href={facebookUrl} target="_blank" rel="noopener noreferrer">
             Facebook
           </a>
         )}

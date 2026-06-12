@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
+import { validateImageFile, IMAGE_ACCEPT } from "../../utils/upload";
 import "./NewsComposer.css";
 
 function NewsComposer({ categoria, categoriaLabel, backPath }) {
@@ -30,6 +31,14 @@ function NewsComposer({ categoria, categoriaLabel, backPath }) {
   };
 
   const lidarComFoto = (file) => {
+    if (file) {
+      const erroValidacao = validateImageFile(file);
+      if (erroValidacao) {
+        setErro(erroValidacao);
+        return;
+      }
+    }
+    setErro("");
     limparPreview();
     setFotoFile(file || null);
     setFotoPreview(file ? URL.createObjectURL(file) : "");
@@ -117,7 +126,7 @@ function NewsComposer({ categoria, categoriaLabel, backPath }) {
               <span>Foto</span>
               <input
                 type="file"
-                accept="image/*"
+                accept={IMAGE_ACCEPT}
                 onChange={(event) => lidarComFoto(event.target.files?.[0] || null)}
                 required
               />

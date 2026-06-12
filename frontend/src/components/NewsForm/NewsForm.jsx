@@ -4,6 +4,8 @@ import api, { getMediaURL } from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import { getApiErrorMessage } from "../../utils/errorUtils";
+import { logError } from "../../utils/logger";
+import { validateImageFile, IMAGE_ACCEPT } from "../../utils/upload";
 import "./NewsForm.css";
 
 const categoriaLabels = {
@@ -64,7 +66,7 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
         });
       } catch (error) {
         if (controller.signal.aborted) return;
-        console.error(error);
+        logError("NewsForm", error);
         setErro("Não foi possível carregar a publicação.");
       } finally {
         if (!controller.signal.aborted) {
@@ -105,6 +107,14 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
   };
 
   const lidarComFoto = (file) => {
+    if (file) {
+      const erroValidacao = validateImageFile(file);
+      if (erroValidacao) {
+        setErro(erroValidacao);
+        return;
+      }
+    }
+    setErro("");
     limparPreview();
     setFotoFile(file || null);
     setFotoPreview(file ? URL.createObjectURL(file) : "");
@@ -217,7 +227,7 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
 
             <input
               type="file"
-              accept="image/*"
+              accept={IMAGE_ACCEPT}
               onChange={(event) => lidarComFoto(event.target.files?.[0] || null)}
             />
           </label>

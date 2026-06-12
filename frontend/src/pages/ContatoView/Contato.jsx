@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 import { isMaster } from "../../utils/permissions";
+import { safeExternalUrl } from "../../utils/url";
 import "./Contato.css";
 
 function IconWhatsApp() {
@@ -90,10 +91,15 @@ function Contato() {
     ? WHATSAPP_CAMPOS.filter((c) => contato[c.key])
     : [];
 
+  // URLs de redes sociais são definidas por admin; valida o esquema (http/https)
+  // antes de renderizar no href para impedir injeção de javascript:/data:.
+  const instagramUrl = safeExternalUrl(contato?.instagram);
+  const facebookUrl = safeExternalUrl(contato?.facebook);
+
   const redesVisiveis = contato
     ? [
-        contato.instagram && { key: "instagram", label: "Instagram", href: contato.instagram, Icon: IconInstagram, cor: "instagram" },
-        contato.facebook  && { key: "facebook",  label: "Facebook",  href: contato.facebook,  Icon: IconFacebook,  cor: "facebook"  },
+        instagramUrl && { key: "instagram", label: "Instagram", href: instagramUrl, Icon: IconInstagram, cor: "instagram" },
+        facebookUrl  && { key: "facebook",  label: "Facebook",  href: facebookUrl,  Icon: IconFacebook,  cor: "facebook"  },
         contato.email     && { key: "email",      label: "E-mail",    href: `mailto:${contato.email}`, Icon: IconEmail, cor: "email", valor: contato.email },
       ].filter(Boolean)
     : [];

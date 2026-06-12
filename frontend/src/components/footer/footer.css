@@ -4,7 +4,7 @@
   align-items: start;
   gap: 2rem;
   padding: 2.5rem clamp(1rem, 4vw, 3.5rem);
-  background: #fbfaf8;
+  background: #f4f3f1;
   color: #242424;
   border-top: 1px solid #eee7df;
 }
@@ -52,7 +52,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #999;
+  color: #666;
   margin-bottom: 0.25rem;
 }
 
@@ -87,7 +87,7 @@
 
 .footer-copy {
   margin: 0.5rem 0 0;
-  color: #aaa;
+  color: #777;
   font-size: 0.8rem;
 }
 

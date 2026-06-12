@@ -5,6 +5,8 @@ import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import EmptyState from "../../components/ui/EmptyState";
 import { getResponseItems } from "../../utils/collection";
 import { getApiErrorMessage } from "../../utils/errorUtils";
+import { logError } from "../../utils/logger";
+import { validateImageFile, IMAGE_ACCEPT } from "../../utils/upload";
 import "./Doe.css";
 
 const bankFields = [
@@ -58,7 +60,7 @@ function Doe() {
         setError(false);
       } catch (erro) {
         if (!ativo) return;
-        console.error(erro);
+        logError("Doe", erro);
         setError(true);
       } finally {
         if (ativo) {
@@ -102,7 +104,7 @@ function Doe() {
       setDadosList(getResponseItems(response.data));
       setError(false);
     } catch (erro) {
-      console.error(erro);
+      logError("Doe", erro);
       setError(true);
     } finally {
       setLoading(false);
@@ -177,6 +179,14 @@ function Doe() {
   };
 
   const lidarComQrCode = (file) => {
+    if (file) {
+      const erroValidacao = validateImageFile(file);
+      if (erroValidacao) {
+        setErroFormulario(erroValidacao);
+        return;
+      }
+    }
+    setErroFormulario("");
     limparPreview();
     setQrCodeFile(file || null);
     setRemoverQrCode(false);
@@ -198,7 +208,7 @@ function Doe() {
       await navigator.clipboard.writeText(dadosDoacao.chave_pix);
       setCopiado(true);
     } catch (error) {
-      console.error(error);
+      logError("Doe", error);
       setErroFormulario("Não foi possível copiar a chave PIX.");
     }
   };
@@ -446,7 +456,7 @@ function Doe() {
                   QR Code
                   <input
                     type="file"
-                    accept="image/*"
+                    accept={IMAGE_ACCEPT}
                     onChange={(event) => lidarComQrCode(event.target.files?.[0] || null)}
                   />
                 </label>

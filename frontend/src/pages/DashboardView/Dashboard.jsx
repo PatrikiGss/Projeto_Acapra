@@ -13,6 +13,7 @@ import {
   podeGerenciar,
   temAcessoDashboard,
 } from "../../utils/permissions";
+import { logError } from "../../utils/logger";
 import "./Dashboard.css";
 
 const MODULOS_RAPIDOS = [
@@ -83,7 +84,7 @@ function Dashboard() {
         }
       } catch (requestError) {
         if (!cancelado) {
-          console.error(requestError);
+          logError("Dashboard", requestError);
           setErro("Não foi possível carregar o painel administrativo.");
         }
       } finally {
@@ -150,7 +151,7 @@ function Dashboard() {
 
       setMensagem("Vínculo administrativo atualizado com sucesso.");
     } catch (requestError) {
-      console.error(requestError);
+      logError("Dashboard", requestError);
       const detalhe =
         requestError.response?.data?.nivel?.[0] ||
         requestError.response?.data?.non_field_errors?.[0] ||

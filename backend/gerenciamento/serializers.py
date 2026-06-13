@@ -27,7 +27,8 @@ class UsuarioSerializer(serializers.ModelSerializer):
         return value.lower().strip()
 
     def validate_password(self, value):
-        # Aplica validações do Django (tamanho, comum, numérica, etc)
+        if len(value) > 128:
+            raise serializers.ValidationError("A senha não pode ter mais de 128 caracteres.")
         validate_password(value)
         return value
 
@@ -144,9 +145,8 @@ class ChangePasswordSerializer(serializers.Serializer):
         return value
 
     def validate_new_password(self, value):
-        """
-        Aplica validações de segurança do Django.
-        """
+        if len(value) > 128:
+            raise serializers.ValidationError("A senha não pode ter mais de 128 caracteres.")
         user = self.context['request'].user
         validate_password(value, user)
         return value

@@ -37,3 +37,20 @@ class PasswordResetRateThrottle(_BaseIPThrottle):
 
 class PublicFormRateThrottle(_BaseIPThrottle):
     scope = "public_form"
+
+
+class PasswordChangeRateThrottle(SimpleRateThrottle):
+    """Rate limit por user_id para endpoint autenticado de troca de senha.
+
+    Usar user_id (não IP) porque o endpoint exige autenticação: o que importa
+    é quantas tentativas o mesmo usuário faz, independente de qual IP ele usa.
+    """
+    scope = "password_change"
+
+    def get_cache_key(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return None
+        return self.cache_format % {
+            "scope": self.scope,
+            "ident": request.user.pk,
+        }

@@ -5,6 +5,8 @@ from .views import (
     ChangePasswordView,
     DashboardView,
     MeuPerfilView,
+    PasswordResetConfirmView,
+    PasswordResetRequestView,
     RegisterView,
     ThrottledLoginView,
     ThrottledRefreshView,
@@ -38,6 +40,12 @@ urlpatterns = [
     # Logout (blacklist do refresh token)
     # Requer envio do refresh token no body
     path('auth/logout/', TokenBlacklistView.as_view(), name='logout'),
+
+    # Solicita link de redefinição de senha (envia e-mail)
+    path('auth/password-reset/request/', PasswordResetRequestView.as_view(), name='password_reset_request'),
+
+    # Confirma nova senha com token recebido por e-mail
+    path('auth/password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
 
 
     # =========================

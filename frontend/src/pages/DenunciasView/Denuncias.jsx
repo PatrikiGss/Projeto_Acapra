@@ -2,10 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import api from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
 import { formatBrazilianPhone, toBrazilianPhoneE164 } from "../../utils/phone";
-import LoadingSpinner from "../../components/ui/LoadingSpinner";
-import EmptyState from "../../components/ui/EmptyState";
+import { validateImageFile, IMAGE_ACCEPT } from "../../utils/upload";
 import ConfirmModal from "../../components/ui/ConfirmModal";
-import { getApiErrorMessage } from "../../utils/errorUtils";
+import "../VoluntariadoView/Voluntariado.css";
 import "./Denuncias.css";
 
 const GRAVIDADE_OPCOES = [
@@ -81,7 +80,17 @@ function Denuncias() {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === "foto") {
-      setForm((f) => ({ ...f, foto: files[0] || null }));
+      const file = files[0] || null;
+      if (file) {
+        const erroValidacao = validateImageFile(file);
+        if (erroValidacao) {
+          setErro(erroValidacao);
+          e.target.value = "";
+          return;
+        }
+      }
+      setErro("");
+      setForm((f) => ({ ...f, foto: file }));
     } else if (name === "telefone") {
       setForm((f) => ({ ...f, telefone: formatBrazilianPhone(value) }));
     } else {
@@ -135,10 +144,6 @@ function Denuncias() {
       .catch(() => setErroAcao("Não foi possível atualizar o status."));
   };
 
-  const excluirDenuncia = (denuncia) => {
-    setConfirmacao(denuncia);
-  };
-
   const confirmarExclusao = () => {
     if (!confirmacao) return;
     api
@@ -148,7 +153,7 @@ function Denuncias() {
         setConfirmacao(null);
       })
       .catch(() => {
-        setErroAcao(getApiErrorMessage(null, "Não foi possível remover a denúncia."));
+        setErroAcao("Não foi possível remover a denúncia.");
         setConfirmacao(null);
       });
   };
@@ -166,9 +171,9 @@ function Denuncias() {
         </div>
 
         {!podeEditar && (
-          <form className="denuncias-form" onSubmit={handleSubmit}>
+          <form className="voluntariado-form" onSubmit={handleSubmit}>
             <label>
-              Título <span className="campo-obrigatorio">*</span>
+              Título *
               <input
                 name="titulo"
                 type="text"
@@ -181,7 +186,7 @@ function Denuncias() {
             </label>
 
             <label>
-              Gravidade <span className="campo-obrigatorio">*</span>
+              Gravidade *
               <select
                 name="gravidade"
                 value={form.gravidade}
@@ -196,7 +201,7 @@ function Denuncias() {
             </label>
 
             <label>
-              Descrição <span className="campo-obrigatorio">*</span>
+              Descrição *
               <textarea
                 name="descricao"
                 value={form.descricao}
@@ -242,7 +247,7 @@ function Denuncias() {
                 ref={fotoInputRef}
                 name="foto"
                 type="file"
-                accept="image/*"
+                accept={IMAGE_ACCEPT}
                 onChange={handleChange}
               />
             </label>
@@ -260,23 +265,21 @@ function Denuncias() {
           <section className="denuncias-admin">
             <div className="denuncias-admin-header">
               <h2>Denúncias recebidas</h2>
-              <p>Lista de denúncias enviadas pelos usuários.</p>
+              <p>Todas as denúncias enviadas pelos usuários.</p>
             </div>
 
-            {loadingLista && <LoadingSpinner label="Carregando denúncias..." />}
+            {loadingLista && (
+              <p className="denuncias-admin-message">Carregando...</p>
+            )}
 
             {!loadingLista && erroLista && (
-              <EmptyState
-                title="Não foi possível carregar as denúncias."
-                description={erroLista}
-              />
+              <p className="denuncias-admin-message error">{erroLista}</p>
             )}
 
             {!loadingLista && !erroLista && denuncias.length === 0 && (
-              <EmptyState
-                title="Nenhuma denúncia recebida até o momento."
-                description="As denúncias enviadas pelos usuários aparecerão aqui."
-              />
+              <p className="denuncias-admin-message">
+                Nenhuma denúncia recebida até o momento.
+              </p>
             )}
 
             {!loadingLista && !erroLista && denuncias.length > 0 && (
@@ -303,7 +306,7 @@ function Denuncias() {
                         <button
                           type="button"
                           className="denuncia-delete-button"
-                          onClick={() => excluirDenuncia(d)}
+                          onClick={() => setConfirmacao(d)}
                         >
                           Remover
                         </button>
@@ -312,23 +315,11 @@ function Denuncias() {
 
                     <dl className="denuncia-card-details">
                       {d.nome && (
-                        <div>
-                          <dt>Nome</dt>
-                          <dd>{d.nome}</dd>
-                        </div>
+                        <div><dt>Nome</dt><dd>{d.nome}</dd></div>
                       )}
-                      <div>
-                        <dt>Telefone</dt>
-                        <dd>{d.telefone}</dd>
-                      </div>
-                      <div>
-                        <dt>Status</dt>
-                        <dd>{d.status_display}</dd>
-                      </div>
-                      <div>
-                        <dt>Recebida em</dt>
-                        <dd>{formatarData(d.created_at)}</dd>
-                      </div>
+                      <div><dt>Telefone</dt><dd>{d.telefone}</dd></div>
+                      <div><dt>Status</dt><dd>{d.status_display}</dd></div>
+                      <div><dt>Recebida em</dt><dd>{formatarData(d.created_at)}</dd></div>
                     </dl>
 
                     <div className="denuncia-card-descricao">
@@ -348,13 +339,11 @@ function Denuncias() {
                 ))}
               </div>
             )}
-
-            {erroAcao && (
-              <p className="denuncias-admin-message error">{erroAcao}</p>
-            )}
           </section>
         )}
       </section>
+
+      {erroAcao && <p className="denuncias-erro-acao">{erroAcao}</p>}
 
       <ConfirmModal
         open={Boolean(confirmacao)}

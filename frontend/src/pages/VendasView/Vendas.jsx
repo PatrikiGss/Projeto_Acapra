@@ -6,6 +6,8 @@ import EmptyState from "../../components/ui/EmptyState";
 import ConfirmModal from "../../components/ui/ConfirmModal";
 import { getResponseItems } from "../../utils/collection";
 import { getApiErrorMessage } from "../../utils/errorUtils";
+import { logError } from "../../utils/logger";
+import { validateImageFile, IMAGE_ACCEPT } from "../../utils/upload";
 import "./Vendas.css";
 
 const formVazio = {
@@ -37,7 +39,7 @@ function Vendas() {
     const carregarProdutos = () => {
         api.get("/api/vendas/produtos/")
             .then((response) => setProdutos(getResponseItems(response.data)))
-            .catch((error) => console.error(error));
+            .catch((error) => logError("Vendas", error));
     };
 
     useEffect(() => {
@@ -163,6 +165,15 @@ function Vendas() {
     };
 
     const lidarComFotoPrincipal = (file) => {
+        if (file) {
+            const erroValidacao = validateImageFile(file);
+            if (erroValidacao) {
+                setErroFormulario(erroValidacao);
+                return;
+            }
+        }
+        setErroFormulario("");
+
         if (previewFotoPrincipal.startsWith("blob:")) {
             URL.revokeObjectURL(previewFotoPrincipal);
         }
@@ -172,13 +183,29 @@ function Vendas() {
     };
 
     const lidarComFotosAdicionais = (files) => {
+        const lista = Array.from(files || []);
+
+        if (lista.length > 10) {
+            setErroFormulario("Selecione no máximo 10 imagens.");
+            return;
+        }
+
+        for (const file of lista) {
+            const erroValidacao = validateImageFile(file);
+            if (erroValidacao) {
+                setErroFormulario(erroValidacao);
+                return;
+            }
+        }
+        setErroFormulario("");
+
         fotosAdicionais.forEach((foto) => {
             if (foto.preview.startsWith("blob:")) {
                 URL.revokeObjectURL(foto.preview);
             }
         });
 
-        const selecionadas = Array.from(files || []).map((file) => ({
+        const selecionadas = lista.map((file) => ({
             file,
             preview: URL.createObjectURL(file),
         }));
@@ -212,7 +239,7 @@ function Vendas() {
         }
 
         fotosAdicionais.forEach((foto) => {
-            payload.append("fotos", foto.file);
+            payload.append("fotos[]", foto.file);
         });
 
         try {
@@ -345,8 +372,8 @@ function Vendas() {
                         Tipo
                         <select value={tipo} onChange={(event) => setTipo(event.target.value)}>
                             <option value="todos">Todos</option>
-                            <option value="humano">Vestuário humano</option>
-                            <option value="pet">Vestuário para pet</option>
+                            <option value="humano">Para pessoas</option>
+                            <option value="pet">Para pets</option>
                         </select>
                     </label>
 
@@ -400,8 +427,8 @@ function Vendas() {
                                 <label>
                                     Tipo
                                     <select name="tipo" value={formulario.tipo} onChange={alterarCampo}>
-                                        <option value="humano">Vestuário humano</option>
-                                        <option value="pet">Vestuário para pet</option>
+                                        <option value="humano">Para pessoas</option>
+                                        <option value="pet">Para pets</option>
                                     </select>
                                 </label>
 
@@ -447,7 +474,7 @@ function Vendas() {
                                     Foto principal
                                     <input
                                         type="file"
-                                        accept="image/*"
+                                        accept={IMAGE_ACCEPT}
                                         onChange={(event) => lidarComFotoPrincipal(event.target.files?.[0] || null)}
                                     />
                                 </label>
@@ -456,7 +483,7 @@ function Vendas() {
                                     Fotos adicionais
                                     <input
                                         type="file"
-                                        accept="image/*"
+                                        accept={IMAGE_ACCEPT}
                                         multiple
                                         onChange={(event) => lidarComFotosAdicionais(event.target.files)}
                                     />

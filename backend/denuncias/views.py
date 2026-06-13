@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
 
 from gerenciamento.permissions import require_module
+from core.throttling import PublicFormRateThrottle
 
 from .models import Denuncia
 from .serializers import (
@@ -24,6 +25,12 @@ class DenunciasView(APIView):
         if self.request.method == "POST":
             return [AllowAny()]
         return [IsAuthenticated(), require_module("denuncias")()]
+
+    def get_throttles(self):
+        # Limita o envio público de denúncias (20/min por IP).
+        if self.request.method == "POST":
+            return [PublicFormRateThrottle()]
+        return super().get_throttles()
 
     def get(self, request):
         denuncias = Denuncia.objects.all()

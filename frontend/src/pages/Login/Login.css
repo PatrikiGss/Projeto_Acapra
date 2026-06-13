@@ -158,6 +158,32 @@
   cursor: not-allowed;
 }
 
+.login-esqueceu {
+  text-align: right;
+  margin-top: -0.3rem;
+}
+
+.login-esqueceu a {
+  color: #888;
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
+.login-esqueceu a:hover {
+  color: #e87722;
+  text-decoration: underline;
+}
+
+.login-sucesso {
+  background-color: #f0fdf4;
+  border: 1px solid #22c55e;
+  color: #166534;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
 .login-register {
   text-align: center;
   margin-top: 1.5rem;

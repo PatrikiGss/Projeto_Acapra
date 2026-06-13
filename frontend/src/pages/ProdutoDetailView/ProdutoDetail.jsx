@@ -2,6 +2,7 @@
 import { useParams } from "react-router-dom";
 import api from "../../services/api";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import { logError } from "../../utils/logger";
 import "./ProdutoDetail.css";
 
 function ProdutoDetail() {
@@ -18,7 +19,7 @@ function ProdutoDetail() {
                 setError(false);
             })
             .catch((erro) => {
-                console.error(erro);
+                logError("ProdutoDetail", erro);
                 setError(true);
             })
             .finally(() => setLoading(false));

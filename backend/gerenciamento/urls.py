@@ -5,12 +5,14 @@ from .views import (
     ChangePasswordView,
     DashboardView,
     MeuPerfilView,
+    PasswordResetConfirmView,
+    PasswordResetRequestView,
     RegisterView,
+    ThrottledLoginView,
+    ThrottledRefreshView,
 )
 
 from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
     TokenBlacklistView
 )
 
@@ -27,17 +29,23 @@ urlpatterns = [
     # Público (não requer autenticação)
     path('auth/register/', RegisterView.as_view(), name='register'),
 
-    # Login JWT
+    # Login JWT (com rate limiting por IP)
     # Retorna access + refresh token
-    path('auth/login/', TokenObtainPairView.as_view(), name='login'),
+    path('auth/login/', ThrottledLoginView.as_view(), name='login'),
 
-    # Refresh do token
+    # Refresh do token (com rate limiting por IP)
     # Usa refresh token para gerar novo access token
-    path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('auth/refresh/', ThrottledRefreshView.as_view(), name='token_refresh'),
 
     # Logout (blacklist do refresh token)
     # Requer envio do refresh token no body
     path('auth/logout/', TokenBlacklistView.as_view(), name='logout'),
+
+    # Solicita link de redefinição de senha (envia e-mail)
+    path('auth/password-reset/request/', PasswordResetRequestView.as_view(), name='password_reset_request'),
+
+    # Confirma nova senha com token recebido por e-mail
+    path('auth/password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
 
 
     # =========================

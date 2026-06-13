@@ -27,6 +27,37 @@
     line-height: 1.6;
 }
 
+.voluntariado-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.07);
+    padding-bottom: 0;
+}
+
+.voluntariado-tab {
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    padding: 0.65rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #666;
+    cursor: pointer;
+    transition: color 0.18s ease, border-color 0.18s ease;
+    letter-spacing: 0.3px;
+}
+
+.voluntariado-tab:hover {
+    color: #e87722;
+}
+
+.voluntariado-tab.active {
+    color: #e87722;
+    border-bottom-color: #e87722;
+}
+
 
 .voluntariado-form {
     border: 1px solid rgba(224, 224, 224, 0.85);
@@ -54,6 +85,7 @@
 }
 
 .voluntariado-form input,
+.voluntariado-form select,
 .voluntariado-form textarea {
     width: 100%;
     padding: 0.75rem 0.85rem;
@@ -74,6 +106,7 @@
 }
 
 .voluntariado-form input:focus-visible,
+.voluntariado-form select:focus-visible,
 .voluntariado-form textarea:focus-visible {
     outline: 2px solid #e87722;
     outline-offset: 3px;

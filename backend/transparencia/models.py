@@ -1,5 +1,8 @@
 from django.db import models
 
+from core.uploads import upload_transparencia, upload_transparencia_documentos
+from core.validators import validate_document_upload
+
 
 class TipoMovimento(models.TextChoices):
     ENTRADA = "entrada", "Entrada"
@@ -31,9 +34,10 @@ class Movimento(models.Model):
     valor = models.DecimalField(max_digits=10, decimal_places=2)
     data = models.DateField()
     comprovante = models.FileField(
-        upload_to="transparencia/%Y/%m/%d",
+        upload_to=upload_transparencia,
         blank=True,
         null=True,
+        validators=[validate_document_upload],
     )
     ativo = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -52,9 +56,10 @@ class DocumentoInstitucional(models.Model):
     nome = models.CharField(max_length=200)
     descricao = models.CharField(max_length=300, blank=True, default="")
     arquivo = models.FileField(
-        upload_to="transparencia/documentos/%Y/%m/%d",
+        upload_to=upload_transparencia_documentos,
         blank=True,
         null=True,
+        validators=[validate_document_upload],
     )
     ativo = models.BooleanField(default=True)
     ordem = models.PositiveSmallIntegerField(default=0)

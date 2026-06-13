@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -11,6 +12,10 @@ class UsuarioAPITestCase(APITestCase):
     """
 
     def setUp(self):
+        # Zera o histórico de rate limiting (throttling) entre os testes,
+        # já que o cache é compartilhado no mesmo processo de teste.
+        cache.clear()
+
         # Usuário base usado na maioria dos testes
         self.user = Usuario.objects.create_user(
             email="teste@email.com",

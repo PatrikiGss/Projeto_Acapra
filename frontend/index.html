@@ -5,10 +5,25 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="/logo.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!--
+    CSP do SPA. 'unsafe-inline' é mantido apenas em style-src porque o React
+    aplica estilos inline (atributo style) e o Vite injeta estilos em dev — não
+    há 'unsafe-inline'/'unsafe-eval' em script-src. img-src/connect-src incluem
+    https: para permitir mídia e API quando o backend está em outra origem;
+    se o backend for servido na mesma origem, é possível restringir a 'self'.
+  -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
+    script-src 'self';
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    font-src 'self' https://fonts.gstatic.com;
+    font-src 'self' https://fonts.gstatic.com data:;
+    img-src 'self' data: blob: https:;
+    connect-src 'self' https:;
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+    frame-ancestors 'none';
+    upgrade-insecure-requests;
   ">
   <title>Acapra</title>
 </head>

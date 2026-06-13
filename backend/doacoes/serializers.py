@@ -1,32 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 
-from .models import DadosPix, DoacaoItem
-
-
-class DoacaoItemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DoacaoItem
-        fields = ['nome', 'telefone', 'email', 'descricao']
-
-    def validate_telefone(self, value):
-        value = value.strip()
-        if not value:
-            raise serializers.ValidationError("Informe um número de telefone válido.")
-        return value
-
-    def validate_descricao(self, value):
-        value = value.strip()
-        if len(value) < 10:
-            raise serializers.ValidationError("A descrição deve ter ao menos 10 caracteres.")
-        return value
-
-
-class GetDoacaoItemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DoacaoItem
-        fields = ['id', 'nome', 'telefone', 'email', 'descricao', 'created_at']
-        read_only_fields = fields
+from .models import DadosPix
 
 
 def _absolute_file_url(request, file_field):

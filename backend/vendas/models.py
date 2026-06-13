@@ -1,9 +1,12 @@
 from django.db import models
 
+from core.uploads import upload_produtos
+from core.validators import validate_image_upload
+
 
 class TipoVestuario(models.TextChoices):
-    HUMANO = 'humano', 'Vestuário Humano'
-    PET = 'pet', 'Vestuário para Pet'
+    HUMANO = 'humano', 'Para pessoas'
+    PET = 'pet', 'Para pets'
 
 
 class Produto(models.Model):
@@ -32,10 +35,11 @@ class Produto(models.Model):
     )
     
     foto = models.ImageField(
-        upload_to='produtos/%Y/%m/%d',
+        upload_to=upload_produtos,
         blank=True,
         null=True,
-        help_text="Foto do produto"
+        help_text="Foto do produto",
+        validators=[validate_image_upload],
     )
     
     estoque = models.IntegerField(
@@ -67,7 +71,8 @@ class ProdutoImagem(models.Model):
         on_delete=models.CASCADE,
     )
     imagem = models.ImageField(
-        upload_to="produtos/%Y/%m/%d",
+        upload_to=upload_produtos,
+        validators=[validate_image_upload],
     )
     ordem = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)

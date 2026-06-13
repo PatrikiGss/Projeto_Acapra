@@ -8,6 +8,8 @@ import EmptyState from "../../components/ui/EmptyState";
 import ConfirmModal from "../../components/ui/ConfirmModal";
 import { getResponseItems } from "../../utils/collection";
 import { getApiErrorMessage } from "../../utils/errorUtils";
+import { logError } from "../../utils/logger";
+import { validateImageFile, IMAGE_ACCEPT } from "../../utils/upload";
 
 const formVazio = {
     nome_animal: "",
@@ -40,7 +42,7 @@ function Adocao() {
     const carregarAnimais = () => {
         api.get("/api/adocao/animais/")
             .then((response) => setAnimais(getResponseItems(response.data)))
-            .catch((error) => console.error(error));
+            .catch((error) => logError("Adocao", error));
     };
 
     useEffect(() => {
@@ -159,19 +161,43 @@ function Adocao() {
     };
 
     const lidarComFotoPrincipal = (file) => {
+        if (file) {
+            const erroValidacao = validateImageFile(file);
+            if (erroValidacao) {
+                setErroFormulario(erroValidacao);
+                return;
+            }
+        }
+        setErroFormulario("");
         if (previewFotoPrincipal.startsWith("blob:")) URL.revokeObjectURL(previewFotoPrincipal);
         setFotoPrincipal(file || null);
         setPreviewFotoPrincipal(file ? URL.createObjectURL(file) : "");
     };
 
     const lidarComFotosAdicionais = (files) => {
+        const lista = Array.from(files || []);
+
+        if (lista.length > 10) {
+            setErroFormulario("Selecione no máximo 10 imagens.");
+            return;
+        }
+
+        for (const file of lista) {
+            const erroValidacao = validateImageFile(file);
+            if (erroValidacao) {
+                setErroFormulario(erroValidacao);
+                return;
+            }
+        }
+        setErroFormulario("");
+
         fotosAdicionais.forEach((foto) => {
             if (foto.preview.startsWith("blob:")) {
                 URL.revokeObjectURL(foto.preview);
             }
         });
 
-        setFotosAdicionais(Array.from(files || []).map((file) => ({
+        setFotosAdicionais(lista.map((file) => ({
             file,
             preview: URL.createObjectURL(file),
         })));
@@ -384,6 +410,13 @@ function Adocao() {
                     >
                         Gatos
                     </button>
+                    <button
+                        className={filtroEspecie === "outros" ? "active" : ""}
+                        type="button"
+                        onClick={() => setFiltroEspecie("outros")}
+                    >
+                        Outros
+                    </button>
                     <span className="adocao-toolbar-divider" aria-hidden="true" />
                     <button
                         className={`adotados-filter${filtroEspecie === "adotados" ? " active" : ""}`}
@@ -485,6 +518,7 @@ function Adocao() {
                                     <select name="especie" value={formulario.especie} onChange={alterarCampo}>
                                         <option value="cachorro">Cachorro</option>
                                         <option value="gato">Gato</option>
+                                        <option value="outros">Outros</option>
                                     </select>
                                 </label>
 
@@ -512,7 +546,7 @@ function Adocao() {
                                     Foto principal
                                     <input
                                         type="file"
-                                        accept="image/*"
+                                        accept={IMAGE_ACCEPT}
                                         onChange={(event) => lidarComFotoPrincipal(event.target.files?.[0] || null)}
                                     />
                                 </label>
@@ -521,7 +555,7 @@ function Adocao() {
                                     Fotos adicionais
                                     <input
                                         type="file"
-                                        accept="image/*"
+                                        accept={IMAGE_ACCEPT}
                                         multiple
                                         onChange={(event) => lidarComFotosAdicionais(event.target.files)}
                                     />

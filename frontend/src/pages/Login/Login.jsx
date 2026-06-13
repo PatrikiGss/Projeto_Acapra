@@ -8,15 +8,18 @@ import {
   setAuthSession,
   subscribeToAuthChanges,
 } from "../../utils/auth";
+import { safeInternalPath } from "../../utils/url";
 import "./Login.css";
 
 function Login() {
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from || "/";
+  // Garante redirecionamento apenas para rotas internas (anti open-redirect).
+  const from = safeInternalPath(location.state?.from, "/");
   const [form, setForm] = useState({ email: "", password: "" });
   const [erro, setErro] = useState(null);
   const [loading, setLoading] = useState(false);
+  const sucesso = location.state?.sucesso ?? null;
   const [estaLogado, setEstaLogado] = useState(isLoggedIn());
   const [usuario, setUsuario] = useState(getStoredUser());
   const [carregandoUsuario, setCarregandoUsuario] = useState(false);
@@ -176,6 +179,8 @@ function Login() {
           </div>
         ) : (
           <>
+            {sucesso && <p className="login-sucesso">{sucesso}</p>}
+
             <form onSubmit={handleSubmit} className="login-form">
               <div className="login-field">
                 <label htmlFor="email">E-mail</label>
@@ -201,6 +206,10 @@ function Login() {
                   onChange={handleChange}
                   required
                 />
+              </div>
+
+              <div className="login-esqueceu">
+                <Link to="/esqueci-senha">Esqueceu sua senha?</Link>
               </div>
 
               {erro && <p className="login-erro">{erro}</p>}

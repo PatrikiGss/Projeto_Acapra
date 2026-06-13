@@ -182,7 +182,7 @@ class AccessControlTests(BaseSecurityTest):
     def test_master_acessa_admin(self):
         master = make_user(
             email="master@acapra.org", telefone="+5547988880005",
-            nivel=PerfilAdministrativo.Nivel.MASTER,
+            nivel=PerfilAdministrativo.Nivel.DIRETOR_ACAPRA,
         )
         self.client.force_authenticate(user=master)
         resp = self.client.get(self.admin_url)

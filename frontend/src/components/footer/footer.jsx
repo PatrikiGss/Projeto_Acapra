@@ -10,6 +10,16 @@ function toWhatsAppHref(numero) {
   return `https://wa.me/${num}`;
 }
 
+const DESENVOLVEDORES = [
+  "patrikigss321@gmail.com",
+  "kauegustavokluska@gmail.com",
+  "iagoamaral607@gmail.com",
+  "mateuscorreiacoelho706@gmail.com",
+  "anderson.bolduan@gmail.com",
+  "vanderlei.junior1993@gmail.com",
+  "tonetto.irai@gmail.com",
+];
+
 function Footer() {
   const [contato, setContato] = useState(null);
 
@@ -78,7 +88,24 @@ function Footer() {
             Facebook
           </a>
         )}
-        <p className="footer-copy">© 2026 Acapra</p>
+      </div>
+
+      <div className="footer-bottom">
+        <p className="footer-copy">
+          © 2026 <strong>ACAPRA</strong> — Todos os direitos reservados.
+        </p>
+        <div className="footer-credits">
+          <span className="footer-credits-title">Desenvolvido por</span>
+          <ul className="footer-credits-list">
+            {DESENVOLVEDORES.map((email) => (
+              <li key={email}>
+                <a href={`mailto:${email}`} title={`Enviar e-mail para ${email}`}>
+                  {email}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </footer>
   );

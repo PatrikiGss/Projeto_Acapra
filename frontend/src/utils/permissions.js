@@ -2,37 +2,50 @@ import { getStoredUser } from "./auth";
 
 export const NIVEIS = {
   USUARIO: "usuario",
-  DOACOES: "doacoes",
-  FINANCEIRO: "financeiro",
-  MASTER: "master",
+  AUXILIAR_GERAL: "auxiliar_geral",
+  ADMIN: "admin",
+  TESOUREIRO: "tesoureiro",
+  DIRETOR_ACAPRA: "diretor_acapra",
 };
 
 export const NIVEL_LABELS = {
-  usuario: "Usuário sem vínculo",
-  doacoes: "Doações",
-  financeiro: "Financeiro",
-  master: "Diretor Acapra",
+  [NIVEIS.USUARIO]: "Usuário sem vínculo",
+  [NIVEIS.AUXILIAR_GERAL]: "Auxiliar Geral",
+  [NIVEIS.ADMIN]: "Administrador",
+  [NIVEIS.TESOUREIRO]: "Tesoureiro",
+  [NIVEIS.DIRETOR_ACAPRA]: "Diretor Acapra",
 };
 
 export const NIVEL_OPCOES = [
-  { value: "usuario", label: "Usuário sem vínculo" },
-  { value: "doacoes", label: "Doações" },
-  { value: "financeiro", label: "Financeiro" },
-  { value: "master", label: "Diretor Acapra" },
+  { value: NIVEIS.USUARIO, label: NIVEL_LABELS[NIVEIS.USUARIO] },
+  { value: NIVEIS.AUXILIAR_GERAL, label: NIVEL_LABELS[NIVEIS.AUXILIAR_GERAL] },
+  { value: NIVEIS.ADMIN, label: NIVEL_LABELS[NIVEIS.ADMIN] },
+  { value: NIVEIS.TESOUREIRO, label: NIVEL_LABELS[NIVEIS.TESOUREIRO] },
+  { value: NIVEIS.DIRETOR_ACAPRA, label: NIVEL_LABELS[NIVEIS.DIRETOR_ACAPRA] },
+];
+
+// Espelha MODULOS_POR_NIVEL do backend (gerenciamento/permissions.py).
+// Hierarquia: DIRETOR_ACAPRA > TESOUREIRO > ADMIN > AUXILIAR_GERAL > USUARIO.
+const TODOS_ADMINS = [
+  NIVEIS.DIRETOR_ACAPRA,
+  NIVEIS.TESOUREIRO,
+  NIVEIS.ADMIN,
+  NIVEIS.AUXILIAR_GERAL,
 ];
 
 const MODULO_ACESSO = {
-  doacoes: [NIVEIS.MASTER, NIVEIS.FINANCEIRO],
-  noticias: [NIVEIS.MASTER, NIVEIS.DOACOES],
-  resgates: [NIVEIS.MASTER],
-  campanhas: [NIVEIS.MASTER],
-  adocao: [NIVEIS.MASTER, NIVEIS.DOACOES],
-  vendas: [NIVEIS.MASTER],
-  voluntariado: [NIVEIS.MASTER],
-  gerenciamento_usuarios: [NIVEIS.MASTER],
-  transparencia: [NIVEIS.MASTER, NIVEIS.FINANCEIRO],
-  denuncias: [NIVEIS.MASTER],
-  desaparecidos: [NIVEIS.MASTER, NIVEIS.DOACOES],
+  doacoes: [NIVEIS.DIRETOR_ACAPRA, NIVEIS.TESOUREIRO],
+  noticias: TODOS_ADMINS,
+  resgates: TODOS_ADMINS,
+  campanhas: TODOS_ADMINS,
+  // "desaparecidos" é uma categoria de publicação e segue o módulo de notícias.
+  desaparecidos: TODOS_ADMINS,
+  adocao: TODOS_ADMINS,
+  vendas: TODOS_ADMINS,
+  voluntariado: TODOS_ADMINS,
+  transparencia: [NIVEIS.DIRETOR_ACAPRA, NIVEIS.TESOUREIRO, NIVEIS.ADMIN],
+  denuncias: [NIVEIS.DIRETOR_ACAPRA, NIVEIS.TESOUREIRO, NIVEIS.ADMIN],
+  gerenciamento_usuarios: [NIVEIS.DIRETOR_ACAPRA],
 };
 
 export function getUserNivel(user = getStoredUser()) {
@@ -52,8 +65,8 @@ export function podeGerenciar(modulo, user = getStoredUser()) {
   return MODULO_ACESSO[modulo]?.includes(nivel) ?? false;
 }
 
-export function isMaster(user = getStoredUser()) {
-  return getUserNivel(user) === NIVEIS.MASTER;
+export function isDiretor(user = getStoredUser()) {
+  return getUserNivel(user) === NIVEIS.DIRETOR_ACAPRA;
 }
 
 export function temAcessoDashboard(user = getStoredUser()) {

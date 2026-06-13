@@ -4,9 +4,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
-from .models import PerfilAdministrativo, Usuario
+from .models import Usuario
 from .permissions import (
-    IsMaster,
+    IsDiretor,
     TemAcessoDashboard,
     get_modulos_usuario,
     get_nivel_usuario,
@@ -25,10 +25,14 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
+from auditoria.models import RegistroAuditoria
+from auditoria.services import registrar_auditoria
+from core.captcha import get_client_ip, verificar_captcha
 from core.throttling import (
     LoginRateThrottle,
     PasswordResetRateThrottle,
     RefreshRateThrottle,
+    RegisterDailyRateThrottle,
     RegisterRateThrottle,
 )
 
@@ -45,11 +49,13 @@ class ThrottledRefreshView(TokenRefreshView):
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
-    throttle_classes = [RegisterRateThrottle]
+    # Rajada (3/min) + teto diário (20/dia) por IP, ambos precisam passar.
+    throttle_classes = [RegisterRateThrottle, RegisterDailyRateThrottle]
     """
     Endpoint público para registro de novos usuários.
 
     Fluxo:
+    - Verifica o CAPTCHA (quando habilitado) para barrar bots
     - Recebe dados (nome, email, telefone, senha)
     - Valida via serializer
     - Cria usuário usando create_user (hash automático da senha)
@@ -57,6 +63,16 @@ class RegisterView(APIView):
     """
 
     def post(self, request):
+        # Verificação anti-robô antes de qualquer escrita no banco.
+        if not verificar_captcha(
+            request.data.get("captcha_token"),
+            get_client_ip(request),
+        ):
+            return Response(
+                {"captcha": ["Falha na verificação anti-robô. Recarregue e tente novamente."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         serializer = UsuarioSerializer(data=request.data)
 
         # Valida dados recebidos (gera erro automático se inválido)
@@ -172,26 +188,22 @@ class DashboardView(APIView):
 
         nivel = get_nivel_usuario(request.user)
         modulos = get_modulos_usuario(request.user)
-        estatisticas = {}
 
-        if nivel == PerfilAdministrativo.Nivel.MASTER:
-            estatisticas = {
-                "animais": Animal.objects.count(),
-                "publicacoes": Publicacao.objects.count(),
-                "produtos": Produto.objects.count(),
-                "dados_pix": DadosPix.objects.count(),
-                "usuarios": Usuario.objects.count(),
-                "voluntarios": Voluntario.objects.count(),
-            }
-        elif nivel == PerfilAdministrativo.Nivel.FINANCEIRO:
-            estatisticas = {
-                "dados_pix": DadosPix.objects.count(),
-            }
-        elif nivel == PerfilAdministrativo.Nivel.DOACOES:
-            estatisticas = {
-                "animais": Animal.objects.count(),
-                "publicacoes": Publicacao.objects.count(),
-            }
+        # As estatísticas seguem os módulos liberados para o nível do usuário,
+        # mantendo o painel sempre coerente com MODULOS_POR_NIVEL.
+        estatisticas = {}
+        if "gerenciamento_usuarios" in modulos:
+            estatisticas["usuarios"] = Usuario.objects.count()
+        if "adocao" in modulos:
+            estatisticas["animais"] = Animal.objects.count()
+        if "noticias" in modulos:
+            estatisticas["publicacoes"] = Publicacao.objects.count()
+        if "vendas" in modulos:
+            estatisticas["produtos"] = Produto.objects.count()
+        if "doacoes" in modulos:
+            estatisticas["dados_pix"] = DadosPix.objects.count()
+        if "voluntariado" in modulos:
+            estatisticas["voluntarios"] = Voluntario.objects.count()
 
         perfil = getattr(request.user, "perfil_admin", None)
         nivel_display = perfil.get_nivel_display() if perfil else "Usuário sem vínculo"
@@ -208,7 +220,7 @@ class DashboardView(APIView):
 
 
 class AdminUsuariosView(APIView):
-    permission_classes = [IsAuthenticated, IsMaster]
+    permission_classes = [IsAuthenticated, IsDiretor]
 
     def get(self, request):
         usuarios = Usuario.objects.select_related("perfil_admin").order_by("nome")
@@ -217,7 +229,7 @@ class AdminUsuariosView(APIView):
 
 
 class AdminPerfilUpdateView(APIView):
-    permission_classes = [IsAuthenticated, IsMaster]
+    permission_classes = [IsAuthenticated, IsDiretor]
 
     def patch(self, request, pk):
         usuario = get_object_or_404(
@@ -225,6 +237,8 @@ class AdminPerfilUpdateView(APIView):
             pk=pk,
         )
         perfil = usuario.perfil_admin
+        nivel_anterior = perfil.nivel
+        ativo_anterior = perfil.ativo
 
         serializer = AtualizarPerfilAdministrativoSerializer(
             perfil,
@@ -234,6 +248,21 @@ class AdminPerfilUpdateView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save(promovido_por=request.user)
+
+        # Auditoria de mudança de permissionamento (crítico para segurança).
+        alteracoes = {}
+        if perfil.nivel != nivel_anterior:
+            alteracoes["nivel"] = [nivel_anterior, perfil.nivel]
+        if perfil.ativo != ativo_anterior:
+            alteracoes["ativo"] = [ativo_anterior, perfil.ativo]
+
+        registrar_auditoria(
+            request,
+            perfil,
+            RegistroAuditoria.Acao.EDITADO,
+            descricao=f"Perfil administrativo de {usuario.nome} ({usuario.email})",
+            alteracoes=alteracoes or None,
+        )
 
         return Response(
             AdminUsuarioSerializer(usuario).data,

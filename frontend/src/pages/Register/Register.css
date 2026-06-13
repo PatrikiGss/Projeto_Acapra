@@ -126,6 +126,11 @@
   color: #bbb;
 }
 
+.register-captcha {
+  display: flex;
+  justify-content: center;
+}
+
 .register-erro {
   background-color: #fff3f0;
   border: 1px solid #e87722;

@@ -3,7 +3,7 @@ Testes automatizados para o app `doacoes`.
 
 Cobre:
 - Model `DadosPix`: criação, defaults, __str__ e Meta.
-- Serializers `DadosPixSerializer` e `GetDadosPixSerializer`: fields e read_only.
+- Serializers `DadosPixWriteSerializer` e `GetDadosPixSerializer`: fields e read_only.
 - View `DadosPixView` (GET): lista pública apenas registros `ativo=True`,
   acesso AllowAny e ordenação por `-id`.
 - View `DadosPixDetailView` (GET): retorna 200 para PIX ativo,
@@ -26,7 +26,7 @@ from rest_framework.test import APIClient
 
 from doacoes.admin import DadosPixAdmin
 from doacoes.models import DadosPix
-from doacoes.serializers import DadosPixSerializer, GetDadosPixSerializer
+from doacoes.serializers import DadosPixWriteSerializer, GetDadosPixSerializer
 
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp()
@@ -112,27 +112,34 @@ class DadosPixSerializerTests(TestCase):
             descricao="Descrição teste",
         )
 
-    def test_dadospix_serializer_fields(self):
-        """DadosPixSerializer deve expor os campos esperados."""
-        serializer = DadosPixSerializer(self.pix)
-        expected_fields = {"id", "chave_pix", "qr_code", "descricao", "ativo"}
+    def test_write_serializer_expoe_campos_editaveis(self):
+        """O serializer de escrita expõe os campos editáveis dos dados Pix."""
+        serializer = DadosPixWriteSerializer(self.pix)
+        expected_fields = {
+            "id", "chave_pix", "qr_code", "descricao",
+            "banco", "agencia", "conta", "tipo_conta",
+            "cnpj", "favorecido", "ativo",
+        }
         self.assertEqual(set(serializer.data.keys()), expected_fields)
 
-    def test_dadospix_serializer_readonly_fields(self):
-        """qr_code, descricao, ativo e id devem ser read-only."""
-        serializer = DadosPixSerializer()
-        read_only = set(serializer.Meta.read_only_fields)
-        for field in ("id", "qr_code", "descricao", "ativo"):
-            self.assertIn(field, read_only)
+    def test_write_serializer_remover_qr_code_write_only(self):
+        """`remover_qr_code` é apenas de escrita e não aparece na saída."""
+        serializer = DadosPixWriteSerializer(self.pix)
+        self.assertNotIn("remover_qr_code", serializer.data)
+        self.assertTrue(serializer.fields["remover_qr_code"].write_only)
 
     def test_get_dadospix_serializer_fields(self):
-        """GetDadosPixSerializer expõe apenas campos públicos."""
+        """GetDadosPixSerializer expõe os campos públicos necessários para doação."""
         serializer = GetDadosPixSerializer(self.pix)
-        expected_fields = {"id", "chave_pix", "qr_code", "descricao"}
+        expected_fields = {
+            "id", "chave_pix", "qr_code", "descricao",
+            "banco", "agencia", "conta", "tipo_conta",
+            "cnpj", "favorecido",
+        }
         self.assertEqual(set(serializer.data.keys()), expected_fields)
 
     def test_get_dadospix_does_not_expose_ativo(self):
-        """`ativo` não deve aparecer no serializer público de leitura."""
+        """`ativo` (flag interna) não deve aparecer no serializer público."""
         serializer = GetDadosPixSerializer(self.pix)
         self.assertNotIn("ativo", serializer.data)
 

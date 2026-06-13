@@ -2,8 +2,15 @@ from rest_framework.permissions import BasePermission
 
 from .models import PerfilAdministrativo
 
+# Define quais módulos cada nível administrativo pode gerenciar.
+# Hierarquia (do maior para o menor acesso):
+#   DIRETOR_ACAPRA  -> acesso total, inclusive gerenciamento de usuários
+#   TESOUREIRO      -> tudo, exceto gerenciamento de usuários
+#   ADMIN           -> operação geral, sem área financeira (doações)
+#   AUXILIAR_GERAL  -> apenas módulos operacionais do dia a dia
+#   USUARIO         -> sem acesso administrativo
 MODULOS_POR_NIVEL = {
-    PerfilAdministrativo.Nivel.MASTER: {
+    PerfilAdministrativo.Nivel.DIRETOR_ACAPRA: {
         "doacoes",
         "noticias",
         "resgates",
@@ -15,7 +22,7 @@ MODULOS_POR_NIVEL = {
         "transparencia",
         "denuncias",
     },
-    PerfilAdministrativo.Nivel.ADMIN: {
+    PerfilAdministrativo.Nivel.TESOUREIRO: {
         "doacoes",
         "noticias",
         "resgates",
@@ -26,7 +33,24 @@ MODULOS_POR_NIVEL = {
         "transparencia",
         "denuncias",
     },
-    PerfilAdministrativo.Nivel.USUARIO: set(),
+    PerfilAdministrativo.Nivel.ADMIN: {
+        "noticias",
+        "resgates",
+        "campanhas",
+        "adocao",
+        "vendas",
+        "voluntariado",
+        "transparencia",
+        "denuncias",
+    },
+    PerfilAdministrativo.Nivel.AUXILIAR_GERAL: {
+        "noticias",
+        "resgates",
+        "campanhas",
+        "adocao",
+        "vendas",
+        "voluntariado",
+    },
 }
 
 
@@ -51,9 +75,11 @@ def get_modulos_usuario(user):
     return sorted(MODULOS_POR_NIVEL.get(nivel, set()))
 
 
-class IsMaster(BasePermission):
+class IsDiretor(BasePermission):
+    """Acesso exclusivo do Diretor Acapra (nível máximo)."""
+
     def has_permission(self, request, view):
-        return get_nivel_usuario(request.user) == PerfilAdministrativo.Nivel.MASTER
+        return get_nivel_usuario(request.user) == PerfilAdministrativo.Nivel.DIRETOR_ACAPRA
 
 
 class TemAcessoDashboard(BasePermission):

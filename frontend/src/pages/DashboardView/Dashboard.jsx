@@ -8,7 +8,7 @@ import {
 } from "../../utils/auth";
 import {
   getNivelLabel,
-  isMaster,
+  isDiretor,
   NIVEL_OPCOES,
   podeGerenciar,
   temAcessoDashboard,
@@ -74,7 +74,7 @@ function Dashboard() {
           setMetaConnections(metaRes.data.connections || []);
         }
 
-        if (isMaster(userData)) {
+        if (isDiretor(userData)) {
           const usuariosRes = await api.get("/api/gerenciamento/admin/usuarios/");
           if (!cancelado) {
             setUsuariosAdmin(usuariosRes.data || []);
@@ -262,7 +262,22 @@ function Dashboard() {
           </div>
         </section>
 
-        {isMaster(usuario) && (
+        {isDiretor(usuario) && (
+          <section className="dashboard-section">
+            <div className="dashboard-section-header">
+              <h2>Auditoria</h2>
+              <p>
+                Histórico imutável das ações sensíveis (dados financeiros,
+                PIX e mudanças de permissão) — quem fez, o quê e quando.
+              </p>
+            </div>
+            <Link to="/auditoria" className="dashboard-btn-meta">
+              Ver registros de auditoria
+            </Link>
+          </section>
+        )}
+
+        {isDiretor(usuario) && (
           <section className="dashboard-section">
             <div className="dashboard-section-header">
               <h2>Redes sociais</h2>
@@ -305,7 +320,7 @@ function Dashboard() {
           </section>
         )}
 
-        {isMaster(usuario) && (
+        {isDiretor(usuario) && (
           <section className="dashboard-section">
             <div className="dashboard-section-header">
               <h2>Gerenciamento de vínculos</h2>

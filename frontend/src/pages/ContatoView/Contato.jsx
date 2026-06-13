@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
-import { isMaster } from "../../utils/permissions";
+import { isDiretor } from "../../utils/permissions";
 import { safeExternalUrl } from "../../utils/url";
 import "./Contato.css";
 
@@ -57,7 +57,7 @@ function Contato() {
   const [salvando, setSalvando] = useState(false);
   const [erroSalvar, setErroSalvar] = useState("");
 
-  const diretor = isMaster();
+  const diretor = isDiretor();
 
   useEffect(() => {
     api

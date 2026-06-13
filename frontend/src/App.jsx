@@ -26,6 +26,7 @@ import NoticiasDetail from "./pages/NoticiasDetailView/NoticiasDetail";
 import ResgatesDetail from "./pages/ResgatesDetailView/ResgatesDetail";
 import CampanhasDetail from "./pages/CampanhasDetailView/CampanhasDetail";
 import Dashboard from "./pages/DashboardView/Dashboard";
+import Auditoria from "./pages/AuditoriaView/Auditoria";
 import Denuncias from "./pages/DenunciasView/Denuncias";
 import Desaparecidos from "./pages/DesaparecidosView/Desaparecidos";
 import DesaparecidosNova from "./pages/DesaparecidosView/DesaparecidosNova";
@@ -80,6 +81,14 @@ function App() {
             element={(
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            )}
+          />
+          <Route
+            path="/auditoria"
+            element={(
+              <ProtectedRoute>
+                <Auditoria />
               </ProtectedRoute>
             )}
           />

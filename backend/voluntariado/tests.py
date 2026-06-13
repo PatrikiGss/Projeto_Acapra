@@ -25,7 +25,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from gerenciamento.models import Usuario
+from gerenciamento.models import PerfilAdministrativo, Usuario
 from voluntariado.admin import VoluntarioAdmin
 from voluntariado.models import Voluntario
 from voluntariado.serializers import (
@@ -54,13 +54,21 @@ def make_voluntario(**kwargs):
 
 
 def make_admin_user(email="admin@test.com", phone="+5511977777777", password="Senh@F0rte!2026"):
-    """Helper para criar usuário autenticável."""
-    return Usuario.objects.create_user(
+    """Helper para criar usuário com nível administrativo (acesso ao módulo de voluntariado).
+
+    Novos usuários nascem como `USUARIO` (sem acesso), então o nível precisa ser
+    concedido explicitamente para os testes que exigem gestão de voluntários.
+    """
+    user = Usuario.objects.create_user(
         email=email,
         password=password,
         nome="Admin Teste",
         telefone=phone,
     )
+    perfil = user.perfil_admin
+    perfil.nivel = PerfilAdministrativo.Nivel.DIRETOR_ACAPRA
+    perfil.save(update_fields=["nivel"])
+    return user
 
 
 # ----------------------------------------------------------------------
@@ -157,13 +165,17 @@ class GetVoluntarioSerializerTests(TestCase):
     def test_fields_expostos(self):
         v = make_voluntario()
         serializer = GetVoluntarioSerializer(v)
-        expected = {"id", "nome", "telefone", "idade", "motivo", "email", "created_at"}
+        expected = {
+            "id", "nome", "telefone", "idade", "motivo", "email", "ativo", "created_at",
+        }
         self.assertEqual(set(serializer.data.keys()), expected)
 
-    def test_ativo_nao_exposto(self):
+    def test_ativo_exposto_para_admin(self):
+        """A listagem é restrita a administradores, então `ativo` é exposto
+        para permitir filtrar/gerir voluntários ativos e inativos."""
         v = make_voluntario()
         serializer = GetVoluntarioSerializer(v)
-        self.assertNotIn("ativo", serializer.data)
+        self.assertIn("ativo", serializer.data)
 
 
 class VoluntarioSerializerTests(TestCase):

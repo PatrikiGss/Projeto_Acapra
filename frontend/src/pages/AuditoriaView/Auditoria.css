@@ -1,0 +1,133 @@
+.auditoria-page {
+  min-height: 75vh;
+  background: whitesmoke;
+  padding: 2.5rem 1rem 3.5rem;
+  text-align: center;
+}
+
+.auditoria-container {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.auditoria-titulo {
+  margin: 0 0 0.4rem;
+  color: #242424;
+  font-size: 1.6rem;
+}
+
+.auditoria-subtitulo {
+  margin: 0 0 2rem;
+  color: #777;
+  font-size: 0.9rem;
+}
+
+.auditoria-estado {
+  color: #666;
+  font-size: 0.95rem;
+  margin-top: 2rem;
+}
+
+.auditoria-erro {
+  color: #c0392b;
+}
+
+.auditoria-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.auditoria-item {
+  background: #ffffff;
+  border: 1px solid #e7e0d6;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.auditoria-acao {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  color: #fff;
+  background: #888;
+  margin-bottom: 0.5rem;
+}
+
+.auditoria-acao--criado {
+  background: #2e7d32;
+}
+
+.auditoria-acao--editado {
+  background: #e87722;
+}
+
+.auditoria-acao--excluido {
+  background: #c0392b;
+}
+
+.auditoria-modelo {
+  display: block;
+  color: #242424;
+  font-size: 1rem;
+}
+
+.auditoria-descricao {
+  margin: 0.35rem 0 0;
+  color: #444;
+  font-size: 0.9rem;
+}
+
+.auditoria-alteracoes {
+  margin: 0.35rem 0 0;
+  color: #6b6b6b;
+  font-size: 0.82rem;
+  font-style: italic;
+}
+
+.auditoria-meta {
+  margin: 0.55rem 0 0;
+  color: #999;
+  font-size: 0.8rem;
+}
+
+.auditoria-meta strong {
+  color: #666;
+}
+
+.auditoria-mais {
+  margin-top: 1.5rem;
+  background: #fff;
+  border: 1px solid #e87722;
+  color: #e87722;
+  padding: 0.6rem 1.4rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.auditoria-mais:hover {
+  background: #e87722;
+  color: #fff;
+}
+
+.auditoria-voltar {
+  display: inline-block;
+  margin-top: 2rem;
+  color: #e87722;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.auditoria-voltar:hover {
+  text-decoration: underline;
+}

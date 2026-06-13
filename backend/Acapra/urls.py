@@ -9,6 +9,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('api/core/',          include('core.urls',          namespace='core')),
+    path('api/auditoria/',     include('auditoria.urls',     namespace='auditoria')),
     path('api/adocao/',        include('adocao.urls',        namespace='adocao')),
     path('api/doacoes/',       include('doacoes.urls',       namespace='doacoes')),
     path('api/denuncias/',     include('denuncias.urls',     namespace='denuncias')),

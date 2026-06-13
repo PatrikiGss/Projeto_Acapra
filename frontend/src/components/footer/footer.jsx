@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../services/api";
+import { safeExternalUrl } from "../../utils/url";
 import "./footer.css";
 
 function toWhatsAppHref(numero) {
@@ -8,6 +9,16 @@ function toWhatsAppHref(numero) {
   const num = digits.startsWith("55") ? digits : `55${digits}`;
   return `https://wa.me/${num}`;
 }
+
+const DESENVOLVEDORES = [
+  "patrikigss321@gmail.com",
+  "kauegustavokluska@gmail.com",
+  "iagoamaral607@gmail.com",
+  "mateuscorreiacoelho706@gmail.com",
+  "anderson.bolduan@gmail.com",
+  "vanderlei.junior1993@gmail.com",
+  "tonetto.irai@gmail.com",
+];
 
 function Footer() {
   const [contato, setContato] = useState(null);
@@ -21,6 +32,11 @@ function Footer() {
     contato?.whatsapp_doacoes ||
     contato?.whatsapp_financeiro ||
     null;
+
+  // URLs definidas por admin: só renderiza se forem http(s) seguras
+  // (bloqueia javascript:, data:, etc.).
+  const instagramUrl = safeExternalUrl(contato?.instagram);
+  const facebookUrl = safeExternalUrl(contato?.facebook);
 
   return (
     <footer className="site-footer" id="contato">
@@ -58,21 +74,38 @@ function Footer() {
           <a href={`mailto:${contato.email}`}>{contato.email}</a>
         )}
         {primeiroWhatsApp && (
-          <a href={toWhatsAppHref(primeiroWhatsApp)} target="_blank" rel="noreferrer">
+          <a href={toWhatsAppHref(primeiroWhatsApp)} target="_blank" rel="noopener noreferrer">
             {primeiroWhatsApp}
           </a>
         )}
-        {contato?.instagram && (
-          <a href={contato.instagram} target="_blank" rel="noreferrer">
+        {instagramUrl && (
+          <a href={instagramUrl} target="_blank" rel="noopener noreferrer">
             Instagram
           </a>
         )}
-        {contato?.facebook && (
-          <a href={contato.facebook} target="_blank" rel="noreferrer">
+        {facebookUrl && (
+          <a href={facebookUrl} target="_blank" rel="noopener noreferrer">
             Facebook
           </a>
         )}
-        <p className="footer-copy">© 2026 Acapra</p>
+      </div>
+
+      <div className="footer-bottom">
+        <p className="footer-copy">
+          © 2026 <strong>ACAPRA</strong> — Todos os direitos reservados.
+        </p>
+        <div className="footer-credits">
+          <span className="footer-credits-title">Desenvolvido por</span>
+          <ul className="footer-credits-list">
+            {DESENVOLVEDORES.map((email) => (
+              <li key={email}>
+                <a href={`mailto:${email}`} title={`Enviar e-mail para ${email}`}>
+                  {email}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </footer>
   );

@@ -11,16 +11,16 @@ Cobre:
     - GET autenticado lista também inativos.
     - GET filtra por `categoria` válida e ignora inválida.
     - POST sem auth retorna 401.
-    - POST autenticado sem perfil MASTER retorna 403.
-    - POST como MASTER cria publicação (201).
+    - POST autenticado sem permissão de módulo retorna 403.
+    - POST com nível administrativo cria publicação (201).
 - View `PublicacaoDetailView`:
     - GET público de publicação ativa: 200.
     - GET público de publicação inativa: 404.
     - GET autenticado de publicação inativa: 200.
     - PATCH/DELETE sem auth retornam 401.
     - PATCH/DELETE sem permissão retornam 403.
-    - PATCH como MASTER atualiza.
-    - DELETE como MASTER remove.
+    - PATCH com nível administrativo atualiza.
+    - DELETE com nível administrativo remove.
 - URLs do app: namespace `noticias`.
 - Admin: registro do model.
 """
@@ -221,7 +221,7 @@ class PublicacoesViewTests(TestCase):
         self.user_master = make_user(
             email="master@test.com",
             phone="+5511922222222",
-            nivel=PerfilAdministrativo.Nivel.MASTER,
+            nivel=PerfilAdministrativo.Nivel.DIRETOR_ACAPRA,
         )
 
     # ---- GET (público) ----
@@ -310,7 +310,7 @@ class PublicacaoDetailViewTests(TestCase):
         self.user_master = make_user(
             email="boss@test.com",
             phone="+5511944444444",
-            nivel=PerfilAdministrativo.Nivel.MASTER,
+            nivel=PerfilAdministrativo.Nivel.DIRETOR_ACAPRA,
         )
 
         self.url_ativa = reverse(

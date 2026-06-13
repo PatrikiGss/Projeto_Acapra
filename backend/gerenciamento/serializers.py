@@ -114,7 +114,7 @@ class AtualizarPerfilAdministrativoSerializer(serializers.ModelSerializer):
             request
             and usuario_alvo == request.user
             and attrs.get("nivel") == PerfilAdministrativo.Nivel.USUARIO
-            and get_nivel_usuario(request.user) == PerfilAdministrativo.Nivel.MASTER
+            and get_nivel_usuario(request.user) == PerfilAdministrativo.Nivel.DIRETOR_ACAPRA
         ):
             raise serializers.ValidationError(
                 "O diretor não pode remover o próprio vínculo administrativo."

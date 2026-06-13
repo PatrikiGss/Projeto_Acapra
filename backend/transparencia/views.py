@@ -5,6 +5,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from gerenciamento.permissions import require_module
 
+from auditoria.models import RegistroAuditoria
+from auditoria.services import registrar_auditoria
+
 from .models import Categoria, DocumentoInstitucional, Indicador, Movimento
 from .serializers import (
     CategoriaReadSerializer,
@@ -95,6 +98,7 @@ class MovimentosView(APIView):
         serializer = MovimentoWriteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         movimento = serializer.save()
+        registrar_auditoria(request, movimento, RegistroAuditoria.Acao.CRIADO)
         return Response(
             MovimentoReadSerializer(movimento, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
@@ -125,10 +129,22 @@ class MovimentoDetailView(APIView):
         serializer = MovimentoWriteSerializer(movimento, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         movimento = serializer.save()
+        registrar_auditoria(
+            request,
+            movimento,
+            RegistroAuditoria.Acao.EDITADO,
+            alteracoes={"campos_editados": sorted(request.data.keys())},
+        )
         return Response(MovimentoReadSerializer(movimento, context={"request": request}).data)
 
     def delete(self, request, pk):
         movimento = self.get_object(pk)
+        registrar_auditoria(
+            request,
+            movimento,
+            RegistroAuditoria.Acao.EXCLUIDO,
+            descricao=str(movimento),
+        )
         if movimento.comprovante:
             movimento.comprovante.delete(save=False)
         movimento.delete()
@@ -154,6 +170,7 @@ class DocumentosInstitucionaisView(APIView):
         serializer = DocumentoInstitucionalWriteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         doc = serializer.save()
+        registrar_auditoria(request, doc, RegistroAuditoria.Acao.CRIADO)
         return Response(
             DocumentoInstitucionalReadSerializer(doc).data,
             status=status.HTTP_201_CREATED,
@@ -183,10 +200,22 @@ class DocumentoInstitucionalDetailView(APIView):
         serializer = DocumentoInstitucionalWriteSerializer(doc, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         doc = serializer.save()
+        registrar_auditoria(
+            request,
+            doc,
+            RegistroAuditoria.Acao.EDITADO,
+            alteracoes={"campos_editados": sorted(request.data.keys())},
+        )
         return Response(DocumentoInstitucionalReadSerializer(doc).data)
 
     def delete(self, request, pk):
         doc = self.get_object(pk)
+        registrar_auditoria(
+            request,
+            doc,
+            RegistroAuditoria.Acao.EXCLUIDO,
+            descricao=str(doc),
+        )
         if doc.arquivo:
             doc.arquivo.delete(save=False)
         doc.delete()

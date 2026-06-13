@@ -134,8 +134,8 @@ class AnimalSerializerTests(APITestCase):
         self.assertIn("especie", serializer.data)
 
     def test_update_serializer_nao_inclui_telefone(self):
-        """UpdateAnimalSerializer permite alterar telefone."""
-        self.assertIn("telefone", UpdateAnimalSerializer.Meta.fields)
+        """UpdateAnimalSerializer não permite alterar telefone."""
+        self.assertNotIn("telefone", UpdateAnimalSerializer.Meta.fields)
 
 
 
@@ -163,7 +163,7 @@ class AnimaisViewTests(APITestCase):
             nome="UsuÃ¡rio Teste",
             telefone="+5511966666666",
         )
-        self.user.perfil_admin.nivel = "master"
+        self.user.perfil_admin.nivel = "diretor_acapra"
         self.user.perfil_admin.save()
         self.url = reverse("adocao:animais")
         self.dados = {
@@ -252,7 +252,7 @@ class AnimalDetailViewTests(APITestCase):
             nome="Outro UsuÃ¡rio",
             telefone="+5511922222222",
         )
-        self.user.perfil_admin.nivel = "master"
+        self.user.perfil_admin.nivel = "diretor_acapra"
         self.user.perfil_admin.save()
         self.animal = Animal.objects.create(
             nome_animal="Max",

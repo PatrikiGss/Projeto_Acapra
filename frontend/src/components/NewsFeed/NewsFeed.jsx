@@ -7,6 +7,7 @@ import EmptyState from "../ui/EmptyState";
 import ConfirmModal from "../ui/ConfirmModal";
 import { getResponseItems } from "../../utils/collection";
 import { getApiErrorMessage } from "../../utils/errorUtils";
+import { logError } from "../../utils/logger";
 import "./NewsFeed.css";
 
 function formatarData(valor) {
@@ -57,7 +58,7 @@ function NewsFeed({ categoria, titulo, subtitulo, basePath, embedded = false, li
         setError(false);
       } catch (erro) {
         if (controller.signal.aborted) return;
-        console.error(erro);
+        logError("NewsFeed", erro);
         setError(true);
       } finally {
         if (!controller.signal.aborted) {
@@ -93,7 +94,7 @@ function NewsFeed({ categoria, titulo, subtitulo, basePath, embedded = false, li
       setItens((atual) => atual.filter((publicacao) => publicacao.id !== confirmacao.id));
       setConfirmacao(null);
     } catch (erro) {
-      console.error(erro);
+      logError("NewsFeed", erro);
       setConfirmacao(null);
       setAcaoErro(getApiErrorMessage(erro, "Não foi possível excluir a publicação."));
     }

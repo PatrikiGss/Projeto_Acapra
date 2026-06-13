@@ -1,9 +1,12 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.exceptions import NotFound
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from gerenciamento.permissions import require_module
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from auditoria.models import RegistroAuditoria
+from auditoria.services import registrar_auditoria
 
 from .models import DadosPix
 from .serializers import DadosPixWriteSerializer, GetDadosPixSerializer
@@ -47,6 +50,7 @@ class DadosPixView(APIView):
         serializer = DadosPixWriteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         dados_pix = serializer.save()
+        registrar_auditoria(request, dados_pix, RegistroAuditoria.Acao.CRIADO)
         return Response(
             GetDadosPixSerializer(dados_pix, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
@@ -75,7 +79,10 @@ class DadosPixDetailView(APIView):
 
     def get_object(self, pk, include_inactive=False):
         queryset = DadosPix.objects.all() if include_inactive else DadosPix.objects.filter(ativo=True)
-        return get_object_or_404(queryset, pk=pk)
+        try:
+            return queryset.get(pk=pk)
+        except DadosPix.DoesNotExist:
+            raise NotFound("Dados Pix não encontrados.")
 
     def get(self, request, pk):
         dados_pix = self.get_object(pk, include_inactive=request.user.is_authenticated)
@@ -91,12 +98,25 @@ class DadosPixDetailView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         dados_pix = serializer.save()
+        registrar_auditoria(
+            request,
+            dados_pix,
+            RegistroAuditoria.Acao.EDITADO,
+            alteracoes={"campos_editados": sorted(request.data.keys())},
+        )
         return Response(
             GetDadosPixSerializer(dados_pix, context={"request": request}).data
         )
 
     def delete(self, request, pk):
         dados_pix = self.get_object(pk, include_inactive=True)
+        # Registra antes da exclusão para preservar o id/descrição no log.
+        registrar_auditoria(
+            request,
+            dados_pix,
+            RegistroAuditoria.Acao.EXCLUIDO,
+            descricao=f"Pix #{dados_pix.pk}: {dados_pix.chave_pix}",
+        )
         if dados_pix.qr_code:
             dados_pix.qr_code.delete(save=False)
         dados_pix.delete()

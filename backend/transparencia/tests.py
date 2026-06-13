@@ -1,20 +1,14 @@
 """
 Testes automatizados para o app `transparencia`.
 
-O app está atualmente sem models, views e serializers (apenas placeholders).
-Os testes garantem que:
-
-- O app está corretamente registrado no INSTALLED_APPS.
-- O `AppConfig` (TransparenciaConfig) carrega normalmente.
-- O módulo de URLs do app é importável e tem namespace correto.
-- A configuração não quebra a coleta automática de URLs.
-
-Quando models/views forem adicionados, novos testes devem cobrir cada CRUD.
+O app expõe categorias, movimentos financeiros, documentos institucionais e
+indicadores. Estes testes cobrem a configuração do app, o registro dos models
+e a resolução das rotas. Cada CRUD deve ganhar cobertura própria conforme evoluir.
 """
 
 from django.apps import apps
 from django.test import TestCase
-from django.urls import NoReverseMatch, reverse
+from django.urls import reverse
 
 from transparencia.apps import TransparenciaConfig
 
@@ -30,50 +24,31 @@ class TransparenciaAppConfigTests(TestCase):
         """O AppConfig deve apontar para o nome `transparencia`."""
         self.assertEqual(TransparenciaConfig.name, "transparencia")
 
-    def test_app_config_resolves_via_apps_registry(self):
-        """O registry do Django deve resolver o app pelo label."""
-        app_config = apps.get_app_config("transparencia")
-        self.assertEqual(app_config.name, "transparencia")
-
 
 class TransparenciaUrlsTests(TestCase):
     """Testes para o módulo de URLs do app."""
 
     def test_urls_module_importable(self):
-        """O módulo `transparencia.urls` deve ser importável sem erros."""
+        """O módulo `transparencia.urls` deve ser importável com namespace."""
         from transparencia import urls
         self.assertEqual(urls.app_name, "transparencia")
 
-    def test_urlpatterns_is_a_list(self):
-        """A variável `urlpatterns` deve ser uma lista (mesmo que vazia)."""
-        from transparencia import urls
-        self.assertIsInstance(urls.urlpatterns, list)
-
-    def test_no_routes_registered_yet(self):
-        """
-        Como nenhuma rota foi adicionada ainda, qualquer reverse
-        para um nome arbitrário do namespace deve falhar.
-        """
-        with self.assertRaises(NoReverseMatch):
-            reverse("transparencia:relatorios")
+    def test_rotas_principais_resolvem(self):
+        """As rotas de listagem do app devem resolver corretamente."""
+        self.assertTrue(reverse("transparencia:categorias"))
+        self.assertTrue(reverse("transparencia:movimentos"))
+        self.assertTrue(reverse("transparencia:documentos"))
+        self.assertTrue(reverse("transparencia:indicadores"))
 
 
 class TransparenciaModelsTests(TestCase):
-    """Testes para módulo de models (atualmente vazio)."""
+    """Testes para o registro dos models do app."""
 
-    def test_models_module_importable(self):
-        """O módulo `transparencia.models` deve ser importável."""
-        from transparencia import models  # noqa: F401
-
-    def test_no_models_registered_yet(self):
-        """Nenhum model do app `transparencia` deve estar registrado."""
-        app_models = apps.get_app_config("transparencia").get_models()
-        self.assertEqual(list(app_models), [])
-
-
-class TransparenciaViewsTests(TestCase):
-    """Testes para módulo de views (atualmente vazio)."""
-
-    def test_views_module_importable(self):
-        """O módulo `transparencia.views` deve ser importável."""
-        from transparencia import views  # noqa: F401
+    def test_models_registrados(self):
+        """Os models do app devem estar registrados no registry do Django."""
+        registrados = {
+            model.__name__
+            for model in apps.get_app_config("transparencia").get_models()
+        }
+        esperados = {"Categoria", "Movimento", "DocumentoInstitucional", "Indicador"}
+        self.assertTrue(esperados.issubset(registrados))

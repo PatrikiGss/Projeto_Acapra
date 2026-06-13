@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import api, { getMediaURL } from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
 import ConfirmModal from "../../components/ui/ConfirmModal";
+import { validateDocumentFile, DOCUMENT_ACCEPT } from "../../utils/upload";
 import "./Transparencia.css";
 
 const descricaoIndicador = {
@@ -335,7 +336,7 @@ function Transparencia() {
                       <span className={`transp-mov-valor ${tipo}`}>{formatarMoeda(mov.valor)}</span>
                       <div className="transp-mov-acoes">
                         {mov.comprovante && (
-                          <a href={getMediaURL(mov.comprovante)} target="_blank" rel="noreferrer" className="transp-mov-comprovante" onClick={(e) => e.stopPropagation()}>
+                          <a href={getMediaURL(mov.comprovante)} target="_blank" rel="noopener noreferrer" className="transp-mov-comprovante" onClick={(e) => e.stopPropagation()}>
                             Comprovante
                           </a>
                         )}
@@ -440,7 +441,7 @@ function Transparencia() {
                   </div>
                   <div className="transp-doc-acoes">
                     {doc.arquivo ? (
-                      <a href={getMediaURL(doc.arquivo)} target="_blank" rel="noreferrer" className="transp-doc-badge disponivel">
+                      <a href={getMediaURL(doc.arquivo)} target="_blank" rel="noopener noreferrer" className="transp-doc-badge disponivel">
                         Download
                       </a>
                     ) : (
@@ -542,7 +543,14 @@ function Transparencia() {
                 <label>Data<input type="date" value={formMov.data} onChange={(e) => setFormMov({ ...formMov, data: e.target.value })} required /></label>
               </div>
               <label>Comprovante (imagem ou PDF)
-                <input type="file" accept="image/*,.pdf" onChange={(e) => { setComprovanteFile(e.target.files?.[0] || null); setRemoverComprovante(false); }} />
+                <input type="file" accept={DOCUMENT_ACCEPT} onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  const erroValidacao = file ? validateDocumentFile(file) : null;
+                  if (erroValidacao) { setErroMov(erroValidacao); e.target.value = ""; return; }
+                  setErroMov("");
+                  setComprovanteFile(file);
+                  setRemoverComprovante(false);
+                }} />
               </label>
               {modalMov.dados?.comprovante && !comprovanteFile && (
                 <label className="transp-form-check">
@@ -590,8 +598,15 @@ function Transparencia() {
                   </label>
                 )}
               </div>
-              <label>Arquivo (PDF, imagem ou documento)
-                <input type="file" accept=".pdf,image/*,.doc,.docx" onChange={(e) => { setArquivoFile(e.target.files?.[0] || null); setRemoverArquivo(false); }} />
+              <label>Arquivo (PDF ou imagem)
+                <input type="file" accept={DOCUMENT_ACCEPT} onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  const erroValidacao = file ? validateDocumentFile(file) : null;
+                  if (erroValidacao) { setErroDoc(erroValidacao); e.target.value = ""; return; }
+                  setErroDoc("");
+                  setArquivoFile(file);
+                  setRemoverArquivo(false);
+                }} />
               </label>
               {modalDoc.dados?.arquivo && !arquivoFile && (
                 <label className="transp-form-check">

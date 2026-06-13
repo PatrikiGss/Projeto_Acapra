@@ -29,6 +29,16 @@ FIELD_ENCRYPTION_KEY = config("FIELD_ENCRYPTION_KEY", default="")
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 
+# =========================================================
+# CAPTCHA (Cloudflare Turnstile)
+# =========================================================
+# Protege o registro público contra bots. Desligado por padrão para não
+# exigir chaves em dev/testes. Em produção: CAPTCHA_ENABLED=True +
+# TURNSTILE_SECRET_KEY (backend) e VITE_TURNSTILE_SITE_KEY (frontend).
+CAPTCHA_ENABLED = config("CAPTCHA_ENABLED", default=False, cast=bool)
+TURNSTILE_SECRET_KEY = config("TURNSTILE_SECRET_KEY", default="")
+TURNSTILE_SITE_KEY = config("TURNSTILE_SITE_KEY", default="")
+
 ALLOWED_HOSTS = config(
     "ALLOWED_HOSTS",
     default="localhost,127.0.0.1,[::1]",
@@ -59,6 +69,7 @@ INSTALLED_APPS = [
 
     # Apps do projeto
     "core.apps.CoreConfig",
+    "auditoria.apps.AuditoriaConfig",
     "adocao.apps.AdocaoConfig",
     "meta_integration.apps.MetaIntegrationConfig",
     "contato.apps.ContatoConfig",
@@ -209,6 +220,7 @@ REST_FRAMEWORK = {
         "public_animals": "60/min",
         "login": "5/min",
         "register": "3/min",
+        "register_day": "20/day",
         "refresh": "10/min",
         "password_reset": "3/min",
         "password_change": "3/min",

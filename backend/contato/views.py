@@ -3,13 +3,15 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import PermissionDenied
 
+from gerenciamento.models import PerfilAdministrativo
+from gerenciamento.permissions import get_nivel_usuario
+
 from .models import ContatoAcapra
 from .serializers import ContatoSerializer
 
 
-def _is_master(user):
-    perfil = getattr(user, 'perfil_admin', None)
-    return perfil is not None and perfil.nivel == 'master'
+def _is_diretor(user):
+    return get_nivel_usuario(user) == PerfilAdministrativo.Nivel.DIRETOR_ACAPRA
 
 
 class ContatoView(APIView):
@@ -24,7 +26,7 @@ class ContatoView(APIView):
         return Response(ContatoSerializer(contato).data)
 
     def patch(self, request):
-        if not _is_master(request.user):
+        if not _is_diretor(request.user):
             raise PermissionDenied("Apenas o Diretor ACAPRA pode editar as informações de contato.")
 
         contato = ContatoAcapra.get_instance()

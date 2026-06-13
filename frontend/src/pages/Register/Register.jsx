@@ -3,12 +3,15 @@ import { useNavigate, Link } from "react-router-dom";
 import api from "../../services/api";
 import logo from "../../assets/acapra.jpeg";
 import { formatBrazilianPhone, toBrazilianPhoneE164 } from "../../utils/phone";
+import Turnstile from "../../components/Turnstile/Turnstile";
+import { captchaHabilitado } from "../../utils/captcha";
 import "./Register.css";
 
 function Register() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ nome: "", email: "", telefone: "", password: "" });
   const [confirmarSenha, setConfirmarSenha] = useState("");
+  const [captchaToken, setCaptchaToken] = useState("");
   const [erro, setErro] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -30,11 +33,17 @@ function Register() {
       return;
     }
 
+    if (captchaHabilitado && !captchaToken) {
+      setErro("Confirme que você não é um robô.");
+      return;
+    }
+
     setLoading(true);
     try {
     await api.post("/api/gerenciamento/auth/register/", {
       ...form,
       telefone: toBrazilianPhoneE164(form.telefone),
+      captcha_token: captchaToken,
     });
 
       navigate("/login");
@@ -46,6 +55,8 @@ function Register() {
       } else {
         setErro("Erro ao cadastrar. Tente novamente.");
       }
+      // Token Turnstile é de uso único: limpa para forçar nova verificação.
+      setCaptchaToken("");
     } finally {
       setLoading(false);
     }
@@ -136,6 +147,15 @@ function Register() {
               required
             />
           </div>
+
+          {captchaHabilitado && (
+            <div className="register-captcha">
+              <Turnstile
+                onVerify={setCaptchaToken}
+                onExpire={() => setCaptchaToken("")}
+              />
+            </div>
+          )}
 
           {erro && <p className="register-erro">{erro}</p>}
 

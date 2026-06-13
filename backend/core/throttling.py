@@ -24,7 +24,13 @@ class LoginRateThrottle(_BaseIPThrottle):
 
 
 class RegisterRateThrottle(_BaseIPThrottle):
+    """Limite de rajada: poucos registros por minuto a partir do mesmo IP."""
     scope = "register"
+
+
+class RegisterDailyRateThrottle(_BaseIPThrottle):
+    """Limite sustentado: teto diário de registros por IP (anti-abuso em massa)."""
+    scope = "register_day"
 
 
 class RefreshRateThrottle(_BaseIPThrottle):

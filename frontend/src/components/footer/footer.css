@@ -85,6 +85,13 @@
   color: #e87722;
 }
 
+.footer-contact-vazio {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #888;
+  font-style: italic;
+}
+
 .footer-bottom {
   grid-column: 1 / -1;
   margin-top: 1.75rem;

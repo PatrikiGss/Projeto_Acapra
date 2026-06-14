@@ -1,9 +1,17 @@
+import hashlib
+import secrets
+from datetime import timedelta
+
+from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
+from .models import PasswordResetToken, Usuario
 from .models import Usuario
 from .permissions import (
     IsDiretor,
@@ -266,5 +274,97 @@ class AdminPerfilUpdateView(APIView):
 
         return Response(
             AdminUsuarioSerializer(usuario).data,
+            status=status.HTTP_200_OK,
+        )
+
+
+class PasswordResetRequestView(APIView):
+    """Envia e-mail com link de redefinição de senha."""
+    permission_classes = [AllowAny]
+    throttle_classes = [PasswordResetRateThrottle]
+
+    def post(self, request):
+        email = request.data.get("email", "").strip().lower()
+        # Resposta genérica para não revelar se o e-mail existe.
+        resposta = Response(
+            {"detail": "Se este e-mail estiver cadastrado, você receberá um link em breve."},
+            status=status.HTTP_200_OK,
+        )
+
+        try:
+            usuario = Usuario.objects.get(email=email)
+        except Usuario.DoesNotExist:
+            return resposta
+
+        token_bruto = secrets.token_urlsafe(48)
+        token_hash = hashlib.sha256(token_bruto.encode()).hexdigest()
+
+        PasswordResetToken.objects.create(
+            usuario=usuario,
+            token_hash=token_hash,
+            expira_em=timezone.now() + timedelta(hours=2),
+            ip_solicitante=get_client_ip(request),
+        )
+
+        frontend_url = request.build_absolute_uri("/").rstrip("/")
+        link = f"{frontend_url}/reset-senha?token={token_bruto}"
+
+        send_mail(
+            subject="Redefinição de senha — ACAPRA",
+            message=(
+                f"Olá, {usuario.nome}!\n\n"
+                f"Clique no link abaixo para redefinir sua senha. "
+                f"O link expira em 2 horas.\n\n{link}\n\n"
+                "Se você não solicitou isso, ignore este e-mail."
+            ),
+            from_email=None,
+            recipient_list=[usuario.email],
+            fail_silently=True,
+        )
+
+        return resposta
+
+
+class PasswordResetConfirmView(APIView):
+    """Confirma nova senha usando o token recebido por e-mail."""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        token_bruto = request.data.get("token", "").strip()
+        nova_senha = request.data.get("new_password", "").strip()
+
+        if not token_bruto or not nova_senha:
+            return Response(
+                {"detail": "Token e nova senha são obrigatórios."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        token_hash = hashlib.sha256(token_bruto.encode()).hexdigest()
+
+        try:
+            reset_token = PasswordResetToken.objects.select_related("usuario").get(
+                token_hash=token_hash
+            )
+        except PasswordResetToken.DoesNotExist:
+            return Response(
+                {"token": "Token inválido ou expirado."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not reset_token.valido:
+            return Response(
+                {"token": "Token inválido ou expirado."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        usuario = reset_token.usuario
+        usuario.set_password(nova_senha)
+        usuario.save(update_fields=["password"])
+
+        reset_token.usado_em = timezone.now()
+        reset_token.save(update_fields=["usado_em"])
+
+        return Response(
+            {"detail": "Senha redefinida com sucesso."},
             status=status.HTTP_200_OK,
         )

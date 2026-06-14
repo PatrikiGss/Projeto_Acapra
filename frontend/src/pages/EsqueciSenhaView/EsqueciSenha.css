@@ -1,4 +1,4 @@
-.login-container {
+.esqueci-container {
   min-height: 100vh;
   display: flex;
   align-items: stretch;
@@ -6,7 +6,7 @@
 }
 
 /* ---- LADO DA IMAGEM ---- */
-.login-imagem {
+.esqueci-imagem {
   flex: 1;
   position: relative;
   overflow: hidden;
@@ -14,18 +14,18 @@
 }
 
 @media (min-width: 768px) {
-  .login-imagem {
+  .esqueci-imagem {
     display: block;
   }
 }
 
-.login-imagem img {
+.esqueci-imagem img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.login-imagem-overlay {
+.esqueci-imagem-overlay {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -34,7 +34,7 @@
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
 }
 
-.login-imagem-overlay h2 {
+.esqueci-imagem-overlay h2 {
   color: #fff;
   font-size: 1.8rem;
   font-weight: 800;
@@ -43,7 +43,7 @@
 }
 
 /* ---- LADO DO FORMULÁRIO ---- */
-.login-card {
+.esqueci-card {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -54,43 +54,40 @@
   margin: 0 auto;
 }
 
-.login-header {
+.esqueci-header {
   text-align: center;
   margin-bottom: 2rem;
 }
 
-.login-logo {
+.esqueci-logo {
   height: 10rem;
 }
 
-.login-header h1 {
+.esqueci-header h1 {
   color: #1a1a1a;
   margin: 0.5rem 0 0.25rem;
 }
 
-.login-header p {
+.esqueci-header p {
   color: #666;
   font-size: 0.9rem;
   margin: 0;
+  line-height: 1.5;
 }
 
-.login-header p strong {
-  color: #e87722;
-}
-
-.login-form {
+.esqueci-form {
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
 }
 
-.login-field {
+.esqueci-field {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
 }
 
-.login-field label {
+.esqueci-field label {
   font-size: 0.85rem;
   font-weight: 600;
   color: #1a1a1a;
@@ -98,7 +95,7 @@
   letter-spacing: 0.5px;
 }
 
-.login-field input {
+.esqueci-field input {
   padding: 0.75rem 1rem;
   border: 1.5px solid #e0e0e0;
   border-radius: 8px;
@@ -108,15 +105,15 @@
   transition: border-color 0.2s;
 }
 
-.login-field input:focus {
+.esqueci-field input:focus {
   border-color: #e87722;
 }
 
-.login-field input::placeholder {
+.esqueci-field input::placeholder {
   color: #bbb;
 }
 
-.login-erro {
+.esqueci-erro {
   background-color: #fff3f0;
   border: 1px solid #e87722;
   color: #c0392b;
@@ -126,7 +123,10 @@
   margin: 0;
 }
 
-.login-btn {
+.esqueci-btn {
+  display: block;
+  text-align: center;
+  text-decoration: none;
   background-color: #e87722;
   color: #fff;
   border: none;
@@ -141,107 +141,46 @@
   margin-top: 0.5rem;
 }
 
-.login-btn.secondary {
-  background: #1a1a1a;
-}
-
-.login-btn:hover {
+.esqueci-btn:hover {
   background-color: #cf6510;
 }
 
-.login-btn.secondary:hover {
-  background-color: #000;
-}
-
-.login-btn:disabled {
+.esqueci-btn:disabled {
   background-color: #f0b07a;
   cursor: not-allowed;
 }
 
-.login-esqueceu {
-  text-align: right;
-  margin-top: -0.3rem;
-}
-
-.login-esqueceu a {
-  color: #888;
-  font-size: 0.8rem;
-  text-decoration: none;
-}
-
-.login-esqueceu a:hover {
-  color: #e87722;
-  text-decoration: underline;
-}
-
-.login-sucesso {
-  background-color: #f0fdf4;
-  border: 1px solid #22c55e;
-  color: #166534;
-  padding: 0.6rem 1rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  margin-bottom: 0.5rem;
-}
-
-.login-register {
+.esqueci-voltar {
   text-align: center;
   margin-top: 1.5rem;
   font-size: 0.9rem;
   color: #666;
 }
 
-.login-register a {
+.esqueci-voltar a {
   color: #e87722;
   font-weight: 700;
   text-decoration: none;
 }
 
-.login-register a:hover {
+.esqueci-voltar a:hover {
   text-decoration: underline;
 }
 
-.login-profile {
-  display: grid;
-  gap: 1rem;
-}
-
-.login-profile-card {
-  display: grid;
-  gap: 0.9rem;
-  padding: 1.1rem;
-  border: 1px solid rgba(232, 119, 34, 0.18);
-  border-radius: 16px;
-  background: #fff7ed;
-}
-
-.login-profile-row {
+.esqueci-sucesso {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 1.25rem;
+  text-align: center;
 }
 
-.login-profile-row span {
-  color: #cf6510;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-.login-profile-row strong {
-  color: #1a1a1a;
-  font-size: 1rem;
-  font-weight: 700;
-  word-break: break-word;
-}
-
-.login-profile-actions {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.login-profile-loading {
+.esqueci-sucesso p {
+  background-color: #f0fdf4;
+  border: 1px solid #22c55e;
+  color: #166534;
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  line-height: 1.6;
   margin: 0;
-  color: #545454;
 }

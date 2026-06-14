@@ -161,3 +161,4 @@ class PasswordResetToken(models.Model):
 
     def __str__(self):
         return f"ResetToken({self.usuario.email}, expirado={self.expirado})"
+        return f"{self.usuario.nome} - {self.nivel}"

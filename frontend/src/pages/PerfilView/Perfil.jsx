@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { clearAuthSession, getStoredUser, isLoggedIn, setAuthSession } from "../../utils/auth";
+import { formatBrazilianPhone, toBrazilianPhoneE164 } from "../../utils/phone";
 import "./Perfil.css";
 
 function Perfil() {
@@ -44,7 +45,8 @@ function Perfil() {
   }, [navigate]);
 
   const handleDadosChange = (e) => {
-    setDadosForm({ ...dadosForm, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setDadosForm({ ...dadosForm, [name]: name === "telefone" ? formatBrazilianPhone(value) : value });
     setDadosErro(null);
     setDadosSucesso(false);
   };
@@ -56,7 +58,10 @@ function Perfil() {
     setDadosLoading(true);
 
     try {
-      const res = await api.patch("/api/gerenciamento/user/me/", dadosForm);
+      const res = await api.patch("/api/gerenciamento/user/me/", {
+        ...dadosForm,
+        telefone: toBrazilianPhoneE164(dadosForm.telefone),
+      });
       setUsuario(res.data);
       setAuthSession({ user: res.data });
       setDadosSucesso(true);

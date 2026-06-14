@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("doacoes", "0004_alter_dadospix_qr_code"),
+        ("doacoes", "0001_initial"),
     ]
 
     operations = [

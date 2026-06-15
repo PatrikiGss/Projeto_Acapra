@@ -104,12 +104,6 @@ ALLOWED_HOSTS=127.0.0.1,localhost
 ### 8. Rode as migrations
 
 ```bash
-python manage.py migrate
-```
-
-Sempre que houver alteração em models, rode também:
-
-```bash
 python manage.py makemigrations
 python manage.py migrate
 ```

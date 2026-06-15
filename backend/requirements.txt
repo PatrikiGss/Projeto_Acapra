@@ -2,9 +2,11 @@
 astroid==4.0.4
 black==26.3.1
 certifi==2026.5.20
+cffi==2.0.0
 charset-normalizer==3.4.7
 click==8.3.3
 colorama==0.4.6
+cryptography==49.0.0
 dill==0.4.1
 Django==6.0.4
 django-cors-headers==4.9.0
@@ -24,6 +26,7 @@ platformdirs==4.9.6
 pluggy==1.6.0
 psycopg==3.2.12
 psycopg-binary==3.2.12
+pycparser==3.0
 Pygments==2.20.0
 PyJWT==2.12.1
 pylint==4.0.5

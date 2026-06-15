@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
@@ -37,17 +38,53 @@ from auditoria.models import RegistroAuditoria
 from auditoria.services import registrar_auditoria
 from core.captcha import get_client_ip, verificar_captcha
 from core.throttling import (
+    LoginDailyRateThrottle,
     LoginRateThrottle,
     PasswordResetRateThrottle,
     RefreshRateThrottle,
     RegisterDailyRateThrottle,
     RegisterRateThrottle,
 )
+from .login_guard import conta_bloqueada, limpar_falhas, registrar_falha
 
 
 class ThrottledLoginView(TokenObtainPairView):
-    """Login JWT com rate limiting por IP (5/min)."""
-    throttle_classes = [LoginRateThrottle]
+    """
+    Login JWT com defesa em camadas contra brute force:
+      - por IP: rajada (5/min) + teto diário (100/dia);
+      - por conta: trava temporária após falhas (independente de IP),
+        fechando ataques que variam o IP de origem.
+    """
+    throttle_classes = [LoginRateThrottle, LoginDailyRateThrottle]
+
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email", "")
+
+        # Bloqueio por conta: barra antes mesmo de verificar a senha.
+        if conta_bloqueada(email):
+            return Response(
+                {"detail": "Muitas tentativas de login para esta conta. "
+                           "Tente novamente mais tarde."},
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+
+        # Credenciais inválidas chegam como exceção 401 (AuthenticationFailed),
+        # não como Response — por isso o registro de falha precisa cobrir os
+        # dois caminhos (exceção e response).
+        try:
+            response = super().post(request, *args, **kwargs)
+        except APIException as exc:
+            if getattr(exc, "status_code", None) == status.HTTP_401_UNAUTHORIZED:
+                registrar_falha(email)
+            raise
+
+        if response.status_code == status.HTTP_200_OK:
+            # Sucesso zera o histórico de falhas da conta.
+            limpar_falhas(email)
+        elif response.status_code == status.HTTP_401_UNAUTHORIZED:
+            registrar_falha(email)
+
+        return response
 
 
 class ThrottledRefreshView(TokenRefreshView):

@@ -204,6 +204,7 @@ function Login() {
                   placeholder="Sua senha"
                   value={form.password}
                   onChange={handleChange}
+                  maxLength={128}
                   required
                 />
               </div>

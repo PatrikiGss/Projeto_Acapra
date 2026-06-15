@@ -20,7 +20,13 @@ class _BaseIPThrottle(SimpleRateThrottle):
 
 
 class LoginRateThrottle(_BaseIPThrottle):
+    """Limite de rajada: poucas tentativas de login por minuto por IP."""
     scope = "login"
+
+
+class LoginDailyRateThrottle(_BaseIPThrottle):
+    """Teto diário de tentativas de login por IP (anti brute force sustentado)."""
+    scope = "login_day"
 
 
 class RegisterRateThrottle(_BaseIPThrottle):

@@ -110,15 +110,46 @@ class AtualizarPerfilAdministrativoSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         usuario_alvo = self.instance.usuario
 
+        Nivel = PerfilAdministrativo.Nivel
+
+        # Valores que ficariam após a edição (mantém o atual se o campo não veio).
+        nivel_atual = self.instance.nivel
+        ativo_atual = self.instance.ativo
+        novo_nivel = attrs.get("nivel", nivel_atual)
+        novo_ativo = attrs.get("ativo", ativo_atual)
+
+        # O resultado final preserva um diretor ativo?
+        continua_diretor_ativo = novo_nivel == Nivel.DIRETOR_ACAPRA and novo_ativo
+
+        # 1) Um diretor não pode remover/reduzir o próprio vínculo: rebaixar para
+        #    qualquer nível OU se autodesativar travaria o acesso ao painel
+        #    (só o diretor possui o módulo de gerenciamento de usuários).
         if (
             request
             and usuario_alvo == request.user
-            and attrs.get("nivel") == PerfilAdministrativo.Nivel.USUARIO
-            and get_nivel_usuario(request.user) == PerfilAdministrativo.Nivel.DIRETOR_ACAPRA
+            and get_nivel_usuario(request.user) == Nivel.DIRETOR_ACAPRA
+            and not continua_diretor_ativo
         ):
             raise serializers.ValidationError(
-                "O diretor não pode remover o próprio vínculo administrativo."
+                "O diretor não pode remover ou reduzir o próprio vínculo administrativo."
             )
+
+        # 2) Não permitir rebaixar/desativar o último diretor ativo do sistema,
+        #    o que deixaria a gestão de usuários permanentemente inacessível.
+        era_diretor_ativo = nivel_atual == Nivel.DIRETOR_ACAPRA and ativo_atual
+        if era_diretor_ativo and not continua_diretor_ativo:
+            outros_diretores_ativos = (
+                PerfilAdministrativo.objects.filter(
+                    nivel=Nivel.DIRETOR_ACAPRA,
+                    ativo=True,
+                )
+                .exclude(pk=self.instance.pk)
+                .exists()
+            )
+            if not outros_diretores_ativos:
+                raise serializers.ValidationError(
+                    "Não é possível rebaixar ou desativar o último diretor ativo do sistema."
+                )
 
         return attrs
 

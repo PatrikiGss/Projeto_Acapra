@@ -172,8 +172,8 @@ function Login() {
               <button type="button" className="login-btn secondary" onClick={() => navigate("/")}>
                 Ir para início
               </button>
-              <button type="button" className="login-btn" onClick={handleLogout}>
-                Logout
+              <button type="button" className="login-btn" onClick={() => navigate("/perfil")}>
+                Meu perfil
               </button>
             </div>
           </div>

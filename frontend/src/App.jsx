@@ -38,6 +38,7 @@ import Contato from "./pages/ContatoView/Contato";
 import MetaConfig from "./pages/MetaConfigView/MetaConfig";
 import EsqueciSenha from "./pages/EsqueciSenhaView/EsqueciSenha";
 import ResetSenha from "./pages/ResetSenhaView/ResetSenha";
+import Perfil from "./pages/PerfilView/Perfil";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 
 
@@ -51,6 +52,14 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/esqueci-senha" element={<EsqueciSenha />} />
           <Route path="/reset-senha" element={<ResetSenha />} />
+          <Route
+            path="/perfil"
+            element={(
+              <ProtectedRoute>
+                <Perfil />
+              </ProtectedRoute>
+            )}
+          />
           <Route path="/adocao" element={<Adocao />} />
           <Route path="/adocao/:id" element={<AnimalDetail />} />
           <Route path="/doe" element={<Doe />} />

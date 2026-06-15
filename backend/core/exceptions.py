@@ -26,8 +26,11 @@ def custom_exception_handler(exc, context):
 
     # Exceção inesperada: loga o detalhe completo no servidor e responde
     # com mensagem genérica.
+    import traceback, sys
     view = context.get("view").__class__.__name__ if context.get("view") else "?"
     logger.exception("Erro não tratado em %s: %s", view, exc.__class__.__name__)
+    print(f"\n[ERRO 500] {view}: {exc.__class__.__name__}: {exc}", file=sys.stderr)
+    traceback.print_exc(file=sys.stderr)
 
     return Response(
         {"detail": "Erro interno do servidor."},

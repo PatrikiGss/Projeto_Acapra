@@ -206,6 +206,17 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
+    # Nº de proxies confiáveis à frente da aplicação. Define como o IP real do
+    # cliente é extraído para fins de rate limiting (anti-spoofing de
+    # X-Forwarded-For):
+    #   0  -> exposição direta: ignora o X-Forwarded-For e usa apenas o
+    #         REMOTE_ADDR (IP do socket TCP, não forjável). Padrão seguro.
+    #   N  -> atrás de N proxies confiáveis (nginx/Cloudflare/túnel) que
+    #         ANEXAM/SOBRESCREVEM o header: usa o IP na posição N a partir do
+    #         fim do X-Forwarded-For, ignorando prefixos forjados pelo cliente.
+    # Sem isto, o DRF confiaria no X-Forwarded-For inteiro, permitindo burlar
+    # o throttle simplesmente variando o header.
+    "NUM_PROXIES": config("NUM_PROXIES", default=0, cast=int),
     # Handler global de exceções: nunca vaza stack trace/detalhes internos.
     "EXCEPTION_HANDLER": "core.exceptions.custom_exception_handler",
     "DEFAULT_THROTTLE_CLASSES": [
@@ -219,6 +230,7 @@ REST_FRAMEWORK = {
         # Escopos específicos.
         "public_animals": "60/min",
         "login": "5/min",
+        "login_day": "100/day",
         "register": "3/min",
         "register_day": "20/day",
         "refresh": "10/min",

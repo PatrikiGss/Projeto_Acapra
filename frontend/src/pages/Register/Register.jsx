@@ -131,6 +131,7 @@ function Register() {
               placeholder="Crie uma senha segura"
               value={form.password}
               onChange={handleChange}
+              maxLength={128}
               required
             />
           </div>
@@ -144,6 +145,7 @@ function Register() {
               placeholder="Repita a senha"
               value={confirmarSenha}
               onChange={(e) => setConfirmarSenha(e.target.value)}
+              maxLength={128}
               required
             />
           </div>

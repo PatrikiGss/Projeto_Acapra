@@ -14,6 +14,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Servir /media pelo próprio Django (necessário no cPanel/Passenger, onde o
+# Apache não mapeia /media para o app root). Ligado via env em produção.
+SERVE_MEDIA = config("SERVE_MEDIA", default=False, cast=bool)
+
 # =========================================================
 # SECURITY
 # =========================================================
@@ -94,6 +98,8 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
 
     "django.middleware.security.SecurityMiddleware",
+    # WhiteNoise serve os estáticos (admin/DRF) logo após o SecurityMiddleware.
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -192,6 +198,17 @@ STATIC_URL = "static/"
 # necessário para deploy e collectstatic
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# WhiteNoise comprime e serve os estáticos coletados (admin/DRF) direto pelo
+# app WSGI, sem precisar configurar Apache. Não afeta uploads (MEDIA).
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
+
 
 # =========================================================
 # DJANGO REST FRAMEWORK + JWT
@@ -235,6 +252,7 @@ REST_FRAMEWORK = {
         "register_day": "20/day",
         "refresh": "10/min",
         "password_reset": "3/min",
+        "password_change": "3/min",
         "public_form": "20/min",
     },
 }
@@ -282,6 +300,14 @@ CORS_ALLOWED_ORIGIN_REGEXES = config(
 )
 
 CORS_ALLOW_CREDENTIALS = True
+
+# Origens confiáveis para CSRF (necessário p/ o admin Django sob HTTPS em
+# domínio próprio). Vem do ambiente; vazio em dev. A API usa JWT (sem CSRF).
+CSRF_TRUSTED_ORIGINS = config(
+    "CSRF_TRUSTED_ORIGINS",
+    default="",
+    cast=Csv(),
+)
 
 
 # =========================================================
@@ -374,5 +400,32 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
+        # Erros de envio de e-mail
+        "django.core.mail": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
     },
 }
+
+
+# =========================================================
+# EMAIL
+# =========================================================
+
+# Em desenvolvimento, emails aparecem no console do servidor.
+# Em produção, configure as variáveis de ambiente abaixo.
+EMAIL_BACKEND = config(
+    "EMAIL_BACKEND",
+    default="django.core.mail.backends.console.EmailBackend",
+)
+EMAIL_HOST = config("EMAIL_HOST", default="")
+EMAIL_PORT = config("EMAIL_PORT", default=587, cast=int)
+EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
+EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
+DEFAULT_FROM_EMAIL = config(
+    "DEFAULT_FROM_EMAIL",
+    default="Acapra <noreply@acapra.org.br>",
+)

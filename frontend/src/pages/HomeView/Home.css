@@ -132,6 +132,7 @@
 .hero {
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
+  background: #fbfaf8;
   background: var(--bg-base);
   overflow: hidden;
   height: calc(100dvh - var(--navbar-h, 75px));
@@ -144,7 +145,7 @@
   width: 100%;
   align-content: center;
   overflow: hidden;
-  background: var(--bg-base);
+  background: #fbfaf8;
 }
 
 .hero-collage-cell {

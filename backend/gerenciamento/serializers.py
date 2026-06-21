@@ -154,6 +154,18 @@ class AtualizarPerfilAdministrativoSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+    def validate_email(self, value):
+        return value.lower().strip()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    token = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+
 class ChangePasswordSerializer(serializers.Serializer):
     """
     Serializer para troca de senha.

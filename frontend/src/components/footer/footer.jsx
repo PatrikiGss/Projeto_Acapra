@@ -11,8 +11,8 @@ function toWhatsAppHref(numero) {
 }
 
 const DESENVOLVEDORES = [
+  "kauekluska@gmail.com",
   "patrikigss321@gmail.com",
-  "kauegustavokluska@gmail.com",
   "iagoamaral607@gmail.com",
   "mateuscorreiacoelho706@gmail.com",
   "anderson.bolduan@gmail.com",
@@ -70,23 +70,29 @@ function Footer() {
       </nav>
 
       <div className="footer-contact">
-        {contato?.email && (
-          <a href={`mailto:${contato.email}`}>{contato.email}</a>
-        )}
-        {primeiroWhatsApp && (
-          <a href={toWhatsAppHref(primeiroWhatsApp)} target="_blank" rel="noopener noreferrer">
-            {primeiroWhatsApp}
-          </a>
-        )}
-        {instagramUrl && (
-          <a href={instagramUrl} target="_blank" rel="noopener noreferrer">
-            Instagram
-          </a>
-        )}
-        {facebookUrl && (
-          <a href={facebookUrl} target="_blank" rel="noopener noreferrer">
-            Facebook
-          </a>
+        {contato === null || (!contato?.email && !primeiroWhatsApp && !instagramUrl && !facebookUrl) ? (
+          <p className="footer-contact-vazio">Dados de contato não cadastrados.</p>
+        ) : (
+          <>
+            {contato?.email && (
+              <a href={`mailto:${contato.email}`}>{contato.email}</a>
+            )}
+            {primeiroWhatsApp && (
+              <a href={toWhatsAppHref(primeiroWhatsApp)} target="_blank" rel="noopener noreferrer">
+                {primeiroWhatsApp}
+              </a>
+            )}
+            {instagramUrl && (
+              <a href={instagramUrl} target="_blank" rel="noopener noreferrer">
+                Instagram
+              </a>
+            )}
+            {facebookUrl && (
+              <a href={facebookUrl} target="_blank" rel="noopener noreferrer">
+                Facebook
+              </a>
+            )}
+          </>
         )}
       </div>
 

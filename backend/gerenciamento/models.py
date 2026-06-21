@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import BaseUserManager
+from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 from django.db import models
 """
@@ -48,7 +49,7 @@ class Usuario(AbstractUser):
 
     nome = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
-    telefone = PhoneNumberField(unique=True, null=False, blank=False)
+    telefone = PhoneNumberField(null=False, blank=False)
    #password_changed_at = models.DateTimeField(null=True, blank=True)
 
     # Remove o username padrão
@@ -127,4 +128,37 @@ class PerfilAdministrativo(models.Model):
         ]
 
     def __str__(self):
+        return f"{self.usuario.nome} - {self.nivel}"
+
+
+class PasswordResetToken(models.Model):
+    """
+    Token de uso único para redefinição de senha via e-mail.
+    Armazena apenas o hash SHA-256 do token real (nunca o valor bruto).
+    """
+
+    usuario = models.ForeignKey(
+        Usuario,
+        on_delete=models.CASCADE,
+        related_name="reset_tokens",
+    )
+    token_hash = models.CharField(max_length=64, db_index=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    expira_em = models.DateTimeField()
+    usado_em = models.DateTimeField(null=True, blank=True)
+    ip_solicitante = models.GenericIPAddressField()
+
+    class Meta:
+        ordering = ["-criado_em"]
+
+    @property
+    def expirado(self) -> bool:
+        return timezone.now() >= self.expira_em
+
+    @property
+    def valido(self) -> bool:
+        return not self.expirado and self.usado_em is None
+
+    def __str__(self):
+        return f"ResetToken({self.usuario.email}, expirado={self.expirado})"
         return f"{self.usuario.nome} - {self.nivel}"

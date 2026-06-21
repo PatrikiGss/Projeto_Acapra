@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import "./Adocao.css";
 import api, { getMediaURL } from "../../services/api";
@@ -38,6 +38,7 @@ function Adocao() {
     const [publicarRedes, setPublicarRedes] = useState(true);
     const [erroAcao, setErroAcao] = useState("");
     const [animalParaExclusao, setAnimalParaExclusao] = useState(null);
+    const fecharModalTimeoutRef = useRef(null);
 
     const carregarAnimais = () => {
         api.get("/api/adocao/animais/")
@@ -51,6 +52,10 @@ function Adocao() {
 
     useEffect(() => {
         return () => {
+            if (fecharModalTimeoutRef.current) {
+                clearTimeout(fecharModalTimeoutRef.current);
+            }
+
             if (previewFotoPrincipal.startsWith("blob:")) {
                 URL.revokeObjectURL(previewFotoPrincipal);
             }
@@ -97,12 +102,14 @@ function Adocao() {
     }, [animalEditando]);
 
     const abrirCriacao = () => {
+        if (fecharModalTimeoutRef.current) clearTimeout(fecharModalTimeoutRef.current);
         setModoFormulario("criar");
         setAnimalEditando(null);
         setFormulario(formVazio);
         setFotoPrincipal(null);
         setFotosAdicionais([]);
         setErroFormulario("");
+        setSucessoFormulario("");
         if (previewFotoPrincipal.startsWith("blob:")) URL.revokeObjectURL(previewFotoPrincipal);
         fotosAdicionais.forEach((foto) => {
             if (foto.preview.startsWith("blob:")) {
@@ -115,6 +122,7 @@ function Adocao() {
     };
 
     const abrirEdicao = (animal) => {
+        if (fecharModalTimeoutRef.current) clearTimeout(fecharModalTimeoutRef.current);
         setModoFormulario("editar");
         setAnimalEditando(animal);
         setFormulario({
@@ -129,6 +137,7 @@ function Adocao() {
         setFotoPrincipal(null);
         setFotosAdicionais([]);
         setErroFormulario("");
+        setSucessoFormulario("");
         if (previewFotoPrincipal.startsWith("blob:")) URL.revokeObjectURL(previewFotoPrincipal);
         fotosAdicionais.forEach((foto) => {
             if (foto.preview.startsWith("blob:")) {
@@ -140,6 +149,11 @@ function Adocao() {
     };
 
     const fecharModal = () => {
+        if (fecharModalTimeoutRef.current) {
+            clearTimeout(fecharModalTimeoutRef.current);
+            fecharModalTimeoutRef.current = null;
+        }
+
         if (previewFotoPrincipal.startsWith("blob:")) URL.revokeObjectURL(previewFotoPrincipal);
         fotosAdicionais.forEach((foto) => {
             if (foto.preview.startsWith("blob:")) {
@@ -153,6 +167,7 @@ function Adocao() {
         setPreviewFotoPrincipal("");
         setFotosAdicionais([]);
         setErroFormulario("");
+        setSucessoFormulario("");
         setSalvando(false);
     };
 
@@ -252,7 +267,7 @@ function Adocao() {
             }
             await carregarAnimais();
             setSucessoFormulario("Animal adicionado com sucesso!");
-            setTimeout(() => fecharModal(), 2500);
+            fecharModalTimeoutRef.current = setTimeout(() => fecharModal(), 2500);
         } catch (error) {
             setErroFormulario(extrairMensagemErro(error));
         } finally {
@@ -454,11 +469,15 @@ function Adocao() {
                     <div className="product-modal" onClick={(event) => event.stopPropagation()}>
                         <div className="product-modal-header">
                             <h2>{modoFormulario === "editar" ? "Editar animal" : "Adicionar animal"}</h2>
-                            {!salvando && !sucessoFormulario && (
-                                <button type="button" className="product-modal-close" onClick={fecharModal}>
-                                    Fechar
-                                </button>
-                            )}
+                            <button
+                                type="button"
+                                className="product-modal-close product-modal-close--icon"
+                                onClick={fecharModal}
+                                aria-label="Fechar modal"
+                                title="Fechar"
+                            >
+                                ×
+                            </button>
                         </div>
 
                         {salvando && (

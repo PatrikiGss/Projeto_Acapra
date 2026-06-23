@@ -11,12 +11,6 @@ const descricaoIndicador = {
   adocoes: "animais que encontraram um lar amoroso",
 };
 
-const parceiros = [
-  { nome: "Clínicas Veterinárias Parceiras", descricao: "Estabelecimentos que oferecem atendimento com desconto ou gratuito" },
-  { nome: "Pet Shops Apoiadores", descricao: "Lojas que doam ração, acessórios e materiais de higiene" },
-  { nome: "Apoiadores Locais", descricao: "Empresas e pessoas de São Joaquim que apoiam a causa" },
-];
-
 function formatarData(data) {
   if (!data) return "";
   const [ano, mes, dia] = data.split("-");
@@ -458,24 +452,6 @@ function Transparencia() {
               ))}
             </div>
           )}
-        </section>
-
-        {/* PARCERIAS */}
-        <section className="transp-dimensao" aria-labelledby="parceiros-titulo">
-          <div className="transp-dimensao-header">
-            <div>
-              <h2 id="parceiros-titulo">Parcerias</h2>
-              <p>Quem nos ajuda a cuidar dos animais de São Joaquim</p>
-            </div>
-          </div>
-          <div className="transp-parceiros-grid">
-            {parceiros.map((p) => (
-              <article key={p.nome} className="transp-parceiro-card">
-                <strong>{p.nome}</strong>
-                <p>{p.descricao}</p>
-              </article>
-            ))}
-          </div>
         </section>
 
         {/* CTA */}

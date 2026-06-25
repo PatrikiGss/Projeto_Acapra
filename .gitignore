@@ -25,3 +25,5 @@ staticfiles/
 .DS_Store
 Thumbs.db
 acapra-backend-deploy.zip
+acapra-frontend-deploy.zip
+acapra-frontend-deploy-planB.zip

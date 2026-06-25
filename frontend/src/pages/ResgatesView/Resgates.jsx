@@ -5,7 +5,7 @@ function Resgates() {
     <NewsFeed
       categoria="resgates"
       titulo="Resgates"
-      subtitulo="Histórias de resgate, cuidado e recomeço com o visual de uma editoria especial."
+      subtitulo="Resgatamos animais das ruas e dos maus-tratos — aqui você acompanha o cuidado, a recuperação e o recomeço de cada um deles."
     />
   );
 }

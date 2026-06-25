@@ -4,12 +4,20 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from gerenciamento.permissions import require_module
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
 
 from auditoria.models import RegistroAuditoria
 from auditoria.services import registrar_auditoria
+from core.throttling import PublicFormRateThrottle
 
-from .models import DadosPix
-from .serializers import DadosPixWriteSerializer, GetDadosPixSerializer
+from .models import DadosPix, OfertaDoacao
+from .serializers import (
+    DadosPixWriteSerializer,
+    GetDadosPixSerializer,
+    OfertaDoacaoAdminSerializer,
+    OfertaDoacaoCreateSerializer,
+    OfertaDoacaoStatusSerializer,
+)
 
 
 class DadosPixView(APIView):
@@ -122,5 +130,65 @@ class DadosPixDetailView(APIView):
         dados_pix.delete()
         return Response(
             {"detail": f"Dado Pix {pk} removido com sucesso."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
+
+class OfertasDoacaoView(APIView):
+    """
+    GET  /api/doacoes/ofertas/  — Lista as ofertas (requer módulo 'doacoes')
+    POST /api/doacoes/ofertas/  — Registra uma oferta de doação (público)
+    """
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [AllowAny()]
+        return [IsAuthenticated(), require_module("doacoes")()]
+
+    def get_throttles(self):
+        # Limita o envio público para evitar spam.
+        if self.request.method == "POST":
+            return [PublicFormRateThrottle()]
+        return super().get_throttles()
+
+    def get(self, request):
+        ofertas = OfertaDoacao.objects.all()
+        serializer = OfertaDoacaoAdminSerializer(ofertas, many=True, context={"request": request})
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = OfertaDoacaoCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {"detail": "Oferta registrada com sucesso. Em breve entraremos em contato. Obrigado!"},
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class OfertaDoacaoDetailView(APIView):
+    """
+    PATCH  /api/doacoes/ofertas/<pk>/  — Atualiza o status (admin)
+    DELETE /api/doacoes/ofertas/<pk>/  — Remove a oferta (admin)
+    """
+
+    def get_permissions(self):
+        return [IsAuthenticated(), require_module("doacoes")()]
+
+    def get_object(self, pk):
+        return get_object_or_404(OfertaDoacao, pk=pk)
+
+    def patch(self, request, pk):
+        oferta = self.get_object(pk)
+        serializer = OfertaDoacaoStatusSerializer(oferta, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(OfertaDoacaoAdminSerializer(oferta, context={"request": request}).data)
+
+    def delete(self, request, pk):
+        oferta = self.get_object(pk)
+        oferta.delete()
+        return Response(
+            {"detail": f"Oferta {pk} removida com sucesso."},
             status=status.HTTP_204_NO_CONTENT,
         )

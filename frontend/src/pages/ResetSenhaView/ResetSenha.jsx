@@ -66,7 +66,7 @@ function ResetSenha() {
   return (
     <div className="reset-container">
       <div className="reset-imagem">
-        <img src="/cachorro.png" alt="Cachorro ACAPRA" />
+        <img src="/cachorro.webp" alt="Cachorro ACAPRA" />
         <div className="reset-imagem-overlay">
           <h2>Proteja quem não tem voz</h2>
         </div>

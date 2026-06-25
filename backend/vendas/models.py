@@ -1,5 +1,6 @@
 from django.db import models
 
+from core.images import CompressImageOnSaveMixin
 from core.uploads import upload_produtos
 from core.validators import validate_image_upload
 
@@ -9,11 +10,13 @@ class TipoVestuario(models.TextChoices):
     PET = 'pet', 'Para pets'
 
 
-class Produto(models.Model):
+class Produto(CompressImageOnSaveMixin, models.Model):
     """
     Modelo para armazenar produtos de vestuário.
     Pode ser vestuário humano ou para pets.
     """
+    campos_imagem_comprimir = ("foto",)
+
     nome = models.CharField(max_length=200)
     
     descricao = models.TextField(
@@ -64,7 +67,9 @@ class Produto(models.Model):
         return f"{self.nome} ({self.get_tipo_display()})"
 
 
-class ProdutoImagem(models.Model):
+class ProdutoImagem(CompressImageOnSaveMixin, models.Model):
+    campos_imagem_comprimir = ("imagem",)
+
     produto = models.ForeignKey(
         Produto,
         related_name="imagens",

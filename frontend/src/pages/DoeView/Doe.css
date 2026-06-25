@@ -397,6 +397,85 @@
     opacity: 0.75;
 }
 
+/* === OFERTA DE DOAÇÃO (formulário público) === */
+.doe-oferta {
+    max-width: 900px;
+    margin: clamp(2rem, 4vw, 3rem) auto 0;
+    background: #fff;
+    border: 1px solid rgba(224, 224, 224, 0.9);
+    border-radius: 16px;
+    padding: clamp(1.4rem, 3vw, 2.2rem);
+    box-shadow: 0 10px 28px rgba(26, 26, 26, 0.05);
+}
+
+.doe-oferta-intro h2 {
+    margin: 0.5rem 0 0.4rem;
+    font-size: 1.5rem;
+}
+
+.doe-oferta-intro p {
+    margin: 0 0 1.4rem;
+    color: #545454;
+    line-height: 1.55;
+    max-width: 620px;
+}
+
+.doe-oferta-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.doe-oferta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.doe-oferta-form label,
+.doe-oferta-full {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.doe-oferta-form input,
+.doe-oferta-form select,
+.doe-oferta-form textarea {
+    padding: 0.65rem 0.8rem;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    border-radius: 8px;
+    font: inherit;
+    font-weight: 500;
+    background: #fff;
+}
+
+.doe-oferta-form input:focus,
+.doe-oferta-form select:focus,
+.doe-oferta-form textarea:focus {
+    outline: none;
+    border-color: #e87722;
+    box-shadow: 0 0 0 3px rgba(232, 119, 34, 0.15);
+}
+
+.doe-oferta-form textarea {
+    resize: vertical;
+}
+
+.doe-oferta-form .doe-form-button.primary {
+    align-self: flex-start;
+    padding: 0 1.6rem;
+}
+
+.doe-oferta-sucesso {
+    margin: 0;
+    color: #20784a;
+    font-weight: 700;
+}
+
 @media (max-width: 820px) {
     .doe-page {
         min-height: auto;
@@ -411,6 +490,10 @@
     }
 
     .doe-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .doe-oferta-grid {
         grid-template-columns: 1fr;
     }
 

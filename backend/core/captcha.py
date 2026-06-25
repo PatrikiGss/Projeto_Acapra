@@ -1,19 +1,10 @@
 """
-Verificação de CAPTCHA (Cloudflare Turnstile).
+Resolução do IP real de origem das requisições.
 
-Protege endpoints públicos sensíveis (ex.: registro) contra automação/bots.
-
-Comportamento:
-- Em desenvolvimento/testes o CAPTCHA fica desligado por padrão
-  (`CAPTCHA_ENABLED=False`) e a verificação sempre passa — assim os testes
-  automatizados e o ambiente local não precisam de chaves.
-- Em produção, defina `CAPTCHA_ENABLED=True` e `TURNSTILE_SECRET_KEY` no
-  ambiente. A partir daí, todo registro precisa de um token válido.
+Usado por logs de auditoria e throttling para identificar o cliente de forma
+confiável, respeitando o nº de proxies confiáveis (NUM_PROXIES) à frente do app.
 """
-import requests
 from django.conf import settings
-
-TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
 
 
 def _num_proxies() -> int:
@@ -23,14 +14,6 @@ def _num_proxies() -> int:
         return int(rest.get("NUM_PROXIES", 0) or 0)
     except (TypeError, ValueError):
         return 0
-
-
-def captcha_ativo():
-    """O CAPTCHA só é exigido quando habilitado E com secret configurada."""
-    return bool(
-        getattr(settings, "CAPTCHA_ENABLED", False)
-        and getattr(settings, "TURNSTILE_SECRET_KEY", "")
-    )
 
 
 def get_client_ip(request):
@@ -59,32 +42,3 @@ def get_client_ip(request):
 
     # Posição N a partir do fim: o IP inserido pelo proxy mais externo confiável.
     return enderecos[-min(num_proxies, len(enderecos))]
-
-
-def verificar_captcha(token, remote_ip=None):
-    """
-    Retorna True se o CAPTCHA estiver desativado ou se o token for válido.
-    Em caso de token ausente ou falha de verificação, retorna False.
-    """
-    if not captcha_ativo():
-        return True
-
-    if not token:
-        return False
-
-    try:
-        resposta = requests.post(
-            TURNSTILE_VERIFY_URL,
-            data={
-                "secret": settings.TURNSTILE_SECRET_KEY,
-                "response": token,
-                "remoteip": remote_ip or "",
-            },
-            timeout=5,
-        )
-        resultado = resposta.json()
-    except (requests.RequestException, ValueError):
-        # Indisponibilidade do provedor ou resposta inválida: nega por segurança.
-        return False
-
-    return bool(resultado.get("success"))

@@ -33,16 +33,6 @@ FIELD_ENCRYPTION_KEY = config("FIELD_ENCRYPTION_KEY", default="")
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-# =========================================================
-# CAPTCHA (Cloudflare Turnstile)
-# =========================================================
-# Protege o registro público contra bots. Desligado por padrão para não
-# exigir chaves em dev/testes. Em produção: CAPTCHA_ENABLED=True +
-# TURNSTILE_SECRET_KEY (backend) e VITE_TURNSTILE_SITE_KEY (frontend).
-CAPTCHA_ENABLED = config("CAPTCHA_ENABLED", default=False, cast=bool)
-TURNSTILE_SECRET_KEY = config("TURNSTILE_SECRET_KEY", default="")
-TURNSTILE_SITE_KEY = config("TURNSTILE_SITE_KEY", default="")
-
 ALLOWED_HOSTS = config(
     "ALLOWED_HOSTS",
     default="localhost,127.0.0.1,[::1]",

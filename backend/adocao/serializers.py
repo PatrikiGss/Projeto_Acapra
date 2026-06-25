@@ -2,8 +2,17 @@ from django.db import transaction
 from django.db.models import Max
 from rest_framework import serializers
 
+from core.images import LIMITE_FOTOS, validar_limite_fotos
 from core.validators import validate_image_upload
 from .models import Animal, AnimalImagem
+
+
+def _contar_fotos_novas(serializer, attrs):
+    fotos = attrs.get("fotos")
+    if fotos is None:
+        request = serializer.context.get("request")
+        fotos = request.FILES.getlist("fotos") if request is not None else []
+    return len(fotos)
 
 
 def _absolute_file_url(request, file_field):
@@ -53,12 +62,16 @@ class AnimalSerializer(serializers.ModelSerializer):
         child=serializers.ImageField(validators=[validate_image_upload]),
         required=False,
         write_only=True,
-        max_length=10,
+        max_length=LIMITE_FOTOS,
     )
 
     class Meta:
         model = Animal
         fields = ['nome_animal', 'nome_doador', 'telefone', 'especie', 'sexo', 'foto', 'fotos', 'descricao', 'disponivel']
+
+    def validate(self, attrs):
+        validar_limite_fotos(self.instance, bool(attrs.get("foto")), _contar_fotos_novas(self, attrs))
+        return attrs
 
     def create(self, validated_data):
         fotos = _extra_fotos_from_validated_data(self, validated_data)
@@ -101,12 +114,16 @@ class UpdateAnimalSerializer(serializers.ModelSerializer):
         child=serializers.ImageField(validators=[validate_image_upload]),
         required=False,
         write_only=True,
-        max_length=10,
+        max_length=LIMITE_FOTOS,
     )
 
     class Meta:
         model = Animal
         fields = ['nome_animal', 'nome_doador', 'especie', 'sexo', 'foto', 'fotos', 'descricao', 'disponivel']
+
+    def validate(self, attrs):
+        validar_limite_fotos(self.instance, bool(attrs.get("foto")), _contar_fotos_novas(self, attrs))
+        return attrs
 
     def update(self, instance, validated_data):
         fotos = _extra_fotos_from_validated_data(self, validated_data)

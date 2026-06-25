@@ -21,6 +21,8 @@ const formVazio = {
   ativo: true,
 };
 
+const LIMITE_FOTOS = 4;
+
 function NewsForm({ categoria, backPath, mode = "create" }) {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -33,6 +35,7 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
   const [formulario, setFormulario] = useState(formVazio);
   const [fotoFile, setFotoFile] = useState(null);
   const [fotoPreview, setFotoPreview] = useState("");
+  const [fotosAdicionais, setFotosAdicionais] = useState([]);
 
   const categoriaLabel = useMemo(
     () => categoriaLabels[categoria] || "Publicação",
@@ -90,6 +93,23 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
     };
   }, [fotoPreview]);
 
+  useEffect(() => {
+    return () => {
+      fotosAdicionais.forEach((foto) => {
+        if (foto.preview.startsWith("blob:")) {
+          URL.revokeObjectURL(foto.preview);
+        }
+      });
+    };
+  }, [fotosAdicionais]);
+
+  // Quantas fotos adicionais ainda cabem (a principal é obrigatória).
+  const fotosExistentes = item?.fotos?.length || (item?.foto ? 1 : 0);
+  const maxAdicionais =
+    mode === "edit"
+      ? Math.max(0, LIMITE_FOTOS - fotosExistentes)
+      : LIMITE_FOTOS - 1;
+
   const limparPreview = () => {
     if (fotoPreview.startsWith("blob:")) {
       URL.revokeObjectURL(fotoPreview);
@@ -120,6 +140,38 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
     setFotoPreview(file ? URL.createObjectURL(file) : "");
   };
 
+  const lidarComFotosAdicionais = (fileList) => {
+    const lista = Array.from(fileList || []);
+    if (!lista.length) return;
+
+    for (const file of lista) {
+      const erroValidacao = validateImageFile(file);
+      if (erroValidacao) {
+        setErro(erroValidacao);
+        return;
+      }
+    }
+
+    fotosAdicionais.forEach((foto) => {
+      if (foto.preview.startsWith("blob:")) {
+        URL.revokeObjectURL(foto.preview);
+      }
+    });
+
+    if (lista.length > maxAdicionais) {
+      setErro(`Máximo de ${LIMITE_FOTOS} fotos no total (1 principal + ${maxAdicionais} adicionais).`);
+    } else {
+      setErro("");
+    }
+
+    setFotosAdicionais(
+      lista.slice(0, maxAdicionais).map((file) => ({
+        file,
+        preview: URL.createObjectURL(file),
+      })),
+    );
+  };
+
   const extrairMensagemErro = (errorResponse) => {
     return getApiErrorMessage(errorResponse, "Não foi possível salvar a publicação.");
   };
@@ -145,6 +197,10 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
     if (fotoFile) {
       payload.append("foto", fotoFile);
     }
+
+    fotosAdicionais.forEach((foto) => {
+      payload.append("fotos", foto.file);
+    });
 
     try {
       let response;
@@ -231,6 +287,29 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
               onChange={(event) => lidarComFoto(event.target.files?.[0] || null)}
             />
           </label>
+
+          <div className="news-form-extra">
+            <div className="news-form-extra-head">
+              <span>Fotos adicionais</span>
+              <small>Até {LIMITE_FOTOS} fotos no total (1 principal + {maxAdicionais} adicionais)</small>
+            </div>
+            <input
+              type="file"
+              accept={IMAGE_ACCEPT}
+              multiple
+              disabled={maxAdicionais === 0}
+              onChange={(event) => lidarComFotosAdicionais(event.target.files)}
+            />
+            {fotosAdicionais.length > 0 && (
+              <div className="news-form-extra-grid">
+                {fotosAdicionais.map((foto) => (
+                  <div className="news-form-extra-item" key={foto.preview}>
+                    <img src={foto.preview} alt="Pré-visualização de foto adicional" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           <label className="news-form-text">
             <span>Texto da publicação</span>

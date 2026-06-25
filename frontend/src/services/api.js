@@ -161,7 +161,7 @@ function buildMediaPath(path) {
 }
 
 export function getMediaURL(path) {
-  if (!path) return "/adocao-cachorro.png";
+  if (!path) return "/adocao-cachorro.webp";
 
   if (path.startsWith("http")) {
     try {

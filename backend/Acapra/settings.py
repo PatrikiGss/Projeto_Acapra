@@ -11,8 +11,12 @@ from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'
 BASE_DIR = Path(__file__).resolve().parent.parent
-MEDIA_URL = '/api/media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Servir /media pelo próprio Django (necessário no cPanel/Passenger, onde o
+# Apache não mapeia /media para o app root). Ligado via env em produção.
+SERVE_MEDIA = config("SERVE_MEDIA", default=False, cast=bool)
 
 # =========================================================
 # SECURITY
@@ -28,22 +32,6 @@ SECRET_KEY = config("SECRET_KEY")
 FIELD_ENCRYPTION_KEY = config("FIELD_ENCRYPTION_KEY", default="")
 
 DEBUG = config("DEBUG", default=False, cast=bool)
-
-# Em hospedagem compartilhada sem Apache configurado para servir /media
-# diretamente, o próprio Django serve esses arquivos (custo aceitável para
-# o volume de tráfego do projeto). Desligue se um Alias do Apache ou CDN
-# passar a cuidar disso.
-SERVE_MEDIA = config("SERVE_MEDIA", default=False, cast=bool)
-
-# =========================================================
-# CAPTCHA (Cloudflare Turnstile)
-# =========================================================
-# Protege o registro público contra bots. Desligado por padrão para não
-# exigir chaves em dev/testes. Em produção: CAPTCHA_ENABLED=True +
-# TURNSTILE_SECRET_KEY (backend) e VITE_TURNSTILE_SITE_KEY (frontend).
-CAPTCHA_ENABLED = config("CAPTCHA_ENABLED", default=False, cast=bool)
-TURNSTILE_SECRET_KEY = config("TURNSTILE_SECRET_KEY", default="")
-TURNSTILE_SITE_KEY = config("TURNSTILE_SITE_KEY", default="")
 
 ALLOWED_HOSTS = config(
     "ALLOWED_HOSTS",
@@ -100,6 +88,8 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
 
     "django.middleware.security.SecurityMiddleware",
+    # WhiteNoise serve os estáticos (admin/DRF) logo após o SecurityMiddleware.
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -198,6 +188,17 @@ STATIC_URL = "static/"
 # necessário para deploy e collectstatic
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# WhiteNoise comprime e serve os estáticos coletados (admin/DRF) direto pelo
+# app WSGI, sem precisar configurar Apache. Não afeta uploads (MEDIA).
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
+
 
 # =========================================================
 # DJANGO REST FRAMEWORK + JWT
@@ -289,6 +290,14 @@ CORS_ALLOWED_ORIGIN_REGEXES = config(
 )
 
 CORS_ALLOW_CREDENTIALS = True
+
+# Origens confiáveis para CSRF (necessário p/ o admin Django sob HTTPS em
+# domínio próprio). Vem do ambiente; vazio em dev. A API usa JWT (sem CSRF).
+CSRF_TRUSTED_ORIGINS = config(
+    "CSRF_TRUSTED_ORIGINS",
+    default="",
+    cast=Csv(),
+)
 
 
 # =========================================================

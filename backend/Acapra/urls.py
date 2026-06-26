@@ -4,10 +4,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include, re_path
-from django.views.static import serve
+from django.views.static import serve as serve_media
 
 urlpatterns = [
-    path('api/admin/', admin.site.urls),
+    path('admin/', admin.site.urls),
 
     path('api/core/',          include('core.urls',          namespace='core')),
     path('api/auditoria/',     include('auditoria.urls',     namespace='auditoria')),
@@ -28,12 +28,13 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 elif settings.SERVE_MEDIA:
-    # static() não funciona fora de DEBUG (ela mesma checa settings.DEBUG),
-    # então servimos a view de arquivo estático do Django diretamente.
+    # Produção no cPanel/Passenger: o Apache não mapeia /media para o app root,
+    # então o próprio Django serve os uploads (dinâmico, lê o arquivo do disco a
+    # cada request). Ligado via SERVE_MEDIA no .env.
     urlpatterns += [
         re_path(
-            r"^api/media/(?P<path>.*)$",
-            serve,
+            r"^media/(?P<path>.*)$",
+            serve_media,
             {"document_root": settings.MEDIA_ROOT},
         ),
     ]

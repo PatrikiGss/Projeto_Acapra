@@ -485,6 +485,17 @@
     background: #fdf9f5;
 }
 
+.product-modal-close--icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4rem;
+    min-width: 2.4rem;
+    padding: 0;
+    font-size: 1.35rem;
+    line-height: 1;
+}
+
 .product-form-loading {
     display: flex;
     flex-direction: column;

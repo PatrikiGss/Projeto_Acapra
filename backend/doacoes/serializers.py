@@ -1,7 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 
-from .models import DadosPix
+from .models import DadosPix, OfertaDoacao
 
 
 def _absolute_file_url(request, file_field):
@@ -95,3 +95,58 @@ class GetDadosPixSerializer(serializers.ModelSerializer):
     def get_qr_code(self, obj):
         request = self.context.get('request')
         return _absolute_file_url(request, obj.qr_code)
+
+
+class OfertaDoacaoCreateSerializer(serializers.ModelSerializer):
+    """Serializer público para registrar uma oferta de doação de item."""
+
+    class Meta:
+        model = OfertaDoacao
+        fields = ["nome_doador", "telefone", "item", "categoria", "quantidade", "observacoes"]
+
+    def validate_nome_doador(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Informe o nome do doador.")
+        return value.strip()
+
+    def validate_telefone(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Informe um telefone para contato.")
+        return value.strip()
+
+    def validate_item(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Descreva o que deseja doar.")
+        return value.strip()
+
+
+class OfertaDoacaoAdminSerializer(serializers.ModelSerializer):
+    """Serializer completo para listagem/gestão das ofertas pelos admins."""
+
+    categoria_display = serializers.CharField(source="get_categoria_display", read_only=True)
+    status_display = serializers.CharField(source="get_status_display", read_only=True)
+
+    class Meta:
+        model = OfertaDoacao
+        fields = [
+            "id",
+            "nome_doador",
+            "telefone",
+            "item",
+            "categoria",
+            "categoria_display",
+            "quantidade",
+            "observacoes",
+            "status",
+            "status_display",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class OfertaDoacaoStatusSerializer(serializers.ModelSerializer):
+    """Serializer para o admin atualizar apenas o status da oferta."""
+
+    class Meta:
+        model = OfertaDoacao
+        fields = ["status"]

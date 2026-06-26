@@ -99,13 +99,13 @@ function Home() {
   return (
     <div className="main">
       <section className="hero">
-        <div className="hero-image" aria-hidden="true">
-          <img src="/hero123.png" alt="" className="hero-collage-img"/>
+        <div className="hero-image">
+          <img src="/hero-acapra.webp" alt="Filhote resgatado pela ACAPRA" className="hero-img" />
         </div>
 
         <div className="hero-content">
           <h1 className="hero-text">
-            Associação Joaquinense de Proteção aos Animais
+            Associação Catarinense de Proteção aos Animais
           </h1>
 
           <p className="hero-subtitle">
@@ -184,7 +184,7 @@ function Home() {
                   tabIndex={index !== animalSlideAtual ? -1 : undefined}
                 >
                   <img
-                    src={animal.foto || animal.fotos?.[0] || "/adocao-cachorro.png"}
+                    src={animal.foto || animal.fotos?.[0] || "/adocao-cachorro.webp"}
                     alt={animal.nome_animal || "Animal para adoção"}
                   />
 
@@ -250,7 +250,7 @@ function Home() {
 
           <div className="produtos-image">
             <img
-              src="/produtos-solidarios.png"
+              src="/produtos-solidarios.webp"
               alt="Gato com carrinho de compras representando produtos solidários"
             />
           </div>

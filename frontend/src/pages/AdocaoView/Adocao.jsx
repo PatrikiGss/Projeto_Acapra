@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import "./Adocao.css";
 import api, { getMediaURL } from "../../services/api";
@@ -38,6 +38,7 @@ function Adocao() {
     const [publicarRedes, setPublicarRedes] = useState(true);
     const [erroAcao, setErroAcao] = useState("");
     const [animalParaExclusao, setAnimalParaExclusao] = useState(null);
+    const fecharModalTimeoutRef = useRef(null);
 
     const carregarAnimais = () => {
         api.get("/api/adocao/animais/")
@@ -51,6 +52,10 @@ function Adocao() {
 
     useEffect(() => {
         return () => {
+            if (fecharModalTimeoutRef.current) {
+                clearTimeout(fecharModalTimeoutRef.current);
+            }
+
             if (previewFotoPrincipal.startsWith("blob:")) {
                 URL.revokeObjectURL(previewFotoPrincipal);
             }
@@ -97,6 +102,7 @@ function Adocao() {
     }, [animalEditando]);
 
     const abrirCriacao = () => {
+        if (fecharModalTimeoutRef.current) clearTimeout(fecharModalTimeoutRef.current);
         setModoFormulario("criar");
         setAnimalEditando(null);
         setFormulario(formVazio);
@@ -116,6 +122,7 @@ function Adocao() {
     };
 
     const abrirEdicao = (animal) => {
+        if (fecharModalTimeoutRef.current) clearTimeout(fecharModalTimeoutRef.current);
         setModoFormulario("editar");
         setAnimalEditando(animal);
         setFormulario({
@@ -142,6 +149,11 @@ function Adocao() {
     };
 
     const fecharModal = () => {
+        if (fecharModalTimeoutRef.current) {
+            clearTimeout(fecharModalTimeoutRef.current);
+            fecharModalTimeoutRef.current = null;
+        }
+
         if (previewFotoPrincipal.startsWith("blob:")) URL.revokeObjectURL(previewFotoPrincipal);
         fotosAdicionais.forEach((foto) => {
             if (foto.preview.startsWith("blob:")) {
@@ -163,35 +175,16 @@ function Adocao() {
         return getApiErrorMessage(error, "Não foi possível salvar o animal.");
     };
 
-    const lidarComFotoPrincipal = (file, input) => {
+    const lidarComFotoPrincipal = (file) => {
         if (file) {
-            const tiposPermitidos = [
-                "image/jpeg",
-                "image/png",
-            ];
-
-            if (!tiposPermitidos.includes(file.type)) {
-                setErroFormulario(
-                    "Apenas imagens JPG, JPEG e PNG são permitidas."
-                );
-
-                setFotoPrincipal(null);
-                setPreviewFotoPrincipal("");
-
-                if (input) {
-                    input.value = "";
-                }
-
+            const erroValidacao = validateImageFile(file);
+            if (erroValidacao) {
+                setErroFormulario(erroValidacao);
                 return;
             }
         }
-
         setErroFormulario("");
-
-        if (previewFotoPrincipal?.startsWith("blob:")) {
-            URL.revokeObjectURL(previewFotoPrincipal);
-        }
-
+        if (previewFotoPrincipal.startsWith("blob:")) URL.revokeObjectURL(previewFotoPrincipal);
         setFotoPrincipal(file || null);
         setPreviewFotoPrincipal(file ? URL.createObjectURL(file) : "");
     };
@@ -199,10 +192,7 @@ function Adocao() {
     const lidarComFotosAdicionais = (files) => {
         const lista = Array.from(files || []);
 
-        if (lista.length > 10) {
-            setErroFormulario("Selecione no máximo 10 imagens.");
-            return;
-        }
+        if (!lista.length) return;
 
         for (const file of lista) {
             const erroValidacao = validateImageFile(file);
@@ -211,7 +201,16 @@ function Adocao() {
                 return;
             }
         }
-        setErroFormulario("");
+
+        const fotosJaSalvas = animalEditando?.fotos?.length || 0;
+        const principalOcupa = (fotoPrincipal || animalEditando?.foto) ? 1 : 0;
+        const maxAdicionais = Math.max(0, 4 - Math.max(fotosJaSalvas, principalOcupa));
+
+        if (lista.length > maxAdicionais) {
+            setErroFormulario("Máximo de 4 fotos por cadastro.");
+        } else {
+            setErroFormulario("");
+        }
 
         fotosAdicionais.forEach((foto) => {
             if (foto.preview.startsWith("blob:")) {
@@ -219,7 +218,7 @@ function Adocao() {
             }
         });
 
-        setFotosAdicionais(lista.map((file) => ({
+        setFotosAdicionais(lista.slice(0, maxAdicionais).map((file) => ({
             file,
             preview: URL.createObjectURL(file),
         })));
@@ -240,62 +239,18 @@ function Adocao() {
 
     const enviarFormulario = async (event) => {
         event.preventDefault();
-
+        setSalvando(true);
         setErroFormulario("");
         setSucessoFormulario("");
 
-        const ehCriacao = !(modoFormulario === "editar" && animalEditando);
-
-        // Foto obrigatória na criação
-        if (ehCriacao && !fotoPrincipal) {
-            setErroFormulario("Selecione uma foto principal.");
-            return;
-        }
-
-        // Validação do formato da foto principal
-        if (fotoPrincipal) {
-            const tiposPermitidos = [
-                "image/jpeg",
-                "image/png",
-            ];
-
-            if (!tiposPermitidos.includes(fotoPrincipal.type)) {
-                setErroFormulario(
-                    "Apenas imagens JPG, JPEG e PNG são permitidas."
-                );
-                return;
-            }
-        }
-
-        // Validação das fotos adicionais
-        for (const foto of fotosAdicionais) {
-            const tiposPermitidos = [
-                "image/jpeg",
-                "image/png",
-            ];
-
-            if (!tiposPermitidos.includes(foto.file.type)) {
-                setErroFormulario(
-                    "Todas as imagens devem ser JPG, JPEG ou PNG."
-                );
-                return;
-            }
-        }
-
-        setSalvando(true);
-
         const payload = new FormData();
-
         payload.append("nome_animal", formulario.nome_animal);
         payload.append("nome_doador", formulario.nome_doador);
         payload.append("telefone", toBrazilianPhoneE164(formulario.telefone));
         payload.append("especie", formulario.especie);
         payload.append("sexo", formulario.sexo);
         payload.append("descricao", formulario.descricao);
-        payload.append(
-            "disponivel",
-            formulario.disponivel ? "true" : "false"
-        );
+        payload.append("disponivel", formulario.disponivel ? "true" : "false");
 
         if (fotoPrincipal) {
             payload.append("foto", fotoPrincipal);
@@ -305,34 +260,20 @@ function Adocao() {
             payload.append("fotos", foto.file);
         });
 
+        const ehCriacao = !(modoFormulario === "editar" && animalEditando);
         if (ehCriacao) {
-            payload.append(
-                "publicar_redes",
-                publicarRedes ? "true" : "false"
-            );
+            payload.append("publicar_redes", publicarRedes ? "true" : "false");
         }
 
         try {
             if (!ehCriacao) {
-                await api.patch(
-                    `/api/adocao/animais/${animalEditando.id}/`,
-                    payload
-                );
+                await api.patch(`/api/adocao/animais/${animalEditando.id}/`, payload);
             } else {
-                await api.post(
-                    "/api/adocao/animais/",
-                    payload
-                );
+                await api.post("/api/adocao/animais/", payload);
             }
-
             await carregarAnimais();
-
             setSucessoFormulario("Animal adicionado com sucesso!");
-
-            setTimeout(() => {
-                fecharModal();
-            }, 2500);
-
+            fecharModalTimeoutRef.current = setTimeout(() => fecharModal(), 2500);
         } catch (error) {
             setErroFormulario(extrairMensagemErro(error));
         } finally {
@@ -534,11 +475,15 @@ function Adocao() {
                     <div className="product-modal" onClick={(event) => event.stopPropagation()}>
                         <div className="product-modal-header">
                             <h2>{modoFormulario === "editar" ? "Editar animal" : "Adicionar animal"}</h2>
-                            {!salvando && !sucessoFormulario && (
-                                <button type="button" className="product-modal-close" onClick={fecharModal}>
-                                    Fechar
-                                </button>
-                            )}
+                            <button
+                                type="button"
+                                className="product-modal-close product-modal-close--icon"
+                                onClick={fecharModal}
+                                aria-label="Fechar modal"
+                                title="Fechar"
+                            >
+                                ×
+                            </button>
                         </div>
 
                         {salvando && (
@@ -560,164 +505,159 @@ function Adocao() {
                         )}
 
                         {!salvando && !sucessoFormulario && (
-                            <form className="product-form" onSubmit={enviarFormulario}>
-                                <div className="product-form-grid">
-                                    <label>
-                                        Nome do animal
-                                        <input
-                                            name="nome_animal"
-                                            value={formulario.nome_animal}
-                                            onChange={alterarCampo}
-                                            required
-                                        />
-                                    </label>
-
-                                    <label>
-                                        Nome do doador
-                                        <input
-                                            name="nome_doador"
-                                            value={formulario.nome_doador}
-                                            onChange={alterarCampo}
-                                            required
-                                        />
-                                    </label>
-                                    <label>
-                                        Telefone do doador (+55)
-                                        <input
-                                            name="telefone"
-                                            value={formulario.telefone}
-                                            onChange={alterarCampo}
-                                            placeholder="(49) 99999-9999"
-                                            autoComplete="tel"
-                                            required
-                                        />
-                                    </label>
-
-                                    <label>
-                                        Espécie
-                                        <select name="especie" value={formulario.especie} onChange={alterarCampo}>
-                                            <option value="cachorro">Cachorro</option>
-                                            <option value="gato">Gato</option>
-                                            <option value="outros">Outros</option>
-                                        </select>
-                                    </label>
-
-                                    <label>
-                                        Sexo
-                                        <select name="sexo" value={formulario.sexo} onChange={alterarCampo}>
-                                            <option value="macho">Macho</option>
-                                            <option value="femea">Fêmea</option>
-                                        </select>
-                                    </label>
-                                </div>
-
-                                <label className="product-form-full">
-                                    Descrição
-                                    <textarea
-                                        name="descricao"
-                                        rows="5"
-                                        value={formulario.descricao}
+                        <form className="product-form" onSubmit={enviarFormulario}>
+                            <div className="product-form-grid">
+                                <label>
+                                    Nome do animal
+                                    <input
+                                        name="nome_animal"
+                                        value={formulario.nome_animal}
                                         onChange={alterarCampo}
+                                        required
                                     />
                                 </label>
 
-                                <div className="product-form-row">
-                                    <label className="product-form-upload">
-                                        Foto principal
-                                        <input
-                                            type="file"
-                                            accept=".jpg,.jpeg,.png"
-                                            onChange={(event) =>
-                                                lidarComFotoPrincipal(
-                                                    event.target.files?.[0] || null,
-                                                    event.target
-                                                )
-                                            }
-                                        />
-                                    </label>
+                                <label>
+                                    Nome do doador
+                                    <input
+                                        name="nome_doador"
+                                        value={formulario.nome_doador}
+                                        onChange={alterarCampo}
+                                        required
+                                    />
+                                </label>
+                                <label>
+                                    Telefone do doador (+55)
+                                    <input
+                                        name="telefone"
+                                        value={formulario.telefone}
+                                        onChange={alterarCampo}
+                                        placeholder="(49) 99999-9999"
+                                        autoComplete="tel"
+                                        required
+                                    />
+                                </label>
 
-                                    <label className="product-form-upload">
-                                        Fotos adicionais
-                                        <input
-                                            type="file"
-                                            accept={IMAGE_ACCEPT}
-                                            multiple
-                                            onChange={(event) => lidarComFotosAdicionais(event.target.files)}
-                                        />
-                                    </label>
+                                <label>
+                                    Espécie
+                                    <select name="especie" value={formulario.especie} onChange={alterarCampo}>
+                                        <option value="cachorro">Cachorro</option>
+                                        <option value="gato">Gato</option>
+                                        <option value="outros">Outros</option>
+                                    </select>
+                                </label>
 
-                                    <label className="product-form-check">
+                                <label>
+                                    Sexo
+                                    <select name="sexo" value={formulario.sexo} onChange={alterarCampo}>
+                                        <option value="macho">Macho</option>
+                                        <option value="femea">Fêmea</option>
+                                    </select>
+                                </label>
+                            </div>
+
+                            <label className="product-form-full">
+                                Descrição
+                                <textarea
+                                    name="descricao"
+                                    rows="5"
+                                    value={formulario.descricao}
+                                    onChange={alterarCampo}
+                                />
+                            </label>
+
+                            <div className="product-form-row">
+                                <label className="product-form-upload">
+                                    Foto principal
+                                    <input
+                                        type="file"
+                                        accept={IMAGE_ACCEPT}
+                                        onChange={(event) => lidarComFotoPrincipal(event.target.files?.[0] || null)}
+                                    />
+                                </label>
+
+                                <label className="product-form-upload">
+                                    Fotos adicionais
+                                    <input
+                                        type="file"
+                                        accept={IMAGE_ACCEPT}
+                                        multiple
+                                        onChange={(event) => lidarComFotosAdicionais(event.target.files)}
+                                    />
+                                </label>
+
+                                <label className="product-form-check">
+                                    <input
+                                        name="disponivel"
+                                        type="checkbox"
+                                        checked={formulario.disponivel}
+                                        onChange={alterarCampo}
+                                    />
+                                    Animal disponível para adoção
+                                </label>
+
+                                {modoFormulario !== "editar" && (
+                                    <label className="product-form-check product-form-check--redes">
                                         <input
-                                            name="disponivel"
                                             type="checkbox"
-                                            checked={formulario.disponivel}
-                                            onChange={alterarCampo}
+                                            checked={publicarRedes}
+                                            onChange={(e) => setPublicarRedes(e.target.checked)}
                                         />
-                                        Animal disponível para adoção
+                                        Publicar no Facebook / Instagram
                                     </label>
-
-                                    {modoFormulario !== "editar" && (
-                                        <label className="product-form-check product-form-check--redes">
-                                            <input
-                                                type="checkbox"
-                                                checked={publicarRedes}
-                                                onChange={(e) => setPublicarRedes(e.target.checked)}
-                                            />
-                                            Publicar no Facebook / Instagram
-                                        </label>
-                                    )}
-                                </div>
-
-                                {fotosAtuais.length > 0 && (
-                                    <div className="product-form-gallery">
-                                        <p className="product-form-gallery-title">Fotos atuais</p>
-                                        <div className="product-form-preview-grid">
-                                            {fotosAtuais.map((foto) => (
-                                                <div className="product-form-preview-item" key={foto}>
-                                                    <img src={foto} alt="Foto atual do animal" />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
                                 )}
+                            </div>
 
-                                {previewFotoPrincipal && (
-                                    <div className="product-form-gallery">
-                                        <p className="product-form-gallery-title">Foto principal selecionada</p>
-                                        <div className="product-form-preview-grid">
-                                            <div className="product-form-preview-item">
-                                                <img src={previewFotoPrincipal} alt="Pré-visualização da foto principal" />
+                            {fotosAtuais.length > 0 && (
+                                <div className="product-form-gallery">
+                                    <p className="product-form-gallery-title">Fotos atuais</p>
+                                    <div className="product-form-preview-grid">
+                                        {fotosAtuais.map((foto) => (
+                                            <div className="product-form-preview-item" key={foto}>
+                                                <img src={foto} alt="Foto atual do animal" />
                                             </div>
-                                        </div>
+                                        ))}
                                     </div>
-                                )}
-
-                                {fotosAdicionais.length > 0 && (
-                                    <div className="product-form-gallery">
-                                        <p className="product-form-gallery-title">Fotos adicionais selecionadas</p>
-                                        <div className="product-form-preview-grid">
-                                            {fotosAdicionais.map((foto) => (
-                                                <div className="product-form-preview-item" key={foto.preview}>
-                                                    <img src={foto.preview} alt="Pré-visualização de foto adicional" />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {erroFormulario && (
-                                    <p className="product-form-error">{erroFormulario}</p>
-                                )}
-
-                                <div className="product-form-actions">
-                                    <button type="button" className="product-form-button secondary" onClick={fecharModal}>
-                                        Cancelar
-                                    </button>
-                                    <button type="submit" className="product-form-button primary" disabled={salvando}>
-                                        {salvando ? "Salvando..." : "Salvar"}
-                                    </button>
                                 </div>
-                            </form>
+                            )}
+
+                            {previewFotoPrincipal && (
+                                <div className="product-form-gallery">
+                                    <p className="product-form-gallery-title">Foto principal selecionada</p>
+                                    <div className="product-form-preview-grid">
+                                        <div className="product-form-preview-item">
+                                            <img src={previewFotoPrincipal} alt="Pré-visualização da foto principal" />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {fotosAdicionais.length > 0 && (
+                                <div className="product-form-gallery">
+                                    <p className="product-form-gallery-title">Fotos adicionais selecionadas</p>
+                                    <div className="product-form-preview-grid">
+                                        {fotosAdicionais.map((foto) => (
+                                            <div className="product-form-preview-item" key={foto.preview}>
+                                                <img src={foto.preview} alt="Pré-visualização de foto adicional" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {erroFormulario && (
+                                <p className="product-form-error">{erroFormulario}</p>
+                            )}
+
+                            <div className="product-form-actions">
+                                <button type="button" className="product-form-button secondary" onClick={fecharModal}>
+                                    Cancelar
+                                </button>
+                                <button type="submit" className="product-form-button primary" disabled={salvando}>
+                                    {salvando ? "Salvando..." : "Salvar"}
+                                </button>
+                            </div>
+                        </form>
                         )}
                     </div>
                 </div>

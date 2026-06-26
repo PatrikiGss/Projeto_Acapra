@@ -1,9 +1,9 @@
 """
 Testes automatizados para o app `transparencia`.
 
-O app expõe categorias, movimentos financeiros, documentos institucionais e
-indicadores. Estes testes cobrem a configuração do app, o registro dos models
-e a resolução das rotas. Cada CRUD deve ganhar cobertura própria conforme evoluir.
+O app expõe documentos institucionais e indicadores de impacto. Estes testes
+cobrem a configuração do app, o registro dos models e a resolução das rotas.
+Cada CRUD deve ganhar cobertura própria conforme evoluir.
 """
 
 from django.apps import apps
@@ -35,8 +35,6 @@ class TransparenciaUrlsTests(TestCase):
 
     def test_rotas_principais_resolvem(self):
         """As rotas de listagem do app devem resolver corretamente."""
-        self.assertTrue(reverse("transparencia:categorias"))
-        self.assertTrue(reverse("transparencia:movimentos"))
         self.assertTrue(reverse("transparencia:documentos"))
         self.assertTrue(reverse("transparencia:indicadores"))
 
@@ -50,5 +48,5 @@ class TransparenciaModelsTests(TestCase):
             model.__name__
             for model in apps.get_app_config("transparencia").get_models()
         }
-        esperados = {"Categoria", "Movimento", "DocumentoInstitucional", "Indicador"}
+        esperados = {"DocumentoInstitucional", "Indicador"}
         self.assertTrue(esperados.issubset(registrados))

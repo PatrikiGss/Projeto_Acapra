@@ -36,7 +36,7 @@ from rest_framework_simplejwt.views import (
 
 from auditoria.models import RegistroAuditoria
 from auditoria.services import registrar_auditoria
-from core.captcha import get_client_ip, verificar_captcha
+from core.captcha import get_client_ip
 from core.throttling import (
     LoginDailyRateThrottle,
     LoginRateThrottle,
@@ -100,24 +100,16 @@ class RegisterView(APIView):
     Endpoint público para registro de novos usuários.
 
     Fluxo:
-    - Verifica o CAPTCHA (quando habilitado) para barrar bots
     - Recebe dados (nome, email, telefone, senha)
     - Valida via serializer
     - Cria usuário usando create_user (hash automático da senha)
     - Retorna dados do usuário (sem senha)
+
+    Proteção contra automação fica a cargo do throttling por IP
+    (RegisterRateThrottle + RegisterDailyRateThrottle).
     """
 
     def post(self, request):
-        # Verificação anti-robô antes de qualquer escrita no banco.
-        if not verificar_captcha(
-            request.data.get("captcha_token"),
-            get_client_ip(request),
-        ):
-            return Response(
-                {"captcha": ["Falha na verificação anti-robô. Recarregue e tente novamente."]},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
         serializer = UsuarioSerializer(data=request.data)
 
         # Valida dados recebidos (gera erro automático se inválido)

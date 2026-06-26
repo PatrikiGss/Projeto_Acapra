@@ -30,6 +30,24 @@ const formVazio = {
   ativo: true,
 };
 
+const categoriasOferta = [
+  ["alimento", "Alimento / Ração"],
+  ["vestuario", "Roupa / Cobertor"],
+  ["higiene", "Higiene / Limpeza"],
+  ["medicamento", "Medicamento"],
+  ["acessorio", "Acessório / Brinquedo"],
+  ["outros", "Outros"],
+];
+
+const ofertaVazia = {
+  nome_doador: "",
+  telefone: "",
+  item: "",
+  categoria: "alimento",
+  quantidade: "",
+  observacoes: "",
+};
+
 function Doe() {
   const [dadosList, setDadosList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -45,6 +63,10 @@ function Doe() {
   const [salvando, setSalvando] = useState(false);
   const [erroFormulario, setErroFormulario] = useState("");
   const [copiado, setCopiado] = useState(false);
+  const [ofertaForm, setOfertaForm] = useState(ofertaVazia);
+  const [enviandoOferta, setEnviandoOferta] = useState(false);
+  const [ofertaSucesso, setOfertaSucesso] = useState("");
+  const [ofertaErro, setOfertaErro] = useState("");
 
   useEffect(() => {
     let ativo = true;
@@ -198,6 +220,29 @@ function Doe() {
     if (checked) {
       setQrCodeFile(null);
       limparPreview();
+    }
+  };
+
+  const alterarOferta = (event) => {
+    const { name, value } = event.target;
+    setOfertaForm((atual) => ({ ...atual, [name]: value }));
+  };
+
+  const enviarOferta = async (event) => {
+    event.preventDefault();
+    setEnviandoOferta(true);
+    setOfertaErro("");
+    setOfertaSucesso("");
+
+    try {
+      const { data } = await api.post("/api/doacoes/ofertas/", ofertaForm);
+      setOfertaSucesso(data?.detail || "Oferta registrada com sucesso. Em breve entraremos em contato!");
+      setOfertaForm(ofertaVazia);
+    } catch (erro) {
+      logError("Doe", erro);
+      setOfertaErro(getApiErrorMessage(erro, "Não foi possível registrar sua oferta. Tente novamente."));
+    } finally {
+      setEnviandoOferta(false);
     }
   };
 
@@ -355,6 +400,58 @@ function Doe() {
           </article>
         </section>
       )}
+
+      <section className="doe-oferta" aria-labelledby="oferta-titulo">
+        <div className="doe-oferta-intro">
+          <span className="card-label">Doe um item</span>
+          <h2 id="oferta-titulo">Quero doar algo</h2>
+          <p>
+            Tem ração, roupinha, cobertor, remédio ou qualquer item que possa ajudar
+            nossos animais? Cadastre abaixo e nós entramos em contato para combinar a coleta.
+          </p>
+        </div>
+
+        <form className="doe-oferta-form" onSubmit={enviarOferta}>
+          <div className="doe-oferta-grid">
+            <label>
+              Seu nome
+              <input name="nome_doador" value={ofertaForm.nome_doador} onChange={alterarOferta} required maxLength={120} />
+            </label>
+            <label>
+              Telefone / WhatsApp
+              <input name="telefone" value={ofertaForm.telefone} onChange={alterarOferta} required maxLength={20} placeholder="(49) 99999-9999" />
+            </label>
+            <label>
+              O que deseja doar
+              <input name="item" value={ofertaForm.item} onChange={alterarOferta} required maxLength={200} placeholder="Ex.: ração, coleira, cobertor" />
+            </label>
+            <label>
+              Categoria
+              <select name="categoria" value={ofertaForm.categoria} onChange={alterarOferta}>
+                {categoriasOferta.map(([valor, rotulo]) => (
+                  <option key={valor} value={valor}>{rotulo}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Quantidade (opcional)
+              <input name="quantidade" value={ofertaForm.quantidade} onChange={alterarOferta} maxLength={60} placeholder="Ex.: 3 sacos, 5 peças, 2 kg" />
+            </label>
+          </div>
+
+          <label className="doe-oferta-full">
+            Observações (opcional)
+            <textarea name="observacoes" rows="3" value={ofertaForm.observacoes} onChange={alterarOferta} placeholder="Estado do item, melhor horário para contato, etc." />
+          </label>
+
+          {ofertaErro && <p className="doe-form-error">{ofertaErro}</p>}
+          {ofertaSucesso && <p className="doe-oferta-sucesso">{ofertaSucesso}</p>}
+
+          <button type="submit" className="doe-form-button primary" disabled={enviandoOferta}>
+            {enviandoOferta ? "Enviando..." : "Quero doar"}
+          </button>
+        </form>
+      </section>
 
       {modalVisivel && (
         <div className="doe-modal-backdrop" onClick={fecharModal}>

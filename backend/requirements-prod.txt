@@ -1,0 +1,31 @@
+# =========================================================
+# Dependencias de PRODUCAO (deploy cPanel / Passenger)
+# Apenas runtime — sem ferramentas de dev (black, pylint, pytest, mypy...).
+# Use no servidor:  pip install -r requirements-prod.txt
+# =========================================================
+
+# Nucleo
+Django==6.0.4
+djangorestframework==3.17.1
+djangorestframework_simplejwt==5.5.1
+PyJWT==2.12.1
+
+# CORS, telefone e configuracao via .env
+django-cors-headers==4.9.0
+django-phonenumber-field==8.4.0
+phonenumbers==9.0.32
+python-decouple==3.8
+
+# Criptografia de campos sensiveis (Fernet) e chamadas HTTP (captcha/Meta)
+cryptography==48.0.1
+requests==2.34.2
+
+# Upload/processamento de imagens (ImageField)
+pillow==12.2.0
+
+# Serve os estaticos do /admin e do DRF sob o Passenger (sem config Apache)
+whitenoise>=6.6,<7.0
+
+# Dados de timezone (America/Sao_Paulo) — evita ZoneInfoNotFoundError se o
+# servidor nao tiver a base de fuso do sistema.
+tzdata==2026.2

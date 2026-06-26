@@ -8,6 +8,9 @@ class ContatoAcapra(models.Model):
     instagram = models.URLField(max_length=255, blank=True)
     facebook = models.URLField(max_length=255, blank=True)
     email = models.EmailField(blank=True)
+    emaildoacoes = models.EmailField(blank=True)
+    emailfinanceiro = models.EmailField(blank=True)
+
 
     class Meta:
         verbose_name = 'Contato ACAPRA'

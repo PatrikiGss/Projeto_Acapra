@@ -393,24 +393,7 @@ function Transparencia() {
           </div>
         </section>
 
-        {/* FINANCEIRO */}
-        <section className="transp-dimensao" aria-labelledby="financeiro-titulo">
-          <div className="transp-dimensao-header">
-            <div>
-              <h2 id="financeiro-titulo">Financeiro</h2>
-              <p>Entradas e saídas organizadas por categoria</p>
-            </div>
-          </div>
-          {loading && <p className="transp-estado">Carregando dados financeiros...</p>}
-          {!loading && erro && <p className="transp-estado erro">Não foi possível carregar os dados financeiros.</p>}
-          {!loading && !erro && (
-            <div className="transp-financeiro">
-              {renderGrupo("entrada", entradas)}
-              {renderGrupo("saida", saidas)}
-            </div>
-          )}
-        </section>
-
+       
         {/* DOCUMENTOS INSTITUCIONAIS */}
         <section className="transp-dimensao" aria-labelledby="institucional-titulo">
           <div className="transp-dimensao-header">
@@ -460,23 +443,7 @@ function Transparencia() {
           )}
         </section>
 
-        {/* PARCERIAS */}
-        <section className="transp-dimensao" aria-labelledby="parceiros-titulo">
-          <div className="transp-dimensao-header">
-            <div>
-              <h2 id="parceiros-titulo">Parcerias</h2>
-              <p>Quem nos ajuda a cuidar dos animais de São Joaquim</p>
-            </div>
-          </div>
-          <div className="transp-parceiros-grid">
-            {parceiros.map((p) => (
-              <article key={p.nome} className="transp-parceiro-card">
-                <strong>{p.nome}</strong>
-                <p>{p.descricao}</p>
-              </article>
-            ))}
-          </div>
-        </section>
+       
 
         {/* CTA */}
         <section className="transp-cta">

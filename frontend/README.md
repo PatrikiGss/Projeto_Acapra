@@ -1,6 +1,6 @@
 # Frontend - Projeto Acapra
 
-Interface web do Projeto Acapra, desenvolvida com React e Vite. A aplicacao usa React Router para organizar as rotas e consome a API local do backend em `http://localhost:8000/`.
+Interface web do Projeto Acapra, desenvolvida com React e Vite. A aplicacao usa React Router para organizar as rotas e consome a API local do backend.
 
 ## Tecnologias
 
@@ -44,6 +44,18 @@ Instale as dependencias:
 npm install
 ```
 
+Crie o arquivo de ambiente local do frontend:
+
+```bash
+copy .env.example .env
+```
+
+Se o backend estiver em `http://localhost:8000`, ajuste em `.env`:
+
+```env
+VITE_PROXY_TARGET=http://localhost:8000
+```
+
 Inicie o servidor de desenvolvimento:
 
 ```bash
@@ -70,13 +82,15 @@ npm run preview
 
 ## Integracao com o backend
 
-A pagina inicial faz uma requisicao para:
+A aplicacao faz requisicoes para rotas como:
 
 ```text
-http://localhost:8000/
+http://127.0.0.1:8000/api/...
 ```
 
-Antes de testar a integracao completa, mantenha o backend rodando nessa porta.
+Em desenvolvimento, o frontend usa proxy do Vite para encaminhar `/api` para o backend definido em `VITE_PROXY_TARGET`.
+
+Antes de testar a integracao completa, mantenha o backend rodando na porta `8000`.
 
 ## Scripts disponiveis
 

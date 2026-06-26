@@ -99,11 +99,8 @@ function Home() {
   return (
     <div className="main">
       <section className="hero">
-        <div className="hero-collage" aria-hidden="true">
-          <div className="hero-collage-cell"><img src="/hero-animal-1.jpg" alt="" className="hero-collage-img" /></div>
-          <div className="hero-collage-cell"><img src="/hero-animal-2.jpg" alt="" className="hero-collage-img" /></div>
-          <div className="hero-collage-cell"><img src="/hero-animal-3.jpg" alt="" className="hero-collage-img" /></div>
-          <div className="hero-collage-cell"><img src="/hero-animal-5.jpg" alt="" className="hero-collage-img" /></div>
+        <div className="hero-image" aria-hidden="true">
+          <img src="/hero123.png" alt="" className="hero-collage-img"/>
         </div>
 
         <div className="hero-content">

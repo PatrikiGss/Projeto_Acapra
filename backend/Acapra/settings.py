@@ -11,7 +11,7 @@ from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'
 BASE_DIR = Path(__file__).resolve().parent.parent
-MEDIA_URL = '/media/'
+MEDIA_URL = '/api/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # =========================================================
@@ -28,6 +28,12 @@ SECRET_KEY = config("SECRET_KEY")
 FIELD_ENCRYPTION_KEY = config("FIELD_ENCRYPTION_KEY", default="")
 
 DEBUG = config("DEBUG", default=False, cast=bool)
+
+# Em hospedagem compartilhada sem Apache configurado para servir /media
+# diretamente, o próprio Django serve esses arquivos (custo aceitável para
+# o volume de tráfego do projeto). Desligue se um Alias do Apache ou CDN
+# passar a cuidar disso.
+SERVE_MEDIA = config("SERVE_MEDIA", default=False, cast=bool)
 
 # =========================================================
 # CAPTCHA (Cloudflare Turnstile)

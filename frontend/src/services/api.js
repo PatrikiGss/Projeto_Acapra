@@ -5,11 +5,22 @@ const envBaseURL = import.meta.env.VITE_API_BASE_URL?.trim();
 const envMediaBaseURL = import.meta.env.VITE_MEDIA_BASE_URL?.trim();
 const usesViteProxy = import.meta.env.DEV && !envBaseURL;
 
+function getLocalBackendBaseURL() {
+  const host = window.location.hostname;
+
+  // O runserver do Django local nao fala HTTPS.
+  if (["localhost", "127.0.0.1", "[::1]"].includes(host)) {
+    return `http://${host}:8000`;
+  }
+
+  return `${window.location.protocol}//${host}:8000`;
+}
+
 const apiBaseURL = envBaseURL
   ? envBaseURL.replace(/\/+$/, "")
   : usesViteProxy
     ? ""
-    : `${window.location.protocol}//${window.location.hostname}:8000`;
+    : getLocalBackendBaseURL();
 
 // Timeout evita requisições penduradas (resource exhaustion / UX travada).
 const REQUEST_TIMEOUT = 30000;
@@ -155,9 +166,9 @@ const MEDIA_BASE_URL = envMediaBaseURL
 function buildMediaPath(path) {
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
 
-  return cleanPath.startsWith("/media")
+  return cleanPath.startsWith("/api/media")
     ? cleanPath
-    : `/media/${cleanPath.replace(/^\/+/, "")}`;
+    : `/api/media/${cleanPath.replace(/^\/+/, "")}`;
 }
 
 export function getMediaURL(path) {

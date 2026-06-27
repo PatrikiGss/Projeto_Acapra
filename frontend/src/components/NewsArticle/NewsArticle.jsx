@@ -39,6 +39,17 @@ function NewsArticle({ backPath }) {
   const categoriaEfetiva = item?.categoria || "";
   const { podeEditar } = useAdminAccess(categoriaEfetiva);
   const [relacionados, setRelacionados] = useState([]);
+  const [imagemAtiva, setImagemAtiva] = useState(0);
+
+  const fotos = useMemo(() => {
+    if (!item) return [];
+    if (item.fotos?.length) return item.fotos;
+    return item.foto ? [item.foto] : [];
+  }, [item]);
+
+  useEffect(() => {
+    setImagemAtiva(0);
+  }, [item?.id]);
 
   useEffect(() => {
     if (!item?.categoria) return;
@@ -136,12 +147,33 @@ function NewsArticle({ backPath }) {
             <div className="news-article-divider" />
 
             <div className="news-article-image">
-              {item.foto ? (
-                <img src={getMediaURL(item.foto)} alt={item.titulo} width="1200" height="675" />
+              {fotos.length > 0 ? (
+                <img
+                  src={getMediaURL(fotos[imagemAtiva] || fotos[0])}
+                  alt={item.titulo}
+                  width="1200"
+                  height="675"
+                />
               ) : (
                 <div className="news-article-placeholder">ACAPRA</div>
               )}
             </div>
+
+            {fotos.length > 1 && (
+              <div className="news-article-gallery">
+                {fotos.map((foto, indice) => (
+                  <button
+                    type="button"
+                    key={foto}
+                    className={`news-article-thumb${indice === imagemAtiva ? " active" : ""}`}
+                    onClick={() => setImagemAtiva(indice)}
+                    aria-label={`Ver foto ${indice + 1}`}
+                  >
+                    <img src={getMediaURL(foto)} alt={`${item.titulo} — foto ${indice + 1}`} />
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="news-article-text">
               {item.texto}

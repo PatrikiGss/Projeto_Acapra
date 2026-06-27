@@ -120,7 +120,7 @@ function Login() {
   return (
     <div className="login-container">
       <div className="login-imagem">
-        <img src="/cachorro.png" alt="Cachorro ACAPRA" />
+        <img src="/cachorro.webp" alt="Cachorro ACAPRA" />
         <div className="login-imagem-overlay">
           <h2>Proteja quem não tem voz</h2>
         </div>

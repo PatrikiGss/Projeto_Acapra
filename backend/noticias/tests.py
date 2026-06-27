@@ -159,6 +159,7 @@ class PublicacaoSerializerTests(TestCase):
             "titulo",
             "resumo",
             "foto",
+            "fotos",
             "texto",
             "ativo",
             "created_at",

@@ -192,10 +192,7 @@ function Adocao() {
     const lidarComFotosAdicionais = (files) => {
         const lista = Array.from(files || []);
 
-        if (lista.length > 10) {
-            setErroFormulario("Selecione no máximo 10 imagens.");
-            return;
-        }
+        if (!lista.length) return;
 
         for (const file of lista) {
             const erroValidacao = validateImageFile(file);
@@ -204,7 +201,16 @@ function Adocao() {
                 return;
             }
         }
-        setErroFormulario("");
+
+        const fotosJaSalvas = animalEditando?.fotos?.length || 0;
+        const principalOcupa = (fotoPrincipal || animalEditando?.foto) ? 1 : 0;
+        const maxAdicionais = Math.max(0, 4 - Math.max(fotosJaSalvas, principalOcupa));
+
+        if (lista.length > maxAdicionais) {
+            setErroFormulario("Máximo de 4 fotos por cadastro.");
+        } else {
+            setErroFormulario("");
+        }
 
         fotosAdicionais.forEach((foto) => {
             if (foto.preview.startsWith("blob:")) {
@@ -212,7 +218,7 @@ function Adocao() {
             }
         });
 
-        setFotosAdicionais(lista.map((file) => ({
+        setFotosAdicionais(lista.slice(0, maxAdicionais).map((file) => ({
             file,
             preview: URL.createObjectURL(file),
         })));

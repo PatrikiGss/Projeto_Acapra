@@ -68,7 +68,7 @@
     will-change: auto;
   }
 
-  .hero-collage-img,
+  .hero-img,
   .home-animal-card,
   .link,
   .fresh-news-banner {
@@ -138,34 +138,18 @@
   height: calc(100dvh - var(--navbar-h, 75px));
 }
 
-.hero-collage {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3px;
-  width: 100%;
-  align-content: center;
+.hero-image {
+  position: relative;
   overflow: hidden;
   background: #fbfaf8;
 }
 
-.hero-collage-cell {
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-  position: relative;
-  isolation: isolate;
-}
-
-.hero-collage-img {
+.hero-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 20%;
+  object-position: center 30%;
   display: block;
-  transition: transform 0.5s ease;
-}
-
-.hero-collage-cell:hover .hero-collage-img {
-  transform: scale(1.05);
 }
 
 .hero-content {
@@ -722,8 +706,8 @@
     min-height: auto;
   }
 
-  .hero-collage {
-    grid-template-columns: 1fr 1fr;
+  .hero-image {
+    height: 300px;
   }
 
   .hero-content {

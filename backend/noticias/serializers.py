@@ -2,7 +2,13 @@ from django.db import transaction
 from django.db.models import Max
 from rest_framework import serializers
 
-from core.images import LIMITE_FOTOS, validar_limite_fotos
+from core.images import (
+    LIMITE_FOTOS,
+    aplicar_remocao_imagens,
+    coletar_ids_remover,
+    galeria_editavel,
+    validar_limite_fotos,
+)
 from core.validators import validate_image_upload
 from .models import Publicacao, PublicacaoImagem
 
@@ -52,20 +58,37 @@ class PublicacaoWriteSerializer(serializers.ModelSerializer):
         write_only=True,
         max_length=LIMITE_FOTOS,
     )
+    remover_foto = serializers.BooleanField(required=False, write_only=True, default=False)
 
     class Meta:
         model = Publicacao
-        fields = ["id", "categoria", "titulo", "resumo", "foto", "fotos", "texto", "ativo"]
+        fields = ["id", "categoria", "titulo", "resumo", "foto", "fotos", "remover_foto", "texto", "ativo"]
 
-    def validate(self, attrs):
+    def _qtd_fotos_novas(self, attrs):
         fotos = attrs.get("fotos")
         if fotos is None:
             request = self.context.get("request")
             fotos = request.FILES.getlist("fotos") if request is not None else []
-        validar_limite_fotos(self.instance, bool(attrs.get("foto")), len(fotos))
+        return len(fotos)
+
+    def _qtd_imagens_removidas(self):
+        ids = coletar_ids_remover(self.context.get("request"))
+        if not ids or self.instance is None:
+            return 0
+        return self.instance.imagens.filter(id__in=ids).count()
+
+    def validate(self, attrs):
+        validar_limite_fotos(
+            self.instance,
+            bool(attrs.get("foto")),
+            self._qtd_fotos_novas(attrs),
+            remover_foto=attrs.get("remover_foto", False),
+            qtd_imagens_removidas=self._qtd_imagens_removidas(),
+        )
         return attrs
 
     def create(self, validated_data):
+        validated_data.pop("remover_foto", None)
         fotos = _extra_fotos(self, validated_data)
 
         with transaction.atomic():
@@ -75,9 +98,12 @@ class PublicacaoWriteSerializer(serializers.ModelSerializer):
         return publicacao
 
     def update(self, instance, validated_data):
+        remover_foto = validated_data.pop("remover_foto", False)
+        ids_remover = coletar_ids_remover(self.context.get("request"))
         fotos = _extra_fotos(self, validated_data)
 
         with transaction.atomic():
+            aplicar_remocao_imagens(instance, remover_foto=remover_foto, ids_remover=ids_remover)
             publicacao = super().update(instance, validated_data)
             _criar_imagens_publicacao(publicacao, fotos)
 
@@ -88,6 +114,7 @@ class GetPublicacaoSerializer(serializers.ModelSerializer):
     categoria_display = serializers.CharField(source="get_categoria_display", read_only=True)
     foto = serializers.SerializerMethodField()
     fotos = serializers.SerializerMethodField()
+    galeria = serializers.SerializerMethodField()
 
     class Meta:
         model = Publicacao
@@ -99,11 +126,15 @@ class GetPublicacaoSerializer(serializers.ModelSerializer):
             "resumo",
             "foto",
             "fotos",
+            "galeria",
             "texto",
             "ativo",
             "created_at",
         ]
         read_only_fields = fields
+
+    def get_galeria(self, obj):
+        return galeria_editavel(obj)
 
     def get_foto(self, obj):
         request = self.context.get("request")

@@ -1,3 +1,7 @@
 node_modules/
 dist/
 build/
+
+# Pacotes de build/deploy gerados (recriáveis com `npm run build`)
+*.zip
+*.rar

@@ -128,10 +128,8 @@ class DadosPixDetailView(APIView):
         if dados_pix.qr_code:
             dados_pix.qr_code.delete(save=False)
         dados_pix.delete()
-        return Response(
-            {"detail": f"Dado Pix {pk} removido com sucesso."},
-            status=status.HTTP_204_NO_CONTENT,
-        )
+        # 204 não pode ter corpo (quebra parsers/proxies HTTP). Resposta vazia.
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class OfertasDoacaoView(APIView):
@@ -188,7 +186,5 @@ class OfertaDoacaoDetailView(APIView):
     def delete(self, request, pk):
         oferta = self.get_object(pk)
         oferta.delete()
-        return Response(
-            {"detail": f"Oferta {pk} removida com sucesso."},
-            status=status.HTTP_204_NO_CONTENT,
-        )
+        # 204 não pode ter corpo (quebra parsers/proxies HTTP). Resposta vazia.
+        return Response(status=status.HTTP_204_NO_CONTENT)

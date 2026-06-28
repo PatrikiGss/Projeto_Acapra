@@ -89,7 +89,5 @@ class PublicacaoDetailView(APIView):
             if imagem.imagem:
                 imagem.imagem.delete(save=False)
         publicacao.delete()
-        return Response(
-            {"detail": f"Publicação {pk} removida com sucesso."},
-            status=status.HTTP_204_NO_CONTENT,
-        )
+        # 204 não pode ter corpo (quebra parsers/proxies HTTP). Resposta vazia.
+        return Response(status=status.HTTP_204_NO_CONTENT)

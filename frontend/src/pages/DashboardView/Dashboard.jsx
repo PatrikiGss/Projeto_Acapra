@@ -13,11 +13,13 @@ import {
   podeGerenciar,
   temAcessoDashboard,
 } from "../../utils/permissions";
+import { isNotFoundError } from "../../utils/errorUtils";
 import { logError } from "../../utils/logger";
 import "./Dashboard.css";
 
 const MODULOS_RAPIDOS = [
   { id: "doacoes", titulo: "Doações", descricao: "Gerenciar dados PIX e QR Code", rota: "/doe" },
+  { id: "doacoes", titulo: "Doações recebidas", descricao: "Ver ofertas de itens do público", rota: "/doacoes/ofertas" },
   { id: "adocao", titulo: "Adoção", descricao: "Cadastrar e editar animais", rota: "/adocao" },
   { id: "noticias", titulo: "Notícias", descricao: "Publicar novidades", rota: "/noticias" },
   { id: "resgates", titulo: "Resgates", descricao: "Registrar resgates", rota: "/resgates" },
@@ -122,11 +124,21 @@ function Dashboard() {
     setErro("");
     try {
       await api.delete(`/api/meta/disconnect/${id}/`);
-      setMetaConnections((prev) => prev.filter((c) => c.id !== id));
-      setMensagem("Conexão removida com sucesso.");
-    } catch {
-      setErro("Não foi possível remover a conexão.");
+    } catch (error) {
+      // 404 = conexão já não existe no servidor: trata como já removida.
+      if (!isNotFoundError(error)) {
+        setErro("Não foi possível remover a conexão.");
+        return;
+      }
     }
+    // Sucesso ou já removida: re-busca o status para refletir o servidor.
+    try {
+      const metaRes = await api.get("/api/meta/status/");
+      setMetaConnections(metaRes.data.connections || []);
+    } catch {
+      setMetaConnections((prev) => prev.filter((c) => c.id !== id));
+    }
+    setMensagem("Conexão removida com sucesso.");
   };
 
   const atualizarNivel = async (usuarioId, nivel) => {
@@ -140,13 +152,19 @@ function Dashboard() {
         { nivel },
       );
 
-      setUsuariosAdmin((listaAtual) =>
-        listaAtual.map((item) => (item.id === usuarioId ? response.data : item)),
-      );
-
       if (usuario?.id === usuarioId) {
         setUsuario(response.data);
         updateStoredUser(response.data);
+      }
+
+      // Refresh da lista a partir do servidor após a edição.
+      try {
+        const usuariosRes = await api.get("/api/gerenciamento/admin/usuarios/");
+        setUsuariosAdmin(usuariosRes.data || []);
+      } catch {
+        setUsuariosAdmin((listaAtual) =>
+          listaAtual.map((item) => (item.id === usuarioId ? response.data : item)),
+        );
       }
 
       setMensagem("Vínculo administrativo atualizado com sucesso.");
@@ -254,7 +272,7 @@ function Dashboard() {
 
           <div className="dashboard-modules">
             {modulosDisponiveis.map((modulo) => (
-              <Link key={modulo.id} to={modulo.rota} className="dashboard-module-card">
+              <Link key={modulo.rota} to={modulo.rota} className="dashboard-module-card">
                 <h3>{modulo.titulo}</h3>
                 <p>{modulo.descricao}</p>
               </Link>

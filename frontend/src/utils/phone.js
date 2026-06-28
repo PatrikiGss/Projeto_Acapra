@@ -32,3 +32,14 @@ export function toBrazilianPhoneE164(value) {
   const digits = getBrazilianPhoneDigits(value);
   return digits ? `+${BR_COUNTRY_CODE}${digits}` : "";
 }
+
+/**
+ * Validação leve de telefone brasileiro (espelha o que a lib phonenumbers
+ * aceita no backend): celular com 11 dígitos (DDD + 9 + 8, 3º dígito = 9) ou
+ * fixo com 10 dígitos (DDD + 8). O backend faz a validação definitiva.
+ */
+export function isValidBrazilianPhone(value) {
+  const digits = getBrazilianPhoneDigits(value);
+  if (digits.length === 11) return digits[2] === "9";
+  return digits.length === 10;
+}

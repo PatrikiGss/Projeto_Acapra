@@ -11,25 +11,6 @@ const descricaoIndicador = {
   adocoes: "animais que encontraram um lar amoroso",
 };
 
-<<<<<<< HEAD
-function formatarData(data) {
-  if (!data) return "";
-  const [ano, mes, dia] = data.split("-");
-  return `${dia}/${mes}/${ano}`;
-}
-
-function formatarMoeda(valor) {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(valor) || 0);
-}
-
-function calcularTotal(movimentos) {
-  return movimentos.reduce((soma, m) => soma + (Number(m.valor) || 0), 0);
-}
-
-const formCatVazio = { nome: "", tipo: "entrada", ativo: true };
-const formMovVazio = { categoria: "", descricao: "", valor: "", data: "", ativo: true };
-=======
->>>>>>> 9340d531d0a9237165e0871ff37ce9aab9526bf6
 const formDocVazio = { nome: "", descricao: "", ativo: true, ordem: 0 };
 
 function Transparencia() {
@@ -137,9 +118,14 @@ function Transparencia() {
   const confirmarAcaoTransp = async () => {
     if (!confirmacaoTransp) return;
     const { tipo, item } = confirmacaoTransp;
-    try {
-      if (tipo === "documento") { await api.delete(`/api/transparencia/documentos/${item.id}/`); carregarDocumentos(); }
-    } catch { /* silencioso — o modal fecha de qualquer forma */ }
+    if (tipo === "documento") {
+      try {
+        await api.delete(`/api/transparencia/documentos/${item.id}/`);
+      } catch { /* 404/erro: a releitura abaixo reflete o estado real do servidor */ }
+      // Sucesso ou já removido: tira da lista e re-busca para refletir o servidor.
+      setDocumentos((lista) => lista.filter((d) => d.id !== item.id));
+      carregarDocumentos();
+    }
     setConfirmacaoTransp(null);
   };
 

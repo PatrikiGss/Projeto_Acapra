@@ -1,4 +1,5 @@
 from django.db import models
+from phonenumber_field.modelfields import PhoneNumberField
 
 from core.uploads import upload_qr_codes
 from core.validators import validate_image_upload
@@ -112,7 +113,7 @@ class OfertaDoacao(models.Model):
     """
 
     nome_doador = models.CharField(max_length=120, help_text="Nome de quem vai doar")
-    telefone = models.CharField(max_length=20, help_text="Telefone/WhatsApp para contato")
+    telefone = PhoneNumberField(help_text="Telefone/WhatsApp para contato")
     item = models.CharField(max_length=200, help_text="O que deseja doar (ex.: ração, roupa para cães)")
     categoria = models.CharField(
         max_length=20,

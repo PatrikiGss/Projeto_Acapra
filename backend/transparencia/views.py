@@ -82,10 +82,8 @@ class DocumentoInstitucionalDetailView(APIView):
         if doc.arquivo:
             doc.arquivo.delete(save=False)
         doc.delete()
-        return Response(
-            {"detail": f"Documento {pk} removido."},
-            status=status.HTTP_204_NO_CONTENT,
-        )
+        # 204 não pode ter corpo (quebra parsers/proxies HTTP). Resposta vazia.
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class IndicadoresView(APIView):

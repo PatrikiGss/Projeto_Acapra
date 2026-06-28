@@ -7,6 +7,7 @@ import { getResponseItems } from "../../utils/collection";
 import { getApiErrorMessage } from "../../utils/errorUtils";
 import { logError } from "../../utils/logger";
 import { validateImageFile, IMAGE_ACCEPT } from "../../utils/upload";
+import { formatBrazilianPhone, toBrazilianPhoneE164, isValidBrazilianPhone } from "../../utils/phone";
 import "./Doe.css";
 
 const bankFields = [
@@ -225,17 +226,25 @@ function Doe() {
 
   const alterarOferta = (event) => {
     const { name, value } = event.target;
-    setOfertaForm((atual) => ({ ...atual, [name]: value }));
+    const novoValor = name === "telefone" ? formatBrazilianPhone(value) : value;
+    setOfertaForm((atual) => ({ ...atual, [name]: novoValor }));
   };
 
   const enviarOferta = async (event) => {
     event.preventDefault();
-    setEnviandoOferta(true);
     setOfertaErro("");
     setOfertaSucesso("");
 
+    if (!isValidBrazilianPhone(ofertaForm.telefone)) {
+      setOfertaErro("Informe um telefone válido com DDD, ex.: (49) 99999-9999.");
+      return;
+    }
+
+    setEnviandoOferta(true);
+
     try {
-      const { data } = await api.post("/api/doacoes/ofertas/", ofertaForm);
+      const payload = { ...ofertaForm, telefone: toBrazilianPhoneE164(ofertaForm.telefone) };
+      const { data } = await api.post("/api/doacoes/ofertas/", payload);
       setOfertaSucesso(data?.detail || "Oferta registrada com sucesso. Em breve entraremos em contato!");
       setOfertaForm(ofertaVazia);
     } catch (erro) {
@@ -419,7 +428,17 @@ function Doe() {
             </label>
             <label>
               Telefone / WhatsApp
-              <input name="telefone" value={ofertaForm.telefone} onChange={alterarOferta} required maxLength={20} placeholder="(49) 99999-9999" />
+              <input
+                name="telefone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel-national"
+                value={ofertaForm.telefone}
+                onChange={alterarOferta}
+                required
+                maxLength={15}
+                placeholder="(49) 99999-9999"
+              />
             </label>
             <label>
               O que deseja doar

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api, { getMediaURL } from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
@@ -6,7 +6,7 @@ import LoadingSpinner from "../ui/LoadingSpinner";
 import EmptyState from "../ui/EmptyState";
 import ConfirmModal from "../ui/ConfirmModal";
 import { getResponseItems } from "../../utils/collection";
-import { getApiErrorMessage } from "../../utils/errorUtils";
+import { getApiErrorMessage, isNotFoundError } from "../../utils/errorUtils";
 import { logError } from "../../utils/logger";
 import "./NewsFeed.css";
 
@@ -39,6 +39,18 @@ function NewsFeed({ categoria, titulo, subtitulo, basePath, embedded = false, li
 
   const rotaCategoria = basePath && categoria ? `${basePath}/${categoria}` : (basePath || `/${categoria || ""}`);
   const resolverLinkItem = (id) => linkBase ? `${linkBase}/${id}` : `${rotaCategoria}/${id}`;
+
+  // Releitura silenciosa da lista (usada após excluir, para refletir o servidor).
+  const recarregar = useCallback(async () => {
+    try {
+      const params = categoria ? { categoria } : {};
+      const response = await api.get("/api/noticias/publicacoes/", { params });
+      setItens(getResponseItems(response.data));
+      setError(false);
+    } catch (erro) {
+      logError("NewsFeed", erro);
+    }
+  }, [categoria]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -88,16 +100,24 @@ function NewsFeed({ categoria, titulo, subtitulo, basePath, embedded = false, li
 
   const excluirItem = async () => {
     if (!confirmacao) return;
+    setAcaoErro("");
 
     try {
       await api.delete(`/api/noticias/publicacoes/${confirmacao.id}/`);
-      setItens((atual) => atual.filter((publicacao) => publicacao.id !== confirmacao.id));
-      setConfirmacao(null);
     } catch (erro) {
-      logError("NewsFeed", erro);
-      setConfirmacao(null);
-      setAcaoErro(getApiErrorMessage(erro, "Não foi possível excluir a publicação."));
+      // 404 = publicação já não existe no servidor: trata como já removida.
+      if (!isNotFoundError(erro)) {
+        logError("NewsFeed", erro);
+        setConfirmacao(null);
+        setAcaoErro(getApiErrorMessage(erro, "Não foi possível excluir a publicação."));
+        return;
+      }
     }
+
+    // Sucesso ou já removida: tira da lista e re-busca para refletir o servidor.
+    setItens((atual) => atual.filter((publicacao) => publicacao.id !== confirmacao.id));
+    setConfirmacao(null);
+    recarregar();
   };
 
   return (

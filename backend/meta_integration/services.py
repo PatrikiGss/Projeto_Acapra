@@ -19,7 +19,7 @@ _LOCAL_URL = re.compile(
 
 def build_post_message(animal):
     especie_map = {'cachorro': 'Cachorro', 'gato': 'Gato', 'outros': 'Animal'}
-    sexo_map = {'macho': 'Macho', 'femea': 'Fêmea'}
+    sexo_map = {'macho': 'Macho', 'femea': 'Fêmea', 'ambos': 'Ambos'}
 
     especie = especie_map.get(animal.especie, 'Animal')
     sexo = sexo_map.get(animal.sexo, '')

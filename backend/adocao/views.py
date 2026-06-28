@@ -67,7 +67,7 @@ class AnimaisView(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        serializer = AnimalSerializer(data=request.data)
+        serializer = AnimalSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         animal = serializer.save()
 
@@ -141,7 +141,8 @@ class AnimalDetailView(APIView):
         serializer = UpdateAnimalSerializer(
             animal,
             data=request.data,
-            partial=True
+            partial=True,
+            context={'request': request},
         )
 
         serializer.is_valid(raise_exception=True)
@@ -157,9 +158,13 @@ class AnimalDetailView(APIView):
 
         animal = self.get_object(pk)
 
+        if animal.foto:
+            animal.foto.delete(save=False)
+        for imagem in animal.imagens.all():
+            if imagem.imagem:
+                imagem.imagem.delete(save=False)
+
         animal.delete()
 
-        return Response(
-            {"detail": f"Animal {pk} removido com sucesso."},
-            status=status.HTTP_204_NO_CONTENT
-        )
+        # 204 não pode ter corpo (quebra parsers/proxies HTTP). Resposta vazia.
+        return Response(status=status.HTTP_204_NO_CONTENT)

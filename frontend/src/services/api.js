@@ -166,9 +166,14 @@ const MEDIA_BASE_URL = envMediaBaseURL
 function buildMediaPath(path) {
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
 
-  return cleanPath.startsWith("/api/media")
-    ? cleanPath
-    : `/api/media/${cleanPath.replace(/^\/+/, "")}`;
+  // O backend serve a mídia em MEDIA_URL = "/media/" (tanto em dev quanto em
+  // produção via SERVE_MEDIA). Caminhos já prefixados (/media/ ou o legado
+  // /api/media/) passam direto; caminhos "crus" recebem o prefixo /media/.
+  if (cleanPath.startsWith("/media/") || cleanPath.startsWith("/api/media/")) {
+    return cleanPath;
+  }
+
+  return `/media/${cleanPath.replace(/^\/+/, "")}`;
 }
 
 export function getMediaURL(path) {

@@ -5,7 +5,7 @@ import { useAdminAccess } from "../../hooks/useAdminAccess";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import EmptyState from "../ui/EmptyState";
 import ConfirmModal from "../ui/ConfirmModal";
-import { getApiErrorMessage } from "../../utils/errorUtils";
+import { getApiErrorMessage, isNotFoundError } from "../../utils/errorUtils";
 import { getResponseItems } from "../../utils/collection";
 import { logError } from "../../utils/logger";
 import "./NewsArticle.css";
@@ -109,11 +109,15 @@ function NewsArticle({ backPath }) {
 
     try {
       await api.delete(`/api/noticias/publicacoes/${item.id}/`);
-      navigate(backPath || "/noticias");
     } catch (erro) {
-      setErroAcao(getApiErrorMessage(erro, "Não foi possível excluir a publicação."));
-      logError("NewsArticle", erro);
+      // 404 = publicação já não existe: segue para a navegação (já foi removida).
+      if (!isNotFoundError(erro)) {
+        setErroAcao(getApiErrorMessage(erro, "Não foi possível excluir a publicação."));
+        logError("NewsArticle", erro);
+        return;
+      }
     }
+    navigate(backPath || "/noticias");
   };
 
   const editarItem = () => {

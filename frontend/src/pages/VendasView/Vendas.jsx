@@ -1,13 +1,14 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import api, { getMediaURL } from "../../services/api";
+import api from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
 import EmptyState from "../../components/ui/EmptyState";
 import ConfirmModal from "../../components/ui/ConfirmModal";
+import EditorImagens from "../../components/ui/EditorImagens";
+import { useEditorImagens } from "../../hooks/useEditorImagens";
 import { getResponseItems } from "../../utils/collection";
-import { getApiErrorMessage } from "../../utils/errorUtils";
+import { getApiErrorMessage, isNotFoundError } from "../../utils/errorUtils";
 import { logError } from "../../utils/logger";
-import { validateImageFile, IMAGE_ACCEPT } from "../../utils/upload";
 import "./Vendas.css";
 
 const formVazio = {
@@ -28,9 +29,7 @@ function Vendas() {
     const [modoFormulario, setModoFormulario] = useState("criar");
     const [produtoEditando, setProdutoEditando] = useState(null);
     const [formulario, setFormulario] = useState(formVazio);
-    const [fotoPrincipal, setFotoPrincipal] = useState(null);
-    const [previewFotoPrincipal, setPreviewFotoPrincipal] = useState("");
-    const [fotosAdicionais, setFotosAdicionais] = useState([]);
+    const editorImagens = useEditorImagens(4);
     const [salvando, setSalvando] = useState(false);
     const [erroFormulario, setErroFormulario] = useState("");
     const [erroAcao, setErroAcao] = useState("");
@@ -45,20 +44,6 @@ function Vendas() {
     useEffect(() => {
         carregarProdutos();
     }, []);
-
-    useEffect(() => {
-        return () => {
-            if (previewFotoPrincipal.startsWith("blob:")) {
-                URL.revokeObjectURL(previewFotoPrincipal);
-            }
-
-            fotosAdicionais.forEach((foto) => {
-                if (foto.preview.startsWith("blob:")) {
-                    URL.revokeObjectURL(foto.preview);
-                }
-            });
-        };
-    }, [previewFotoPrincipal, fotosAdicionais]);
 
     const produtosFiltrados = useMemo(() => {
         const filtrados = produtos
@@ -79,14 +64,6 @@ function Vendas() {
         });
     };
 
-    const fotosAtuais = useMemo(() => {
-        if (!produtoEditando) return [];
-
-        return [produtoEditando.foto, ...(produtoEditando.fotos || [])]
-            .filter(Boolean)
-            .map((foto) => getMediaURL(foto));
-    }, [produtoEditando]);
-
     const getStatusProduto = (produto) => {
         if (produto.estoque <= 0) {
             return { label: "Esgotado", className: "sold-out" };
@@ -99,19 +76,8 @@ function Vendas() {
         setModoFormulario("criar");
         setProdutoEditando(null);
         setFormulario(formVazio);
-        setFotoPrincipal(null);
-        setFotosAdicionais([]);
+        editorImagens.reiniciar([]);
         setErroFormulario("");
-        if (previewFotoPrincipal.startsWith("blob:")) {
-            URL.revokeObjectURL(previewFotoPrincipal);
-        }
-        fotosAdicionais.forEach((foto) => {
-            if (foto.preview.startsWith("blob:")) {
-                URL.revokeObjectURL(foto.preview);
-            }
-        });
-        setPreviewFotoPrincipal("");
-        setFotosAdicionais([]);
         setModalAberto(true);
     };
 
@@ -126,97 +92,22 @@ function Vendas() {
             estoque: produto.estoque ?? 0,
             ativo: Boolean(produto.ativo ?? true),
         });
-        setFotoPrincipal(null);
-        setFotosAdicionais([]);
+        editorImagens.reiniciar(produto.galeria || []);
         setErroFormulario("");
-        if (previewFotoPrincipal.startsWith("blob:")) {
-            URL.revokeObjectURL(previewFotoPrincipal);
-        }
-        fotosAdicionais.forEach((foto) => {
-            if (foto.preview.startsWith("blob:")) {
-                URL.revokeObjectURL(foto.preview);
-            }
-        });
-        setPreviewFotoPrincipal("");
         setModalAberto(true);
     };
 
     const fecharModal = () => {
-        if (previewFotoPrincipal.startsWith("blob:")) {
-            URL.revokeObjectURL(previewFotoPrincipal);
-        }
-        fotosAdicionais.forEach((foto) => {
-            if (foto.preview.startsWith("blob:")) {
-                URL.revokeObjectURL(foto.preview);
-            }
-        });
         setModalAberto(false);
         setProdutoEditando(null);
         setFormulario(formVazio);
-        setFotoPrincipal(null);
-        setPreviewFotoPrincipal("");
-        setFotosAdicionais([]);
+        editorImagens.reiniciar([]);
         setErroFormulario("");
         setSalvando(false);
     };
 
     const extrairMensagemErro = (error) => {
         return getApiErrorMessage(error, "Não foi possível salvar o produto.");
-    };
-
-    const lidarComFotoPrincipal = (file) => {
-        if (file) {
-            const erroValidacao = validateImageFile(file);
-            if (erroValidacao) {
-                setErroFormulario(erroValidacao);
-                return;
-            }
-        }
-        setErroFormulario("");
-
-        if (previewFotoPrincipal.startsWith("blob:")) {
-            URL.revokeObjectURL(previewFotoPrincipal);
-        }
-
-        setFotoPrincipal(file || null);
-        setPreviewFotoPrincipal(file ? URL.createObjectURL(file) : "");
-    };
-
-    const lidarComFotosAdicionais = (files) => {
-        const lista = Array.from(files || []);
-
-        if (!lista.length) return;
-
-        for (const file of lista) {
-            const erroValidacao = validateImageFile(file);
-            if (erroValidacao) {
-                setErroFormulario(erroValidacao);
-                return;
-            }
-        }
-
-        const fotosJaSalvas = produtoEditando?.fotos?.length || 0;
-        const principalOcupa = (fotoPrincipal || produtoEditando?.foto) ? 1 : 0;
-        const maxAdicionais = Math.max(0, 4 - Math.max(fotosJaSalvas, principalOcupa));
-
-        if (lista.length > maxAdicionais) {
-            setErroFormulario("Máximo de 4 fotos por cadastro.");
-        } else {
-            setErroFormulario("");
-        }
-
-        fotosAdicionais.forEach((foto) => {
-            if (foto.preview.startsWith("blob:")) {
-                URL.revokeObjectURL(foto.preview);
-            }
-        });
-
-        const selecionadas = lista.slice(0, maxAdicionais).map((file) => ({
-            file,
-            preview: URL.createObjectURL(file),
-        }));
-
-        setFotosAdicionais(selecionadas);
     };
 
     const alterarCampo = (event) => {
@@ -240,13 +131,7 @@ function Vendas() {
         payload.append("estoque", formulario.estoque);
         payload.append("ativo", formulario.ativo ? "true" : "false");
 
-        if (fotoPrincipal) {
-            payload.append("foto", fotoPrincipal);
-        }
-
-        fotosAdicionais.forEach((foto) => {
-            payload.append("fotos[]", foto.file);
-        });
+        editorImagens.anexarAoFormData(payload);
 
         try {
             if (modoFormulario === "editar" && produtoEditando) {
@@ -270,15 +155,23 @@ function Vendas() {
 
     const confirmarExclusao = async () => {
         if (!produtoParaExclusao) return;
+        setErroAcao("");
 
         try {
             await api.delete(`/api/vendas/produtos/${produtoParaExclusao.id}/`);
-            await carregarProdutos();
         } catch (error) {
-            setErroAcao(getApiErrorMessage(error, "Não foi possível excluir o produto."));
-        } finally {
-            setProdutoParaExclusao(null);
+            // 404 = produto já não existe no servidor: trata como já removido.
+            if (!isNotFoundError(error)) {
+                setErroAcao(getApiErrorMessage(error, "Não foi possível excluir o produto."));
+                setProdutoParaExclusao(null);
+                return;
+            }
         }
+
+        // Sucesso ou já removido: tira da lista e re-busca para refletir o servidor.
+        setProdutos((lista) => lista.filter((p) => p.id !== produtoParaExclusao.id));
+        setProdutoParaExclusao(null);
+        carregarProdutos();
     };
 
     const renderProductCard = (produto) => {
@@ -476,25 +369,6 @@ function Vendas() {
                             </label>
 
                             <div className="product-form-row">
-                                <label className="product-form-upload">
-                                    Foto principal
-                                    <input
-                                        type="file"
-                                        accept={IMAGE_ACCEPT}
-                                        onChange={(event) => lidarComFotoPrincipal(event.target.files?.[0] || null)}
-                                    />
-                                </label>
-
-                                <label className="product-form-upload">
-                                    Fotos adicionais
-                                    <input
-                                        type="file"
-                                        accept={IMAGE_ACCEPT}
-                                        multiple
-                                        onChange={(event) => lidarComFotosAdicionais(event.target.files)}
-                                    />
-                                </label>
-
                                 <label className="product-form-check">
                                     <input
                                         name="ativo"
@@ -506,42 +380,7 @@ function Vendas() {
                                 </label>
                             </div>
 
-                            {fotosAtuais.length > 0 && (
-                                <div className="product-form-gallery">
-                                    <p className="product-form-gallery-title">Fotos atuais</p>
-                                    <div className="product-form-preview-grid">
-                                        {fotosAtuais.map((foto) => (
-                                            <div className="product-form-preview-item" key={foto}>
-                                                <img src={foto} alt="Foto atual do produto" />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {previewFotoPrincipal && (
-                                <div className="product-form-gallery">
-                                    <p className="product-form-gallery-title">Foto principal selecionada</p>
-                                    <div className="product-form-preview-grid">
-                                        <div className="product-form-preview-item">
-                                            <img src={previewFotoPrincipal} alt="Pré-visualização da foto principal" />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {fotosAdicionais.length > 0 && (
-                                <div className="product-form-gallery">
-                                    <p className="product-form-gallery-title">Fotos adicionais selecionadas</p>
-                                    <div className="product-form-preview-grid">
-                                        {fotosAdicionais.map((foto) => (
-                                            <div className="product-form-preview-item" key={foto.preview}>
-                                                <img src={foto.preview} alt="Pré-visualização de foto adicional" />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
+                            <EditorImagens api={editorImagens} label="Fotos do produto" />
 
                             {erroFormulario && (
                                 <p className="product-form-error">{erroFormulario}</p>

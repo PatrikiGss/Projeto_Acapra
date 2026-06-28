@@ -1,3 +1,12 @@
+/**
+ * Indica que o recurso não existe mais no servidor (HTTP 404).
+ * Útil em exclusões: se o item já foi removido, tratamos como sucesso e apenas
+ * atualizamos a lista, em vez de mostrar um erro ao usuário.
+ */
+export function isNotFoundError(error) {
+  return error?.response?.status === 404;
+}
+
 export function getApiErrorMessage(error, fallback = "Não foi possível concluir a operação.") {
   const data = error?.response?.data;
 

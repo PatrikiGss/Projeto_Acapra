@@ -15,6 +15,7 @@ class EspecieAnimal(models.TextChoices):
 class SexoAnimal(models.TextChoices):
     MACHO = 'macho', 'Macho'
     FEMEA = 'femea', 'Fêmea'
+    AMBOS = 'ambos', 'Ambos'
 
 
 class Animal(CompressImageOnSaveMixin, models.Model):

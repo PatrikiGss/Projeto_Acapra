@@ -1,5 +1,6 @@
 from django.db import transaction
 from rest_framework import serializers
+from phonenumber_field.serializerfields import PhoneNumberField
 
 from .models import DadosPix, OfertaDoacao
 
@@ -100,6 +101,16 @@ class GetDadosPixSerializer(serializers.ModelSerializer):
 class OfertaDoacaoCreateSerializer(serializers.ModelSerializer):
     """Serializer público para registrar uma oferta de doação de item."""
 
+    # Valida o telefone com a lib phonenumbers (django-phonenumber-field).
+    # Espera formato E.164 (ex.: +5549999999999), enviado pelo frontend.
+    telefone = PhoneNumberField(
+        error_messages={
+            "invalid": "Informe um telefone válido com DDD, ex.: (49) 99999-9999.",
+            "required": "Informe um telefone para contato.",
+            "blank": "Informe um telefone para contato.",
+        }
+    )
+
     class Meta:
         model = OfertaDoacao
         fields = ["nome_doador", "telefone", "item", "categoria", "quantidade", "observacoes"]
@@ -107,11 +118,6 @@ class OfertaDoacaoCreateSerializer(serializers.ModelSerializer):
     def validate_nome_doador(self, value):
         if not value.strip():
             raise serializers.ValidationError("Informe o nome do doador.")
-        return value.strip()
-
-    def validate_telefone(self, value):
-        if not value.strip():
-            raise serializers.ValidationError("Informe um telefone para contato.")
         return value.strip()
 
     def validate_item(self, value):

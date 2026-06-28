@@ -274,3 +274,54 @@ class DadosPixAdminRegistrationTests(TestCase):
         admin_cls = admin.site._registry[DadosPix]
         self.assertIn("chave_pix", admin_cls.list_display)
         self.assertIn("ativo", admin_cls.list_display)
+
+
+class OfertaDoacaoTelefoneValidationTests(TestCase):
+    """Validação do telefone da oferta de doação via phonenumbers."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.url = reverse("doacoes:ofertas")
+        self.base = {
+            "nome_doador": "Maria",
+            "item": "Ração",
+            "categoria": "alimento",
+        }
+
+    def _payload(self, telefone):
+        return {**self.base, "telefone": telefone}
+
+    def test_serializer_aceita_telefone_e164_valido(self):
+        from doacoes.serializers import OfertaDoacaoCreateSerializer
+
+        serializer = OfertaDoacaoCreateSerializer(data=self._payload("+5549999990000"))
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_serializer_recusa_telefone_invalido(self):
+        from doacoes.serializers import OfertaDoacaoCreateSerializer
+
+        for telefone in ["abc", "+5549999", "(49) 99999-0000", "123"]:
+            serializer = OfertaDoacaoCreateSerializer(data=self._payload(telefone))
+            self.assertFalse(serializer.is_valid(), f"deveria recusar {telefone!r}")
+            self.assertIn("telefone", serializer.errors)
+
+    def test_serializer_recusa_telefone_vazio(self):
+        from doacoes.serializers import OfertaDoacaoCreateSerializer
+
+        serializer = OfertaDoacaoCreateSerializer(data=self._payload(""))
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("telefone", serializer.errors)
+
+    def test_post_publico_cria_com_telefone_valido(self):
+        from doacoes.models import OfertaDoacao
+
+        resp = self.client.post(self.url, self._payload("+5549999990000"), format="json")
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED, resp.data)
+        self.assertEqual(OfertaDoacao.objects.count(), 1)
+
+    def test_post_publico_rejeita_telefone_invalido(self):
+        from doacoes.models import OfertaDoacao
+
+        resp = self.client.post(self.url, self._payload("abc"), format="json")
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(OfertaDoacao.objects.count(), 0)

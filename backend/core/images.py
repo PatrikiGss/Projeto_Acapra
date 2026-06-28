@@ -23,24 +23,104 @@ QUALITY = 82
 LIMITE_FOTOS = 4
 
 
-def validar_limite_fotos(instance, tem_foto_nova, qtd_fotos_novas, *, limite=LIMITE_FOTOS):
+def validar_limite_fotos(
+    instance,
+    tem_foto_nova,
+    qtd_fotos_novas,
+    *,
+    limite=LIMITE_FOTOS,
+    remover_foto=False,
+    qtd_imagens_removidas=0,
+):
     """
     Garante que um cadastro não ultrapasse `limite` fotos no total.
 
     Conta a foto principal (existente ou recém-enviada) + as imagens já salvas
-    na relação `imagens` + as novas fotos do lote. Levanta ValidationError do DRF
-    quando o resultado passaria do limite. Deve ser chamado no `validate()` dos
-    serializers de escrita.
+    na relação `imagens` + as novas fotos do lote, descontando o que será
+    removido nesta edição (`remover_foto` e `qtd_imagens_removidas`). Levanta
+    ValidationError do DRF quando o resultado passaria do limite. Deve ser
+    chamado no `validate()` dos serializers de escrita.
     """
     from rest_framework import serializers
 
-    foto_final = 1 if (tem_foto_nova or (instance is not None and getattr(instance, "foto", None))) else 0
+    foto_existente = bool(instance is not None and getattr(instance, "foto", None)) and not remover_foto
+    foto_final = 1 if (tem_foto_nova or foto_existente) else 0
     existentes = instance.imagens.count() if instance is not None else 0
+    existentes = max(0, existentes - qtd_imagens_removidas)
     total = foto_final + existentes + qtd_fotos_novas
     if total > limite:
         raise serializers.ValidationError(
             {"fotos": f"Máximo de {limite} fotos por cadastro (você ficaria com {total})."}
         )
+
+
+def coletar_ids_remover(request, campo="remover_imagens"):
+    """
+    Lê do request a lista de ids de imagens da galeria a remover.
+
+    Funciona tanto com multipart (QueryDict, chaves repetidas via getlist) quanto
+    com JSON (lista). Ignora valores não numéricos. Espelha a leitura manual de
+    `fotos`, já que o ListField do DRF não captura chaves repetidas em multipart.
+    """
+    if request is None:
+        return []
+
+    data = request.data
+    if hasattr(data, "getlist"):
+        valores = data.getlist(campo)
+    else:
+        valores = data.get(campo, [])
+        if not isinstance(valores, (list, tuple)):
+            valores = [valores]
+
+    ids = []
+    for valor in valores:
+        try:
+            ids.append(int(valor))
+        except (TypeError, ValueError):
+            continue
+    return ids
+
+
+def galeria_editavel(obj):
+    """
+    Lista estruturada das imagens de `obj` para o editor do frontend.
+
+    Devolve a foto principal (quando existe) seguida das imagens da galeria
+    `imagens`, cada item com o handle necessário para removê-la individualmente:
+      - {"tipo": "principal", "id": None, "url": ...}
+      - {"tipo": "galeria",   "id": <int>, "url": ...}
+    """
+    itens = []
+    if getattr(obj, "foto", None):
+        itens.append({"tipo": "principal", "id": None, "url": obj.foto.url})
+    for img in obj.imagens.all():
+        if img.imagem:
+            itens.append({"tipo": "galeria", "id": img.id, "url": img.imagem.url})
+    return itens
+
+
+def aplicar_remocao_imagens(instance, *, remover_foto=False, ids_remover=None):
+    """
+    Remove a foto principal e/ou imagens da galeria de `instance`.
+
+    - `remover_foto`: apaga o arquivo da foto principal e zera o campo.
+    - `ids_remover`: ids de imagens da relação `imagens` a excluir. O filtro é
+      escopado à própria instância, então ids de outros objetos são ignorados.
+
+    Apaga também os arquivos do storage. Deve ser chamado dentro de uma
+    transação, antes de criar as novas imagens.
+    """
+    if remover_foto and getattr(instance, "foto", None):
+        instance.foto.delete(save=False)
+        instance.foto = None
+
+    if ids_remover:
+        imagens = instance.imagens.filter(id__in=ids_remover)
+        for img in imagens:
+            if img.imagem:
+                img.imagem.delete(save=False)
+        imagens.delete()
 
 
 def compress_uploaded_image(file, *, max_side=MAX_SIDE, quality=QUALITY):

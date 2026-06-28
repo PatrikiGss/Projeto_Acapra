@@ -6,6 +6,7 @@ import Register from "./pages/Register/Register";
 import Login from "./pages/Login/Login";
 import Adocao from "./pages/AdocaoView/Adocao"
 import Doe from "./pages/DoeView/Doe";
+import DoacoesOfertas from "./pages/DoacoesView/DoacoesOfertas";
 import AnimalDetail from "./pages/AnimalDetailView/AnimalDetail";
 import Vendas from "./pages/VendasView/Vendas";
 import ProdutoDetail from "./pages/ProdutoDetailView/ProdutoDetail";
@@ -65,6 +66,14 @@ function App() {
           <Route path="/adocao" element={<Adocao />} />
           <Route path="/adocao/:id" element={<AnimalDetail />} />
           <Route path="/doe" element={<Doe />} />
+          <Route
+            path="/doacoes/ofertas"
+            element={(
+              <ProtectedRoute>
+                <DoacoesOfertas />
+              </ProtectedRoute>
+            )}
+          />
           <Route path="/informacoes" element={<Informacoes />} />
           <Route path="/informacoes/:categoria/nova" element={<InformacoesNova />} />
           <Route path="/informacoes/:categoria/:id/editar" element={<InformacoesEditar />} />

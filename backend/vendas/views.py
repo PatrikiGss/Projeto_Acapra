@@ -60,7 +60,7 @@ class ProdutosView(APIView):
         """
         Cria novo produto (autenticado).
         """
-        serializer = ProdutoSerializer(data=request.data)
+        serializer = ProdutoSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         produto = serializer.save()
         return Response(
@@ -118,7 +118,8 @@ class ProdutoDetailView(APIView):
         serializer = UpdateProdutoSerializer(
             produto,
             data=request.data,
-            partial=True
+            partial=True,
+            context={'request': request},
         )
 
         serializer.is_valid(raise_exception=True)
@@ -133,12 +134,16 @@ class ProdutoDetailView(APIView):
         """
         produto = self.get_object(pk)
 
+        if produto.foto:
+            produto.foto.delete(save=False)
+        for imagem in produto.imagens.all():
+            if imagem.imagem:
+                imagem.imagem.delete(save=False)
+
         produto.delete()
 
-        return Response(
-            {"detail": f"Produto {pk} removido com sucesso."},
-            status=status.HTTP_204_NO_CONTENT
-        )
+        # 204 não pode ter corpo (quebra parsers/proxies HTTP). Resposta vazia.
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ProdutosPorTipoView(APIView):

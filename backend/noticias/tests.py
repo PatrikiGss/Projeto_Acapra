@@ -160,6 +160,7 @@ class PublicacaoSerializerTests(TestCase):
             "resumo",
             "foto",
             "fotos",
+            "galeria",
             "texto",
             "ativo",
             "created_at",

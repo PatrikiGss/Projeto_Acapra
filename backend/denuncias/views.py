@@ -77,7 +77,5 @@ class DenunciaDetailView(APIView):
     def delete(self, request, pk):
         denuncia = self.get_object(pk)
         denuncia.delete()
-        return Response(
-            {"detail": f"Denúncia {pk} removida com sucesso."},
-            status=status.HTTP_204_NO_CONTENT,
-        )
+        # 204 não pode ter corpo (quebra parsers/proxies HTTP). Resposta vazia.
+        return Response(status=status.HTTP_204_NO_CONTENT)

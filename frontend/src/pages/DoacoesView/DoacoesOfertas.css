@@ -1,0 +1,250 @@
+.doacoes-page {
+  min-height: 100vh;
+  background: #fbfaf8;
+  color: #1a1a1a;
+}
+
+.doacoes-content {
+  width: min(100%, 860px);
+  margin: 0 auto;
+  padding: clamp(2rem, 4vw, 3.5rem) clamp(1rem, 4vw, 2rem) 4rem;
+}
+
+.doacoes-heading {
+  margin-bottom: 1.5rem;
+}
+
+.doacoes-heading h1 {
+  margin: 0 0 0.6rem;
+}
+
+.doacoes-heading p {
+  max-width: 640px;
+  color: #545454;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ---- Toolbar de filtro ---- */
+
+.doacoes-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.doacoes-toolbar button {
+  border: 1px solid rgba(232, 119, 34, 0.28);
+  border-radius: 999px;
+  background: #fff;
+  color: #545454;
+  padding: 0.45rem 0.95rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.doacoes-toolbar button:hover,
+.doacoes-toolbar button:focus-visible {
+  background: #fff4ea;
+}
+
+.doacoes-toolbar button.active {
+  background: #e87722;
+  border-color: #e87722;
+  color: #fff;
+}
+
+/* ---- Estados ---- */
+
+.doacoes-message {
+  margin: 0;
+  padding: 1rem 1.1rem;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid rgba(224, 224, 224, 0.85);
+  color: #545454;
+}
+
+.doacoes-message.error {
+  background: #fdebea;
+  color: #b42318;
+  border-color: rgba(180, 35, 24, 0.15);
+}
+
+.doacoes-erro-acao {
+  color: #8a1f1f;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+/* ---- Acesso restrito ---- */
+
+.doacoes-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.doacoes-empty h1 {
+  margin: 0 0 0.6rem;
+}
+
+.doacoes-empty p {
+  color: #545454;
+  margin: 0 0 1.5rem;
+}
+
+.doacoes-link-button {
+  display: inline-block;
+  background: #e87722;
+  color: #fff;
+  text-decoration: none;
+  padding: 0.6rem 1.4rem;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+/* ---- Lista / Card ---- */
+
+.doacoes-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.doacao-card {
+  background: #fff;
+  border: 1px solid rgba(224, 224, 224, 0.85);
+  border-radius: 8px;
+  padding: 1.25rem;
+  box-shadow: 0 10px 24px rgba(26, 26, 26, 0.06);
+}
+
+.doacao-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.doacao-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.doacao-card-title-row h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.doacao-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.status-select {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(232, 119, 34, 0.28);
+  border-radius: 6px;
+  background: #fbfaf8;
+  color: #1a1a1a;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.doacao-delete-button {
+  border: 1px solid rgba(180, 35, 24, 0.25);
+  border-radius: 6px;
+  background: #fff;
+  color: #b42318;
+  padding: 0.45rem 0.85rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.doacao-delete-button:hover,
+.doacao-delete-button:focus-visible {
+  background: #fdebea;
+}
+
+/* Status badges */
+
+.status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.status-pendente { background: #fff4e0; color: #996300; }
+.status-em-contato { background: #e6f0ff; color: #1b4f9c; }
+.status-recebida { background: #e6f4ea; color: #1e7e3a; }
+
+/* Card details */
+
+.doacao-card-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.85rem;
+  margin: 0 0 1rem;
+}
+
+.doacao-card-details div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.doacao-card-details dt {
+  color: #cf6510;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.doacao-card-details dd {
+  margin: 0;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.doacao-card-details dd a {
+  color: #1b4f9c;
+  text-decoration: none;
+}
+
+.doacao-card-details dd a:hover {
+  text-decoration: underline;
+}
+
+.doacao-card-obs span {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #cf6510;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.doacao-card-obs p {
+  margin: 0;
+  color: #333;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}

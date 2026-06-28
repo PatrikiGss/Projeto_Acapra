@@ -7,7 +7,8 @@ import { formatBrazilianPhone, toBrazilianPhoneE164 } from "../../utils/phone";
 import EmptyState from "../../components/ui/EmptyState";
 import ConfirmModal from "../../components/ui/ConfirmModal";
 import { getResponseItems } from "../../utils/collection";
-import { getApiErrorMessage, isNotFoundError } from "../../utils/errorUtils";
+import { getApiErrorMessage } from "../../utils/errorUtils";
+import { excluirRecurso } from "../../utils/crud";
 import { logError } from "../../utils/logger";
 import { useEditorImagens } from "../../hooks/useEditorImagens";
 import EditorImagens from "../../components/ui/EditorImagens";
@@ -189,22 +190,13 @@ function Adocao() {
     const confirmarExclusao = async () => {
         if (!animalParaExclusao) return;
         setErroAcao("");
-
-        try {
-            await api.delete(`/api/adocao/animais/${animalParaExclusao.id}/`);
-        } catch (error) {
-            // 404 = animal já não existe no servidor: trata como já removido.
-            if (!isNotFoundError(error)) {
-                setErroAcao(getApiErrorMessage(error, "Não foi possível excluir o animal."));
-                setAnimalParaExclusao(null);
-                return;
-            }
-        }
-
-        // Sucesso ou já removido: tira da lista e re-busca para refletir o servidor.
-        setAnimais((lista) => lista.filter((a) => a.id !== animalParaExclusao.id));
+        await excluirRecurso(`/api/adocao/animais/${animalParaExclusao.id}/`, {
+            aoRemover: () => setAnimais((lista) => lista.filter((a) => a.id !== animalParaExclusao.id)),
+            recarregar: carregarAnimais,
+            aoErro: setErroAcao,
+            mensagemErro: "Não foi possível excluir o animal.",
+        });
         setAnimalParaExclusao(null);
-        carregarAnimais();
     };
 
     const renderAdotadoBadge = () => (

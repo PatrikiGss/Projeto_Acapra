@@ -4,8 +4,10 @@ from rest_framework import serializers
 
 from core.images import (
     LIMITE_FOTOS,
+    apagar_arquivos,
     aplicar_remocao_imagens,
     coletar_ids_remover,
+    contar_imagens_removidas,
     galeria_editavel,
     validar_limite_fotos,
 )
@@ -132,19 +134,13 @@ class UpdateAnimalSerializer(serializers.ModelSerializer):
         model = Animal
         fields = ['nome_animal', 'nome_doador', 'especie', 'sexo', 'foto', 'fotos', 'remover_foto', 'descricao', 'disponivel']
 
-    def _qtd_imagens_removidas(self):
-        ids = coletar_ids_remover(self.context.get("request"))
-        if not ids or self.instance is None:
-            return 0
-        return self.instance.imagens.filter(id__in=ids).count()
-
     def validate(self, attrs):
         validar_limite_fotos(
             self.instance,
             bool(attrs.get("foto")),
             _contar_fotos_novas(self, attrs),
             remover_foto=attrs.get("remover_foto", False),
-            qtd_imagens_removidas=self._qtd_imagens_removidas(),
+            qtd_imagens_removidas=contar_imagens_removidas(self.instance, self.context.get("request")),
         )
         return attrs
 
@@ -154,8 +150,12 @@ class UpdateAnimalSerializer(serializers.ModelSerializer):
         fotos = _extra_fotos_from_validated_data(self, validated_data)
 
         with transaction.atomic():
-            aplicar_remocao_imagens(instance, remover_foto=remover_foto, ids_remover=ids_remover)
+            arquivos_orfaos = aplicar_remocao_imagens(
+                instance, remover_foto=remover_foto, ids_remover=ids_remover
+            )
             animal = super().update(instance, validated_data)
             _criar_imagens_animal(animal, fotos)
 
+        # Apaga os arquivos só após o commit (deleção de arquivo não é transacional).
+        apagar_arquivos(arquivos_orfaos)
         return animal

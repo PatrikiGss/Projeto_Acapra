@@ -6,7 +6,7 @@ import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import EmptyState from "../../components/ui/EmptyState";
 import ConfirmModal from "../../components/ui/ConfirmModal";
 import { getResponseItems } from "../../utils/collection";
-import { getApiErrorMessage, isNotFoundError } from "../../utils/errorUtils";
+import { excluirRecurso } from "../../utils/crud";
 import "./Voluntariado.css";
 
 const initialFormVoluntario = {
@@ -175,19 +175,14 @@ function Voluntariado() {
 
   const confirmarExclusaoVoluntario = async () => {
     if (!voluntarioParaExclusao) return;
-    try {
-      await api.delete(`/api/voluntariado/voluntarios/${voluntarioParaExclusao.id}/`);
-    } catch (err) {
-      // 404 = cadastro já não existe no servidor: trata como já removido.
-      if (!isNotFoundError(err)) {
-        setErroAcaoVoluntario(getApiErrorMessage(err, "Não foi possível remover o cadastro."));
-        setVoluntarioParaExclusao(null);
-        return;
-      }
-    }
-    setVoluntarios((lista) => lista.filter((v) => v.id !== voluntarioParaExclusao.id));
+    setErroAcaoVoluntario("");
+    await excluirRecurso(`/api/voluntariado/voluntarios/${voluntarioParaExclusao.id}/`, {
+      aoRemover: () => setVoluntarios((lista) => lista.filter((v) => v.id !== voluntarioParaExclusao.id)),
+      recarregar: () => carregarVoluntarios({ silencioso: true }),
+      aoErro: setErroAcaoVoluntario,
+      mensagemErro: "Não foi possível remover o cadastro.",
+    });
     setVoluntarioParaExclusao(null);
-    carregarVoluntarios({ silencioso: true });
   };
 
   // --- Handlers lar ---
@@ -229,19 +224,14 @@ function Voluntariado() {
 
   const confirmarExclusaoLar = async () => {
     if (!larParaExclusao) return;
-    try {
-      await api.delete(`/api/lares/lares/${larParaExclusao.id}/`);
-    } catch (err) {
-      // 404 = cadastro já não existe no servidor: trata como já removido.
-      if (!isNotFoundError(err)) {
-        setErroAcaoLar(getApiErrorMessage(err, "Não foi possível remover o cadastro."));
-        setLarParaExclusao(null);
-        return;
-      }
-    }
-    setLares((lista) => lista.filter((l) => l.id !== larParaExclusao.id));
+    setErroAcaoLar("");
+    await excluirRecurso(`/api/lares/lares/${larParaExclusao.id}/`, {
+      aoRemover: () => setLares((lista) => lista.filter((l) => l.id !== larParaExclusao.id)),
+      recarregar: () => carregarLares({ silencioso: true }),
+      aoErro: setErroAcaoLar,
+      mensagemErro: "Não foi possível remover o cadastro.",
+    });
     setLarParaExclusao(null);
-    carregarLares({ silencioso: true });
   };
 
   return (

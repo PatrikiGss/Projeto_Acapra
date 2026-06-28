@@ -145,7 +145,12 @@ export function useEditorImagens(limite = 4) {
         const [promovida, ...resto] = arquivosNovos;
         payload.append("foto", promovida);
         adicionais = resto;
-      } else if (principalRemovida) {
+      }
+
+      // Principal marcada para remoção: avisa o backend a apagar o arquivo antigo
+      // — inclusive quando uma nova foto é promovida acima, senão o arquivo
+      // anterior ficaria órfão no storage.
+      if (principalRemovida) {
         payload.append("remover_foto", "true");
       }
 

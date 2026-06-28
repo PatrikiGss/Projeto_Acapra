@@ -6,6 +6,7 @@ from gerenciamento.permissions import require_module
 
 from django.shortcuts import get_object_or_404
 
+from core.images import apagar_arquivos, coletar_arquivos_instancia
 from .models import Produto
 from .serializers import (
     ProdutoSerializer,
@@ -134,13 +135,12 @@ class ProdutoDetailView(APIView):
         """
         produto = self.get_object(pk)
 
-        if produto.foto:
-            produto.foto.delete(save=False)
-        for imagem in produto.imagens.all():
-            if imagem.imagem:
-                imagem.imagem.delete(save=False)
-
+        # Coleta os arquivos ANTES de excluir (cascata apaga a relação imagens),
+        # exclui o registro (operação autoritativa) e só então apaga os arquivos
+        # em melhor-esforço — assim uma falha de storage não vira 500.
+        arquivos = coletar_arquivos_instancia(produto)
         produto.delete()
+        apagar_arquivos(arquivos)
 
         # 204 não pode ter corpo (quebra parsers/proxies HTTP). Resposta vazia.
         return Response(status=status.HTTP_204_NO_CONTENT)

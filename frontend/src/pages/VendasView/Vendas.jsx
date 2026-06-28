@@ -7,7 +7,8 @@ import ConfirmModal from "../../components/ui/ConfirmModal";
 import EditorImagens from "../../components/ui/EditorImagens";
 import { useEditorImagens } from "../../hooks/useEditorImagens";
 import { getResponseItems } from "../../utils/collection";
-import { getApiErrorMessage, isNotFoundError } from "../../utils/errorUtils";
+import { getApiErrorMessage } from "../../utils/errorUtils";
+import { excluirRecurso } from "../../utils/crud";
 import { logError } from "../../utils/logger";
 import "./Vendas.css";
 
@@ -156,22 +157,13 @@ function Vendas() {
     const confirmarExclusao = async () => {
         if (!produtoParaExclusao) return;
         setErroAcao("");
-
-        try {
-            await api.delete(`/api/vendas/produtos/${produtoParaExclusao.id}/`);
-        } catch (error) {
-            // 404 = produto já não existe no servidor: trata como já removido.
-            if (!isNotFoundError(error)) {
-                setErroAcao(getApiErrorMessage(error, "Não foi possível excluir o produto."));
-                setProdutoParaExclusao(null);
-                return;
-            }
-        }
-
-        // Sucesso ou já removido: tira da lista e re-busca para refletir o servidor.
-        setProdutos((lista) => lista.filter((p) => p.id !== produtoParaExclusao.id));
+        await excluirRecurso(`/api/vendas/produtos/${produtoParaExclusao.id}/`, {
+            aoRemover: () => setProdutos((lista) => lista.filter((p) => p.id !== produtoParaExclusao.id)),
+            recarregar: carregarProdutos,
+            aoErro: setErroAcao,
+            mensagemErro: "Não foi possível excluir o produto.",
+        });
         setProdutoParaExclusao(null);
-        carregarProdutos();
     };
 
     const renderProductCard = (produto) => {

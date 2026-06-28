@@ -6,7 +6,7 @@ import LoadingSpinner from "../ui/LoadingSpinner";
 import EmptyState from "../ui/EmptyState";
 import ConfirmModal from "../ui/ConfirmModal";
 import { getResponseItems } from "../../utils/collection";
-import { getApiErrorMessage, isNotFoundError } from "../../utils/errorUtils";
+import { excluirRecurso } from "../../utils/crud";
 import { logError } from "../../utils/logger";
 import "./NewsFeed.css";
 
@@ -101,23 +101,13 @@ function NewsFeed({ categoria, titulo, subtitulo, basePath, embedded = false, li
   const excluirItem = async () => {
     if (!confirmacao) return;
     setAcaoErro("");
-
-    try {
-      await api.delete(`/api/noticias/publicacoes/${confirmacao.id}/`);
-    } catch (erro) {
-      // 404 = publicação já não existe no servidor: trata como já removida.
-      if (!isNotFoundError(erro)) {
-        logError("NewsFeed", erro);
-        setConfirmacao(null);
-        setAcaoErro(getApiErrorMessage(erro, "Não foi possível excluir a publicação."));
-        return;
-      }
-    }
-
-    // Sucesso ou já removida: tira da lista e re-busca para refletir o servidor.
-    setItens((atual) => atual.filter((publicacao) => publicacao.id !== confirmacao.id));
+    await excluirRecurso(`/api/noticias/publicacoes/${confirmacao.id}/`, {
+      aoRemover: () => setItens((atual) => atual.filter((p) => p.id !== confirmacao.id)),
+      recarregar,
+      aoErro: setAcaoErro,
+      mensagemErro: "Não foi possível excluir a publicação.",
+    });
     setConfirmacao(null);
-    recarregar();
   };
 
   return (

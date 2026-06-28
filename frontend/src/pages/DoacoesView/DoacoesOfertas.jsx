@@ -4,7 +4,7 @@ import api from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
 import ConfirmModal from "../../components/ui/ConfirmModal";
 import { getResponseItems } from "../../utils/collection";
-import { isNotFoundError } from "../../utils/errorUtils";
+import { excluirRecurso } from "../../utils/crud";
 import { logError } from "../../utils/logger";
 import { formatBrazilianPhone } from "../../utils/phone";
 import "./DoacoesOfertas.css";
@@ -100,19 +100,13 @@ function DoacoesOfertas() {
   const confirmarExclusao = async () => {
     if (!confirmacao) return;
     setErroAcao("");
-    try {
-      await api.delete(`/api/doacoes/ofertas/${confirmacao.id}/`);
-    } catch (error) {
-      // 404 = oferta já não existe no servidor: trata como já removida.
-      if (!isNotFoundError(error)) {
-        setErroAcao("Não foi possível remover a doação.");
-        setConfirmacao(null);
-        return;
-      }
-    }
-    setOfertas((lista) => lista.filter((o) => o.id !== confirmacao.id));
+    await excluirRecurso(`/api/doacoes/ofertas/${confirmacao.id}/`, {
+      aoRemover: () => setOfertas((lista) => lista.filter((o) => o.id !== confirmacao.id)),
+      recarregar: () => carregarOfertas({ silencioso: true }),
+      aoErro: setErroAcao,
+      mensagemErro: "Não foi possível remover a doação.",
+    });
     setConfirmacao(null);
-    carregarOfertas({ silencioso: true });
   };
 
   if (!podeEditar) {

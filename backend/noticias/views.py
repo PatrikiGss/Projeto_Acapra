@@ -5,6 +5,7 @@ from gerenciamento.permissions import require_module
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.images import apagar_arquivos, coletar_arquivos_instancia
 from .models import CategoriaNoticia, Publicacao
 from .serializers import GetPublicacaoSerializer, PublicacaoWriteSerializer
 
@@ -83,11 +84,11 @@ class PublicacaoDetailView(APIView):
 
     def delete(self, request, pk):
         publicacao = self.get_object(pk, include_inactive=True)
-        if publicacao.foto:
-            publicacao.foto.delete(save=False)
-        for imagem in publicacao.imagens.all():
-            if imagem.imagem:
-                imagem.imagem.delete(save=False)
+        # Coleta os arquivos ANTES de excluir (cascata apaga a relação imagens),
+        # exclui o registro (operação autoritativa) e só então apaga os arquivos
+        # em melhor-esforço — assim uma falha de storage não vira 500.
+        arquivos = coletar_arquivos_instancia(publicacao)
         publicacao.delete()
+        apagar_arquivos(arquivos)
         # 204 não pode ter corpo (quebra parsers/proxies HTTP). Resposta vazia.
         return Response(status=status.HTTP_204_NO_CONTENT)

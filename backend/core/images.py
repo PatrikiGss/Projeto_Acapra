@@ -10,10 +10,13 @@ Uso típico: herde `CompressImageOnSaveMixin` no model e liste os campos de
 imagem em `campos_imagem_comprimir`. A compressão acontece sozinha no save().
 """
 import io
+import logging
 import os
 
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import UploadedFile
+
+logger = logging.getLogger(__name__)
 
 # Maior lado da imagem em pixels e qualidade do WebP.
 MAX_SIDE = 1600
@@ -102,25 +105,79 @@ def galeria_editavel(obj):
 
 def aplicar_remocao_imagens(instance, *, remover_foto=False, ids_remover=None):
     """
-    Remove a foto principal e/ou imagens da galeria de `instance`.
+    Aplica as remoções no BANCO e devolve os arquivos a apagar do storage.
 
-    - `remover_foto`: apaga o arquivo da foto principal e zera o campo.
-    - `ids_remover`: ids de imagens da relação `imagens` a excluir. O filtro é
-      escopado à própria instância, então ids de outros objetos são ignorados.
+    - `remover_foto`: zera o campo da foto principal.
+    - `ids_remover`: ids de imagens da relação `imagens` a excluir (escopados à
+      própria instância, então ids de outros objetos são ignorados).
 
-    Apaga também os arquivos do storage. Deve ser chamado dentro de uma
-    transação, antes de criar as novas imagens.
+    Faz apenas as mudanças de banco e RETORNA a lista de FieldFiles a apagar
+    DEPOIS do commit. Deleção de arquivo não é transacional, então adiá-la evita
+    perder arquivos caso a transação sofra rollback. Deve ser chamado dentro da
+    transação, antes de criar as novas imagens; o chamador apaga os arquivos
+    retornados após o `with transaction.atomic()`.
     """
+    arquivos = []
+
     if remover_foto and getattr(instance, "foto", None):
-        instance.foto.delete(save=False)
+        arquivos.append(instance.foto)
         instance.foto = None
 
     if ids_remover:
         imagens = instance.imagens.filter(id__in=ids_remover)
         for img in imagens:
             if img.imagem:
-                img.imagem.delete(save=False)
+                arquivos.append(img.imagem)
         imagens.delete()
+
+    return arquivos
+
+
+def apagar_arquivos(arquivos):
+    """
+    Apaga do storage os FieldFiles coletados, em MELHOR-ESFORÇO.
+
+    Deleção de arquivo não é a operação autoritativa (a linha do banco é); por
+    isso uma falha de storage vira log e nunca derruba o fluxo. Caso contrário um
+    erro ao apagar o arquivo (ex.: arquivo travado no Windows) transformaria uma
+    exclusão/edição já persistida num 500 — pior que deixar um arquivo órfão.
+    """
+    for arquivo in arquivos or []:
+        try:
+            arquivo.delete(save=False)
+        except OSError as exc:
+            logger.warning(
+                "Falha ao apagar mídia %s: %s", getattr(arquivo, "name", arquivo), exc
+            )
+
+
+def coletar_arquivos_instancia(instance):
+    """
+    Coleta (sem apagar) a foto principal e as imagens da galeria da instância.
+
+    Usado ao excluir o objeto inteiro: chame ANTES de `instance.delete()` para
+    capturar os FieldFiles (as linhas da relação `imagens` somem por cascata) e
+    depois passe o resultado a `apagar_arquivos`, já com a linha removida.
+    """
+    arquivos = []
+    if getattr(instance, "foto", None):
+        arquivos.append(instance.foto)
+    for img in instance.imagens.all():
+        if img.imagem:
+            arquivos.append(img.imagem)
+    return arquivos
+
+
+def contar_imagens_removidas(instance, request):
+    """
+    Quantas das imagens pedidas para remoção realmente pertencem à instância.
+
+    Usado em `validate()` para descontar as remoções do limite de fotos.
+    """
+    ids = coletar_ids_remover(request)
+    if not ids or instance is None:
+        return 0
+    return instance.imagens.filter(id__in=ids).count()
 
 
 def compress_uploaded_image(file, *, max_side=MAX_SIDE, quality=QUALITY):
@@ -134,27 +191,28 @@ def compress_uploaded_image(file, *, max_side=MAX_SIDE, quality=QUALITY):
         from PIL import Image, ImageOps
 
         file.seek(0)
-        img = Image.open(file)
+        # Fecha o handle do arquivo de origem ao sair, evitando handles vazados
+        # (no Windows, um handle aberto trava o arquivo e bloqueia remoções).
+        with Image.open(file) as origem:
+            # GIF animado: comprimir perderia a animação, então não mexemos.
+            if getattr(origem, "is_animated", False):
+                return None
 
-        # GIF animado: comprimir perderia a animação, então não mexemos.
-        if getattr(img, "is_animated", False):
-            return None
+            img = ImageOps.exif_transpose(origem)
 
-        img = ImageOps.exif_transpose(img)
+            tem_alpha = img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info)
+            img = img.convert("RGBA" if tem_alpha else "RGB")
 
-        tem_alpha = img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info)
-        img = img.convert("RGBA" if tem_alpha else "RGB")
+            largura, altura = img.size
+            maior = max(largura, altura)
+            if maior > max_side:
+                escala = max_side / maior
+                img = img.resize((round(largura * escala), round(altura * escala)), Image.LANCZOS)
 
-        largura, altura = img.size
-        maior = max(largura, altura)
-        if maior > max_side:
-            escala = max_side / maior
-            img = img.resize((round(largura * escala), round(altura * escala)), Image.LANCZOS)
-
-        buffer = io.BytesIO()
-        img.save(buffer, format="WEBP", quality=quality, method=6)
-        buffer.seek(0)
-        return ContentFile(buffer.read())
+            buffer = io.BytesIO()
+            img.save(buffer, format="WEBP", quality=quality, method=6)
+            buffer.seek(0)
+            return ContentFile(buffer.read())
     except Exception:
         return None
 

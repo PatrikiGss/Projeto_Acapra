@@ -3,7 +3,7 @@ import api from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
 import { formatBrazilianPhone, toBrazilianPhoneE164 } from "../../utils/phone";
 import { validateImageFile, IMAGE_ACCEPT } from "../../utils/upload";
-import { isNotFoundError } from "../../utils/errorUtils";
+import { excluirRecurso } from "../../utils/crud";
 import ConfirmModal from "../../components/ui/ConfirmModal";
 import "../VoluntariadoView/Voluntariado.css";
 import "./Denuncias.css";
@@ -146,19 +146,13 @@ function Denuncias() {
   const confirmarExclusao = async () => {
     if (!confirmacao) return;
     setErroAcao("");
-    try {
-      await api.delete(`/api/denuncias/denuncias/${confirmacao.id}/`);
-    } catch (error) {
-      // 404 = denúncia já não existe no servidor: trata como já removida.
-      if (!isNotFoundError(error)) {
-        setErroAcao("Não foi possível remover a denúncia.");
-        setConfirmacao(null);
-        return;
-      }
-    }
-    setDenuncias((lista) => lista.filter((d) => d.id !== confirmacao.id));
+    await excluirRecurso(`/api/denuncias/denuncias/${confirmacao.id}/`, {
+      aoRemover: () => setDenuncias((lista) => lista.filter((d) => d.id !== confirmacao.id)),
+      recarregar: () => carregarDenuncias({ silencioso: true }),
+      aoErro: setErroAcao,
+      mensagemErro: "Não foi possível remover a denúncia.",
+    });
     setConfirmacao(null);
-    carregarDenuncias({ silencioso: true });
   };
 
   return (

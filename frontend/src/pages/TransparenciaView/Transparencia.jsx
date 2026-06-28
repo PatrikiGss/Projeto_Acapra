@@ -3,6 +3,7 @@ import api, { getMediaURL } from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
 import ConfirmModal from "../../components/ui/ConfirmModal";
 import { validateDocumentFile, DOCUMENT_ACCEPT } from "../../utils/upload";
+import { excluirRecurso } from "../../utils/crud";
 import "./Transparencia.css";
 
 const descricaoIndicador = {
@@ -36,6 +37,7 @@ function Transparencia() {
   const [salvandoDoc, setSalvandoDoc] = useState(false);
   const [confirmacaoTransp, setConfirmacaoTransp] = useState(null);
   const [erroDoc, setErroDoc] = useState("");
+  const [erroAcaoDoc, setErroAcaoDoc] = useState("");
 
   // ---- Loaders ----
   const carregarDocumentos = () => {
@@ -119,12 +121,13 @@ function Transparencia() {
     if (!confirmacaoTransp) return;
     const { tipo, item } = confirmacaoTransp;
     if (tipo === "documento") {
-      try {
-        await api.delete(`/api/transparencia/documentos/${item.id}/`);
-      } catch { /* 404/erro: a releitura abaixo reflete o estado real do servidor */ }
-      // Sucesso ou já removido: tira da lista e re-busca para refletir o servidor.
-      setDocumentos((lista) => lista.filter((d) => d.id !== item.id));
-      carregarDocumentos();
+      setErroAcaoDoc("");
+      await excluirRecurso(`/api/transparencia/documentos/${item.id}/`, {
+        aoRemover: () => setDocumentos((lista) => lista.filter((d) => d.id !== item.id)),
+        recarregar: carregarDocumentos,
+        aoErro: setErroAcaoDoc,
+        mensagemErro: "Não foi possível remover o documento.",
+      });
     }
     setConfirmacaoTransp(null);
   };
@@ -185,6 +188,7 @@ function Transparencia() {
 
           {loadingDocs && <p className="transp-estado">Carregando documentos...</p>}
           {!loadingDocs && erroDocs && <p className="transp-estado erro">Não foi possível carregar os documentos.</p>}
+          {erroAcaoDoc && <p className="transp-estado erro">{erroAcaoDoc}</p>}
           {!loadingDocs && !erroDocs && documentos.length === 0 && !podeEditar && (
             <p className="transp-estado">Nenhum documento publicado ainda.</p>
           )}

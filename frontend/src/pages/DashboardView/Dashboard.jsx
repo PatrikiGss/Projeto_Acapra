@@ -18,8 +18,8 @@ import { logError } from "../../utils/logger";
 import "./Dashboard.css";
 
 const MODULOS_RAPIDOS = [
-  { id: "doacoes", titulo: "Doações", descricao: "Gerenciar dados PIX e QR Code", rota: "/doe" },
-  { id: "doacoes", titulo: "Doações recebidas", descricao: "Ver ofertas de itens do público", rota: "/doacoes/ofertas" },
+  { id: "doacoes", permissao: "doacoes", titulo: "Doações", descricao: "Gerenciar dados PIX e QR Code", rota: "/doe" },
+  { id: "doacoes_ofertas", permissao: "doacoes", titulo: "Doações recebidas", descricao: "Ver ofertas de itens do público", rota: "/doacoes/ofertas" },
   { id: "adocao", titulo: "Adoção", descricao: "Cadastrar e editar animais", rota: "/adocao" },
   { id: "noticias", titulo: "Notícias", descricao: "Publicar novidades", rota: "/noticias" },
   { id: "resgates", titulo: "Resgates", descricao: "Registrar resgates", rota: "/resgates" },
@@ -104,7 +104,7 @@ function Dashboard() {
   }, []);
 
   const modulosDisponiveis = useMemo(
-    () => MODULOS_RAPIDOS.filter((modulo) => podeGerenciar(modulo.id, usuario)),
+    () => MODULOS_RAPIDOS.filter((modulo) => podeGerenciar(modulo.permissao ?? modulo.id, usuario)),
     [usuario],
   );
 
@@ -272,7 +272,7 @@ function Dashboard() {
 
           <div className="dashboard-modules">
             {modulosDisponiveis.map((modulo) => (
-              <Link key={modulo.rota} to={modulo.rota} className="dashboard-module-card">
+              <Link key={modulo.id} to={modulo.rota} className="dashboard-module-card">
                 <h3>{modulo.titulo}</h3>
                 <p>{modulo.descricao}</p>
               </Link>

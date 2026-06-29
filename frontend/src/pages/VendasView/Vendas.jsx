@@ -10,6 +10,8 @@ import { getResponseItems } from "../../utils/collection";
 import { getApiErrorMessage } from "../../utils/errorUtils";
 import { excluirRecurso } from "../../utils/crud";
 import { logError } from "../../utils/logger";
+import { usePaginacao } from "../../hooks/usePaginacao";
+import Paginacao from "../../components/ui/Paginacao";
 import "./Vendas.css";
 
 const formVazio = {
@@ -66,6 +68,8 @@ function Vendas() {
             return b.id - a.id;
         });
     }, [produtos, tipo, ordenacao, busca]);
+
+    const { pagina, setPagina, totalPaginas, itensPagina } = usePaginacao(produtosFiltrados, 12);
 
     const formatarPreco = (preco) => {
         return Number(preco).toLocaleString("pt-BR", {
@@ -299,7 +303,7 @@ function Vendas() {
                 </div>
 
                 <div className="products">
-                    {produtosFiltrados.map((produto) => renderProductCard(produto))}
+                    {itensPagina.map((produto) => renderProductCard(produto))}
 
                     {produtosFiltrados.length === 0 && (
                         <EmptyState
@@ -308,6 +312,8 @@ function Vendas() {
                         />
                     )}
                 </div>
+
+                <Paginacao pagina={pagina} totalPaginas={totalPaginas} onMudar={setPagina} />
 
                 {erroAcao && <p className="vendas-action-error">{erroAcao}</p>}
             </section>

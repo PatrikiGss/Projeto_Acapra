@@ -8,6 +8,8 @@ import ConfirmModal from "../ui/ConfirmModal";
 import { getResponseItems } from "../../utils/collection";
 import { excluirRecurso } from "../../utils/crud";
 import { logError } from "../../utils/logger";
+import { usePaginacao } from "../../hooks/usePaginacao";
+import Paginacao from "../ui/Paginacao";
 import "./NewsFeed.css";
 
 function formatarData(valor) {
@@ -36,6 +38,7 @@ function NewsFeed({ categoria, titulo, subtitulo, basePath, embedded = false, li
   const [acaoErro, setAcaoErro] = useState("");
   const [confirmacao, setConfirmacao] = useState(null);
   const { podeEditar } = useAdminAccess(categoria || "");
+  const { pagina, setPagina, totalPaginas, itensPagina } = usePaginacao(itens, 12);
 
   const rotaCategoria = basePath && categoria ? `${basePath}/${categoria}` : (basePath || `/${categoria || ""}`);
   const resolverLinkItem = (id) => linkBase ? `${linkBase}/${id}` : `${rotaCategoria}/${id}`;
@@ -145,8 +148,9 @@ function NewsFeed({ categoria, titulo, subtitulo, basePath, embedded = false, li
         )}
 
         {!loading && !error && itens.length > 0 && (
+          <>
           <div className="news-list">
-            {itens.map((item) => (
+            {itensPagina.map((item) => (
               <article className="news-row" key={item.id}>
                 <Link className="news-row-link" to={resolverLinkItem(item.id)}>
                   <div className="news-row-image">
@@ -189,6 +193,8 @@ function NewsFeed({ categoria, titulo, subtitulo, basePath, embedded = false, li
               </article>
             ))}
           </div>
+          <Paginacao pagina={pagina} totalPaginas={totalPaginas} onMudar={setPagina} />
+          </>
         )}
 
         {acaoErro && <p className="news-message">{acaoErro}</p>}

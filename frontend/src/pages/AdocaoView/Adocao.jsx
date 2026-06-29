@@ -12,6 +12,8 @@ import { excluirRecurso } from "../../utils/crud";
 import { logError } from "../../utils/logger";
 import { useEditorImagens } from "../../hooks/useEditorImagens";
 import EditorImagens from "../../components/ui/EditorImagens";
+import { usePaginacao } from "../../hooks/usePaginacao";
+import Paginacao from "../../components/ui/Paginacao";
 
 const formVazio = {
     nome_animal: "",
@@ -77,6 +79,8 @@ function Adocao() {
             return a.disponivel ? -1 : 1;
         });
     }, [animais, filtroEspecie]);
+
+    const { pagina, setPagina, totalPaginas, itensPagina } = usePaginacao(animaisFiltrados, 12);
 
     const formatarTexto = (texto) => {
         if (!texto) return "";
@@ -350,7 +354,7 @@ function Adocao() {
                 </div>
 
                 <div className="animals">
-                    {animaisFiltrados.map((animal) => renderAnimalCard(animal))}
+                    {itensPagina.map((animal) => renderAnimalCard(animal))}
 
                     {animaisFiltrados.length === 0 && (
                         <EmptyState
@@ -367,6 +371,8 @@ function Adocao() {
                         />
                     )}
                 </div>
+
+                <Paginacao pagina={pagina} totalPaginas={totalPaginas} onMudar={setPagina} />
 
                 {erroAcao && <p className="adocao-action-error">{erroAcao}</p>}
             </section>

@@ -37,7 +37,7 @@
 
 .doe-admin-button {
     min-height: 2.8rem;
-    margin-top: 1rem;
+    margin-top: 0;
     padding: 0 1rem;
     border: 0;
     border-radius: 8px;
@@ -48,6 +48,47 @@
     font-weight: 800;
     cursor: pointer;
     box-shadow: 0 10px 22px rgba(26, 26, 26, 0.12);
+}
+
+/* === ABAS (subtópicos) === */
+.doe-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    max-width: 900px;
+    margin: 0 auto clamp(1.5rem, 3vw, 2.2rem);
+    padding: 0 1rem;
+}
+
+.doe-tabs button {
+    padding: 0.55rem 1.15rem;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 999px;
+    background: #fff;
+    color: #545454;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.doe-tabs button:hover {
+    border-color: #e87722;
+    color: #cf6510;
+}
+
+.doe-tabs button.active {
+    background: #e87722;
+    border-color: #e87722;
+    color: #fff;
+}
+
+.doe-pix-admin {
+    max-width: 1040px;
+    margin: 0 auto 1.2rem;
+    display: flex;
+    justify-content: center;
 }
 
 .donation-grid {

@@ -40,7 +40,7 @@ function linkWhatsApp(telefone) {
   return `https://wa.me/${normalized}`;
 }
 
-function DoacoesOfertas() {
+function DoacoesOfertas({ embedded = false }) {
   const { podeEditar } = useAdminAccess("doacoes");
 
   const [ofertas, setOfertas] = useState([]);
@@ -110,6 +110,7 @@ function DoacoesOfertas() {
   };
 
   if (!podeEditar) {
+    if (embedded) return null;
     return (
       <div className="doacoes-page">
         <section className="doacoes-content">
@@ -124,15 +125,17 @@ function DoacoesOfertas() {
   }
 
   return (
-    <div className="doacoes-page">
+    <div className={embedded ? "doacoes-embedded" : "doacoes-page"}>
       <section className="doacoes-content">
-        <div className="doacoes-heading">
-          <h1>Doações recebidas</h1>
-          <p>
-            Ofertas de itens enviadas pelo público através do formulário “Quero doar algo” na
-            página Apoie. Atualize o andamento do contato com cada doador.
-          </p>
-        </div>
+        {!embedded && (
+          <div className="doacoes-heading">
+            <h1>Doações recebidas</h1>
+            <p>
+              Ofertas de itens enviadas pelo público através do formulário “Quero doar algo” na
+              página Apoie. Atualize o andamento do contato com cada doador.
+            </p>
+          </div>
+        )}
 
         <div className="doacoes-toolbar" aria-label="Filtrar por status">
           <button

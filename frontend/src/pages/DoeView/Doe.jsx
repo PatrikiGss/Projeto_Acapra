@@ -8,6 +8,7 @@ import { getApiErrorMessage } from "../../utils/errorUtils";
 import { logError } from "../../utils/logger";
 import { validateImageFile, IMAGE_ACCEPT } from "../../utils/upload";
 import { formatBrazilianPhone, toBrazilianPhoneE164, isValidBrazilianPhone } from "../../utils/phone";
+import DoacoesOfertas from "../DoacoesView/DoacoesOfertas";
 import "./Doe.css";
 
 const bankFields = [
@@ -68,6 +69,7 @@ function Doe() {
   const [enviandoOferta, setEnviandoOferta] = useState(false);
   const [ofertaSucesso, setOfertaSucesso] = useState("");
   const [ofertaErro, setOfertaErro] = useState("");
+  const [aba, setAba] = useState("pix");
 
   useEffect(() => {
     let ativo = true;
@@ -310,43 +312,66 @@ function Doe() {
   const hasCurrentQr = Boolean(qrCodeAtual) && !removerQrCode;
   const currentPreview = previewQrCode || (hasCurrentQr ? qrCodeAtual : "");
 
+  const abas = [
+    { id: "pix", label: "Contribuir com PIX" },
+    { id: "item", label: "Doar um item" },
+    ...(podeEditar ? [{ id: "recebidas", label: "Doações recebidas" }] : []),
+  ];
+
   return (
     <div className="doe-page">
       <section className="doe-header">
         <h1>Ajude a ACAPRA</h1>
-        <p>
-          {dadosDoacao?.descricao || "Use o PIX ou os dados bancários para fazer a sua doação."}
-        </p>
-
-        {podeEditar && (
-          <button
-            type="button"
-            className="doe-admin-button"
-            onClick={dadosDoacao ? abrirEdicao : abrirCriacao}
-          >
-            {dadosDoacao ? "Editar dados de doação" : "Cadastrar dados de doação"}
-          </button>
-        )}
+        <p>Escolha como ajudar: contribua com uma doação via PIX ou cadastre um item para doar.</p>
       </section>
 
-      {loading && <LoadingSpinner label="Carregando dados de doação..." />}
+      <div className="doe-tabs" role="tablist" aria-label="Formas de ajudar">
+        {abas.map((a) => (
+          <button
+            key={a.id}
+            type="button"
+            role="tab"
+            aria-selected={aba === a.id}
+            className={aba === a.id ? "active" : ""}
+            onClick={() => setAba(a.id)}
+          >
+            {a.label}
+          </button>
+        ))}
+      </div>
 
-      {!loading && error && (
-        <EmptyState
-          title="Não foi possível carregar os dados de doação."
-          description="Tente novamente em instantes."
-        />
-      )}
+      {aba === "pix" && (
+        <div className="doe-tab-panel">
+          {podeEditar && (
+            <div className="doe-pix-admin">
+              <button
+                type="button"
+                className="doe-admin-button"
+                onClick={dadosDoacao ? abrirEdicao : abrirCriacao}
+              >
+                {dadosDoacao ? "Editar dados de doação" : "Cadastrar dados de doação"}
+              </button>
+            </div>
+          )}
 
-      {!loading && !error && !dadosDoacao && (
-        <EmptyState
-          title="Nenhum dado de doação ativo foi cadastrado."
-          description="Cadastre os dados pelo painel administrativo."
-        />
-      )}
+          {loading && <LoadingSpinner label="Carregando dados de doação..." />}
 
-      {!loading && !error && dadosDoacao && (
-        <section className="donation-grid" aria-label="Dados para doação">
+          {!loading && error && (
+            <EmptyState
+              title="Não foi possível carregar os dados de doação."
+              description="Tente novamente em instantes."
+            />
+          )}
+
+          {!loading && !error && !dadosDoacao && (
+            <EmptyState
+              title="Nenhum dado de doação ativo foi cadastrado."
+              description="Cadastre os dados pelo painel administrativo."
+            />
+          )}
+
+          {!loading && !error && dadosDoacao && (
+            <section className="donation-grid" aria-label="Dados para doação">
           <article className="donation-card pix-card">
             <div>
               <span className="card-label">PIX</span>
@@ -407,9 +432,13 @@ function Doe() {
               <p className="bank-empty">Dados bancários ainda não cadastrados.</p>
             )}
           </article>
-        </section>
+            </section>
+          )}
+        </div>
       )}
 
+      {aba === "item" && (
+        <div className="doe-tab-panel">
       <section className="doe-oferta" aria-labelledby="oferta-titulo">
         <div className="doe-oferta-intro">
           <span className="card-label">Doe um item</span>
@@ -471,6 +500,14 @@ function Doe() {
           </button>
         </form>
       </section>
+        </div>
+      )}
+
+      {aba === "recebidas" && podeEditar && (
+        <div className="doe-tab-panel">
+          <DoacoesOfertas embedded />
+        </div>
+      )}
 
       {modalVisivel && (
         <div className="doe-modal-backdrop" onClick={fecharModal}>

@@ -10,6 +10,12 @@
   padding: clamp(2rem, 4vw, 3.5rem) clamp(1rem, 4vw, 2rem) 4rem;
 }
 
+/* Versão embutida (dentro de uma aba da página Apoie). */
+.doacoes-embedded .doacoes-content {
+  width: 100%;
+  padding: 0 0 1rem;
+}
+
 .doacoes-heading {
   margin-bottom: 1.5rem;
 }

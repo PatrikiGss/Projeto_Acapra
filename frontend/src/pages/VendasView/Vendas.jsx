@@ -25,6 +25,7 @@ function Vendas() {
     const [produtos, setProdutos] = useState([]);
     const [tipo, setTipo] = useState("todos");
     const [ordenacao, setOrdenacao] = useState("recentes");
+    const [busca, setBusca] = useState("");
     const { podeEditar } = useAdminAccess("vendas");
     const [modalAberto, setModalAberto] = useState(false);
     const [modoFormulario, setModoFormulario] = useState("criar");
@@ -47,8 +48,16 @@ function Vendas() {
     }, []);
 
     const produtosFiltrados = useMemo(() => {
+        const termo = busca.trim().toLowerCase();
         const filtrados = produtos
-            .filter((produto) => tipo === "todos" || produto.tipo === tipo);
+            .filter((produto) => tipo === "todos" || produto.tipo === tipo)
+            .filter((produto) => {
+                if (!termo) return true;
+
+                const nome = (produto.nome || "").toLowerCase();
+                const descricao = (produto.descricao || "").toLowerCase();
+                return nome.includes(termo) || descricao.includes(termo);
+            });
 
         return [...filtrados].sort((a, b) => {
             if (ordenacao === "preco-menor") return Number(a.preco) - Number(b.preco);
@@ -56,7 +65,7 @@ function Vendas() {
             if (ordenacao === "nome") return a.nome.localeCompare(b.nome);
             return b.id - a.id;
         });
-    }, [produtos, tipo, ordenacao]);
+    }, [produtos, tipo, ordenacao, busca]);
 
     const formatarPreco = (preco) => {
         return Number(preco).toLocaleString("pt-BR", {
@@ -259,6 +268,16 @@ function Vendas() {
                 </div>
 
                 <div className="vendas-toolbar" aria-label="Filtros de produtos">
+                    <label>
+                        Buscar
+                        <input
+                            type="search"
+                            value={busca}
+                            onChange={(event) => setBusca(event.target.value)}
+                            placeholder="Nome ou descrição"
+                        />
+                    </label>
+
                     <label>
                         Tipo
                         <select value={tipo} onChange={(event) => setTipo(event.target.value)}>

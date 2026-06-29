@@ -74,7 +74,8 @@
     text-transform: uppercase;
 }
 
-.vendas-toolbar select {
+.vendas-toolbar select,
+.vendas-toolbar input {
     width: 100%;
     min-height: 2.7rem;
     padding: 0.65rem 0.8rem;
@@ -90,7 +91,8 @@
     cursor: pointer;
 }
 
-.vendas-toolbar select:focus-visible {
+.vendas-toolbar select:focus-visible,
+.vendas-toolbar input:focus-visible {
     outline: 2px solid #e87722;
     outline-offset: 3px;
 }

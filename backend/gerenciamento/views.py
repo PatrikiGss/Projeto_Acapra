@@ -1,7 +1,9 @@
 import hashlib
+import logging
 import secrets
 from datetime import timedelta
 
+from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -46,6 +48,8 @@ from core.throttling import (
     RegisterRateThrottle,
 )
 from .login_guard import conta_bloqueada, limpar_falhas, registrar_falha
+
+logger = logging.getLogger(__name__)
 
 
 class ThrottledLoginView(TokenObtainPairView):
@@ -335,21 +339,28 @@ class PasswordResetRequestView(APIView):
             ip_solicitante=get_client_ip(request),
         )
 
-        frontend_url = request.build_absolute_uri("/").rstrip("/")
+        # Usa a URL do FRONTEND (onde a rota /reset-senha existe), não a do
+        # backend que recebeu a requisição — senão o link cai em 404.
+        frontend_url = settings.FRONTEND_URL.rstrip("/")
         link = f"{frontend_url}/reset-senha?token={token_bruto}"
 
-        send_mail(
-            subject="Redefinição de senha — ACAPRA",
-            message=(
-                f"Olá, {usuario.nome}!\n\n"
-                f"Clique no link abaixo para redefinir sua senha. "
-                f"O link expira em 2 horas.\n\n{link}\n\n"
-                "Se você não solicitou isso, ignore este e-mail."
-            ),
-            from_email=None,
-            recipient_list=[usuario.email],
-            fail_silently=True,
-        )
+        try:
+            send_mail(
+                subject="Redefinição de senha — ACAPRA",
+                message=(
+                    f"Olá, {usuario.nome}!\n\n"
+                    f"Clique no link abaixo para redefinir sua senha. "
+                    f"O link expira em 2 horas.\n\n{link}\n\n"
+                    "Se você não solicitou isso, ignore este e-mail."
+                ),
+                from_email=None,
+                recipient_list=[usuario.email],
+                fail_silently=False,
+            )
+        except Exception:
+            # Mantém a resposta genérica ao cliente (não revela se o e-mail
+            # existe), mas registra a falha para ser diagnosticável nos logs.
+            logger.exception("Falha ao enviar e-mail de redefinição de senha para %s", email)
 
         return resposta
 

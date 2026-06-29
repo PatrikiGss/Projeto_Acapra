@@ -97,7 +97,7 @@ class GetAnimalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Animal
-        fields = ['id','nome_animal', 'nome_doador','telefone','especie','sexo','foto','fotos','galeria','descricao','disponivel']
+        fields = ['id','created_at','nome_animal', 'nome_doador','telefone','especie','sexo','foto','fotos','galeria','descricao','disponivel']
 
     def get_galeria(self, obj):
         return galeria_editavel(obj)

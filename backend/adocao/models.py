@@ -21,6 +21,8 @@ class SexoAnimal(models.TextChoices):
 class Animal(CompressImageOnSaveMixin, models.Model):
     campos_imagem_comprimir = ("foto",)
 
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
     nome_animal = models.CharField(max_length=30)
     
     nome_doador = models.CharField(max_length=30)

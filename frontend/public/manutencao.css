@@ -1,0 +1,142 @@
+:root {
+  --bg: #fbfaf8;
+  --card: #ffffff;
+  --text: #1a1a1a;
+  --muted: #5b5b5b;
+  --accent: #e87722;
+  --accent-dark: #cf6510;
+  --border: rgba(232, 119, 34, 0.25);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: "Segoe UI", "Trebuchet MS", "Verdana", sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at 10% 10%, #fff3e6 0%, transparent 45%),
+    radial-gradient(circle at 90% 90%, #ffe9d4 0%, transparent 45%),
+    var(--bg);
+}
+
+.maintenance-page {
+  position: relative;
+  min-height: 100vh;
+  padding: clamp(1rem, 4vw, 2rem);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.bg-shape {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(4px);
+  opacity: 0.55;
+}
+
+.bg-shape-top {
+  width: min(42vw, 520px);
+  height: min(42vw, 520px);
+  top: -14%;
+  right: -8%;
+  background: radial-gradient(circle, #ffd9b8 0%, rgba(255, 217, 184, 0) 70%);
+}
+
+.bg-shape-bottom {
+  width: min(46vw, 560px);
+  height: min(46vw, 560px);
+  left: -12%;
+  bottom: -18%;
+  background: radial-gradient(circle, #ffe8d2 0%, rgba(255, 232, 210, 0) 72%);
+}
+
+.maintenance-card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 660px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+  padding: clamp(1.3rem, 4vw, 2.6rem);
+  text-align: center;
+  box-shadow: 0 18px 40px rgba(26, 26, 26, 0.08);
+}
+
+.brand-logo {
+  width: min(72vw, 290px);
+  height: auto;
+  margin-bottom: 1.1rem;
+}
+
+.tag {
+  margin: 0;
+  color: var(--accent-dark);
+  text-transform: uppercase;
+  letter-spacing: 1.1px;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+h1 {
+  margin: 0.35rem 0 0.6rem;
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  line-height: 1;
+}
+
+.description {
+  margin: 0 auto;
+  max-width: 46ch;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.status-row {
+  margin-top: 1.2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 2.6rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  background: #fff2e6;
+  color: var(--accent-dark);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.pulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--accent);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.45);
+    opacity: 0.45;
+  }
+}
+
+@media (max-width: 520px) {
+  .maintenance-card {
+    border-radius: 12px;
+  }
+
+  .status-row {
+    width: 100%;
+    justify-content: center;
+  }
+}

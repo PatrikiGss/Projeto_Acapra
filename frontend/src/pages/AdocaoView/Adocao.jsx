@@ -428,7 +428,7 @@ function Adocao() {
                                     />
                                 </label>
                                 <label>
-                                    Telefone do doador (+55)
+                                    Telefone(+55)
                                     <input
                                         name="telefone"
                                         value={formulario.telefone}

@@ -184,7 +184,7 @@ USE_TZ = True
 # STATIC FILES
 # =========================================================
 
-STATIC_URL = "static/"
+STATIC_URL = "/api/static/"
 
 # necessário para deploy e collectstatic
 STATIC_ROOT = BASE_DIR / "staticfiles"

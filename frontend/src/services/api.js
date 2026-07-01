@@ -166,35 +166,48 @@ const MEDIA_BASE_URL = envMediaBaseURL
 function buildMediaPath(path) {
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
 
+  const mediaPrefix = usesViteProxy ? "/media/" : "/api/media/";
+
   // O backend serve a mídia em MEDIA_URL = "/media/" (tanto em dev quanto em
   // produção via SERVE_MEDIA). Caminhos já prefixados (/media/ ou o legado
   // /api/media/) passam direto; caminhos "crus" recebem o prefixo /media/.
-  if (cleanPath.startsWith("/media/") || cleanPath.startsWith("/api/media/")) {
+  if (cleanPath.startsWith("/api/media/")) {
     return cleanPath;
   }
 
-  return `/media/${cleanPath.replace(/^\/+/, "")}`;
+  if (cleanPath.startsWith("/media/")) {
+    return usesViteProxy
+      ? cleanPath
+      : cleanPath.replace(/^\/media\//, "/api/media/");
+  }
+
+  return `${mediaPrefix}${cleanPath.replace(/^\/+/, "")}`;
 }
 
 export function getMediaURL(path) {
   if (!path) return "/adocao-cachorro.webp";
 
+  if (path.startsWith("blob:") || path.startsWith("data:")) {
+    return path;
+  }
+
   if (path.startsWith("http")) {
     try {
       const parsed = new URL(path);
+      const cleanPath = parsed.pathname.startsWith("/")
+        ? parsed.pathname
+        : `/${parsed.pathname}`;
+      const isMediaPath = cleanPath.startsWith("/media/") || cleanPath.startsWith("/api/media/");
       const isLocalBackend =
         ["localhost", "127.0.0.1", "[::1]"].includes(parsed.hostname) ||
         parsed.port === "8000";
 
-      if (!isLocalBackend) {
+      if (!isMediaPath && !isLocalBackend) {
         return path;
       }
 
-      const cleanPath = parsed.pathname.startsWith("/")
-        ? parsed.pathname
-        : `/${parsed.pathname}`;
-
-      return MEDIA_BASE_URL ? `${MEDIA_BASE_URL}${cleanPath}` : cleanPath;
+      const finalPath = buildMediaPath(cleanPath);
+      return MEDIA_BASE_URL ? `${MEDIA_BASE_URL}${finalPath}` : finalPath;
     } catch {
       return path;
     }

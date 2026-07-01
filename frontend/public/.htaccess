@@ -1,0 +1,20 @@
+Options -MultiViews
+RewriteEngine On
+
+# Garante MIME correto para módulos JS/CSS
+AddType text/javascript .js .mjs
+AddType text/css .css
+
+# Redireciona /api/ e /media/ para o proxy PHP (sem mod_proxy)
+RewriteCond %{REQUEST_URI} ^/(api|media)/
+RewriteRule ^ /proxy.php [QSA,L]
+
+# Se um asset esperado não existir, devolve 404 (evita MIME text/html em JS)
+RewriteCond %{REQUEST_URI} \.(js|mjs|css|map|png|jpe?g|webp|svg|ico|woff2?)$ [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ - [R=404,L]
+
+# SPA routing — tudo que não é arquivo/pasta vai para index.html
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.html [QSA,L]

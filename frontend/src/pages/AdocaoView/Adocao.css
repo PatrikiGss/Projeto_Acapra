@@ -430,6 +430,12 @@
     }
 }
 
+@media (max-width: 500px) {
+    .adocao-toolbar-divider {
+        display: none;
+    }
+}
+
 @media (max-width: 420px) {
     .animals {
         grid-template-columns: 1fr;

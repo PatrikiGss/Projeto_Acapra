@@ -1,0 +1,16 @@
+RewriteEngine On
+
+# Define variável de ambiente com a origem quando ela for o domínio do frontend
+SetEnvIf Origin "^(https?://sincere-charcoal-eagle\.187-85-164-159\.cpanel\.site)$" CORS_ORIGIN=$1
+
+# Injeta os cabeçalhos CORS em toda resposta onde a origem foi reconhecida
+Header always set Access-Control-Allow-Origin "%{CORS_ORIGIN}e" env=CORS_ORIGIN
+Header always set Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS" env=CORS_ORIGIN
+Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-CSRFToken" env=CORS_ORIGIN
+Header always set Access-Control-Allow-Credentials "true" env=CORS_ORIGIN
+Header always set Access-Control-Max-Age "86400" env=CORS_ORIGIN
+
+# Responde ao preflight OPTIONS com 204 sem passar pelo Django
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteCond %{ENV:CORS_ORIGIN} !^$
+RewriteRule ^ - [R=204,L]

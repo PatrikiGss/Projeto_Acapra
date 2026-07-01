@@ -46,7 +46,7 @@ function toWhatsAppHref(numero) {
 const WHATSAPP_CAMPOS = [
   { key: "whatsapp_castracoes", label: "Castrações" },
   { key: "whatsapp_doacoes", label: "Doações" },
-  { key: "whatsapp_financeiro", label: "Financeiro" },
+  { key: "whatsapp_financeiro", label: "Denúncias" },
 ];
 
 function Contato() {

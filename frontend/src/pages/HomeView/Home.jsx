@@ -13,6 +13,20 @@ const destaqueExemplo = {
   foto: "/carousel-voluntariado.jpg",
 };
 
+function resolveHomeImage(path, fallback) {
+  if (!path) return fallback;
+
+  const source = String(path).trim();
+  const isBackendMediaPath =
+    source.startsWith("http") ||
+    source.startsWith("/media/") ||
+    source.startsWith("/api/media/") ||
+    source.startsWith("media/") ||
+    source.startsWith("api/media/");
+
+  return isBackendMediaPath ? getMediaURL(source) : source;
+}
+
 function Home() {
   const [animais, setAnimais] = useState([]);
   const [carregandoAnimais, setCarregandoAnimais] = useState(true);
@@ -184,7 +198,7 @@ function Home() {
                   tabIndex={index !== animalSlideAtual ? -1 : undefined}
                 >
                   <img
-                    src={animal.foto || animal.fotos?.[0] || "/adocao-cachorro.webp"}
+                    src={resolveHomeImage(animal.foto || animal.fotos?.[0], "/adocao-cachorro.webp")}
                     alt={animal.nome_animal || "Animal para adoção"}
                   />
 
@@ -291,9 +305,7 @@ function Home() {
           >
             <div className="fresh-news-image">
               <img
-                src={destaqueInfo.foto?.startsWith("/")
-                  ? destaqueInfo.foto
-                  : getMediaURL(destaqueInfo.foto)}
+                src={resolveHomeImage(destaqueInfo.foto, "/carousel-voluntariado.jpg")}
                 alt={destaqueInfo.titulo}
               />
             </div>

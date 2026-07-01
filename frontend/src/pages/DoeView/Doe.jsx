@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import api from "../../services/api";
+import api, { getMediaURL } from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import EmptyState from "../../components/ui/EmptyState";
@@ -310,7 +310,7 @@ function Doe() {
   };
 
   const hasCurrentQr = Boolean(qrCodeAtual) && !removerQrCode;
-  const currentPreview = previewQrCode || (hasCurrentQr ? qrCodeAtual : "");
+  const currentPreview = previewQrCode || (hasCurrentQr ? getMediaURL(qrCodeAtual) : "");
 
   const abas = [
     { id: "pix", label: "Contribuir com PIX" },
@@ -380,7 +380,7 @@ function Doe() {
 
             <div className="qr-code-image">
               {dadosDoacao.qr_code ? (
-                <img src={dadosDoacao.qr_code} alt="QR Code PIX da ACAPRA" />
+                <img src={getMediaURL(dadosDoacao.qr_code)} alt="QR Code PIX da ACAPRA" />
               ) : (
                 <div className="qr-placeholder" aria-label="QR Code não cadastrado">
                   <svg viewBox="0 0 64 64" width="96" height="96" fill="none" aria-hidden="true">

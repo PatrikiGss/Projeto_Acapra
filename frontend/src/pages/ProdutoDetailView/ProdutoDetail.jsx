@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import api from "../../services/api";
+import api, { getMediaURL } from "../../services/api";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import { logError } from "../../utils/logger";
 import "./ProdutoDetail.css";
@@ -64,6 +64,7 @@ function ProdutoDetail() {
     };
 
     const fotoAtual = fotos.length > 0 ? fotos[fotoIndex % fotos.length] : null;
+    const fotoAtualUrl = fotoAtual ? getMediaURL(fotoAtual) : null;
 
     const selecionarFoto = (index) => {
         setFotoIndex(index);
@@ -94,9 +95,9 @@ function ProdutoDetail() {
             <section className="produto-detail">
                 <div className="produto-gallery">
                     <div className="produto-main-image">
-                        {fotoAtual ? (
+                        {fotoAtualUrl ? (
                             <>
-                                <img src={fotoAtual} alt={produto.nome} width="1200" height="900" />
+                                <img src={fotoAtualUrl} alt={produto.nome} width="1200" height="900" />
 
                                 {fotos.length > 1 && (
                                     <>

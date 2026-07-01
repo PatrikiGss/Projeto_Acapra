@@ -32,7 +32,7 @@ function EsqueciSenha() {
   return (
     <div className="esqueci-container">
       <div className="esqueci-imagem">
-        <img src="/cachorro.png" alt="Cachorro ACAPRA" />
+        <img src="/cachorro.webp" alt="Cachorro ACAPRA" />
         <div className="esqueci-imagem-overlay">
           <h2>Proteja quem não tem voz</h2>
         </div>

@@ -7,6 +7,8 @@ import { getResponseItems } from "../../utils/collection";
 import { getApiErrorMessage } from "../../utils/errorUtils";
 import { logError } from "../../utils/logger";
 import { validateImageFile, IMAGE_ACCEPT } from "../../utils/upload";
+import { formatBrazilianPhone, toBrazilianPhoneE164, isValidBrazilianPhone } from "../../utils/phone";
+import DoacoesOfertas from "../DoacoesView/DoacoesOfertas";
 import "./Doe.css";
 
 const bankFields = [
@@ -30,6 +32,24 @@ const formVazio = {
   ativo: true,
 };
 
+const categoriasOferta = [
+  ["alimento", "Alimento / Ração"],
+  ["vestuario", "Roupa / Cobertor"],
+  ["higiene", "Higiene / Limpeza"],
+  ["medicamento", "Medicamento"],
+  ["acessorio", "Acessório / Brinquedo"],
+  ["outros", "Outros"],
+];
+
+const ofertaVazia = {
+  nome_doador: "",
+  telefone: "",
+  item: "",
+  categoria: "alimento",
+  quantidade: "",
+  observacoes: "",
+};
+
 function Doe() {
   const [dadosList, setDadosList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -45,6 +65,11 @@ function Doe() {
   const [salvando, setSalvando] = useState(false);
   const [erroFormulario, setErroFormulario] = useState("");
   const [copiado, setCopiado] = useState(false);
+  const [ofertaForm, setOfertaForm] = useState(ofertaVazia);
+  const [enviandoOferta, setEnviandoOferta] = useState(false);
+  const [ofertaSucesso, setOfertaSucesso] = useState("");
+  const [ofertaErro, setOfertaErro] = useState("");
+  const [aba, setAba] = useState("pix");
 
   useEffect(() => {
     let ativo = true;
@@ -201,6 +226,37 @@ function Doe() {
     }
   };
 
+  const alterarOferta = (event) => {
+    const { name, value } = event.target;
+    const novoValor = name === "telefone" ? formatBrazilianPhone(value) : value;
+    setOfertaForm((atual) => ({ ...atual, [name]: novoValor }));
+  };
+
+  const enviarOferta = async (event) => {
+    event.preventDefault();
+    setOfertaErro("");
+    setOfertaSucesso("");
+
+    if (!isValidBrazilianPhone(ofertaForm.telefone)) {
+      setOfertaErro("Informe um telefone válido com DDD, ex.: (49) 99999-9999.");
+      return;
+    }
+
+    setEnviandoOferta(true);
+
+    try {
+      const payload = { ...ofertaForm, telefone: toBrazilianPhoneE164(ofertaForm.telefone) };
+      const { data } = await api.post("/api/doacoes/ofertas/", payload);
+      setOfertaSucesso(data?.detail || "Oferta registrada com sucesso. Em breve entraremos em contato!");
+      setOfertaForm(ofertaVazia);
+    } catch (erro) {
+      logError("Doe", erro);
+      setOfertaErro(getApiErrorMessage(erro, "Não foi possível registrar sua oferta. Tente novamente."));
+    } finally {
+      setEnviandoOferta(false);
+    }
+  };
+
   const copiarChavePix = async () => {
     if (!dadosDoacao?.chave_pix) return;
 
@@ -256,43 +312,66 @@ function Doe() {
   const hasCurrentQr = Boolean(qrCodeAtual) && !removerQrCode;
   const currentPreview = previewQrCode || (hasCurrentQr ? qrCodeAtual : "");
 
+  const abas = [
+    { id: "pix", label: "Contribuir com PIX" },
+    { id: "item", label: "Doar um item" },
+    ...(podeEditar ? [{ id: "recebidas", label: "Doações recebidas" }] : []),
+  ];
+
   return (
     <div className="doe-page">
       <section className="doe-header">
         <h1>Ajude a ACAPRA</h1>
-        <p>
-          {dadosDoacao?.descricao || "Use o PIX ou os dados bancários para fazer a sua doação."}
-        </p>
-
-        {podeEditar && (
-          <button
-            type="button"
-            className="doe-admin-button"
-            onClick={dadosDoacao ? abrirEdicao : abrirCriacao}
-          >
-            {dadosDoacao ? "Editar dados de doação" : "Cadastrar dados de doação"}
-          </button>
-        )}
+        <p>Escolha como ajudar: contribua com uma doação via PIX ou cadastre um item para doar.</p>
       </section>
 
-      {loading && <LoadingSpinner label="Carregando dados de doação..." />}
+      <div className="doe-tabs" role="tablist" aria-label="Formas de ajudar">
+        {abas.map((a) => (
+          <button
+            key={a.id}
+            type="button"
+            role="tab"
+            aria-selected={aba === a.id}
+            className={aba === a.id ? "active" : ""}
+            onClick={() => setAba(a.id)}
+          >
+            {a.label}
+          </button>
+        ))}
+      </div>
 
-      {!loading && error && (
-        <EmptyState
-          title="Não foi possível carregar os dados de doação."
-          description="Tente novamente em instantes."
-        />
-      )}
+      {aba === "pix" && (
+        <div className="doe-tab-panel">
+          {podeEditar && (
+            <div className="doe-pix-admin">
+              <button
+                type="button"
+                className="doe-admin-button"
+                onClick={dadosDoacao ? abrirEdicao : abrirCriacao}
+              >
+                {dadosDoacao ? "Editar dados de doação" : "Cadastrar dados de doação"}
+              </button>
+            </div>
+          )}
 
-      {!loading && !error && !dadosDoacao && (
-        <EmptyState
-          title="Nenhum dado de doação ativo foi cadastrado."
-          description="Cadastre os dados pelo painel administrativo."
-        />
-      )}
+          {loading && <LoadingSpinner label="Carregando dados de doação..." />}
 
-      {!loading && !error && dadosDoacao && (
-        <section className="donation-grid" aria-label="Dados para doação">
+          {!loading && error && (
+            <EmptyState
+              title="Não foi possível carregar os dados de doação."
+              description="Tente novamente em instantes."
+            />
+          )}
+
+          {!loading && !error && !dadosDoacao && (
+            <EmptyState
+              title="Nenhum dado de doação ativo foi cadastrado."
+              description="Cadastre os dados pelo painel administrativo."
+            />
+          )}
+
+          {!loading && !error && dadosDoacao && (
+            <section className="donation-grid" aria-label="Dados para doação">
           <article className="donation-card pix-card">
             <div>
               <span className="card-label">PIX</span>
@@ -353,7 +432,81 @@ function Doe() {
               <p className="bank-empty">Dados bancários ainda não cadastrados.</p>
             )}
           </article>
-        </section>
+            </section>
+          )}
+        </div>
+      )}
+
+      {aba === "item" && (
+        <div className="doe-tab-panel">
+      <section className="doe-oferta" aria-labelledby="oferta-titulo">
+        <div className="doe-oferta-intro">
+          <span className="card-label">Doe um item</span>
+          <h2 id="oferta-titulo">Quero doar algo</h2>
+          <p>
+            Tem ração, roupinha, cobertor, remédio ou qualquer item que possa ajudar
+            nossos animais? Cadastre abaixo e nós entramos em contato para combinar a coleta.
+          </p>
+        </div>
+
+        <form className="doe-oferta-form" onSubmit={enviarOferta}>
+          <div className="doe-oferta-grid">
+            <label>
+              Seu nome
+              <input name="nome_doador" value={ofertaForm.nome_doador} onChange={alterarOferta} required maxLength={120} />
+            </label>
+            <label>
+              Telefone / WhatsApp
+              <input
+                name="telefone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel-national"
+                value={ofertaForm.telefone}
+                onChange={alterarOferta}
+                required
+                maxLength={15}
+                placeholder="(49) 99999-9999"
+              />
+            </label>
+            <label>
+              O que deseja doar
+              <input name="item" value={ofertaForm.item} onChange={alterarOferta} required maxLength={200} placeholder="Ex.: ração, coleira, cobertor" />
+            </label>
+            <label>
+              Categoria
+              <select name="categoria" value={ofertaForm.categoria} onChange={alterarOferta}>
+                {categoriasOferta.map(([valor, rotulo]) => (
+                  <option key={valor} value={valor}>{rotulo}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Quantidade (opcional)
+              <input name="quantidade" value={ofertaForm.quantidade} onChange={alterarOferta} maxLength={60} placeholder="Ex.: 3 sacos, 5 peças, 2 kg" />
+            </label>
+          </div>
+
+          <label className="doe-oferta-full">
+            Observações (opcional)
+            <textarea name="observacoes" rows="3" value={ofertaForm.observacoes} onChange={alterarOferta} placeholder="Estado do item, melhor horário para contato, etc." />
+          </label>
+
+          {ofertaErro && <p className="doe-form-error">{ofertaErro}</p>}
+          {ofertaSucesso && <p className="doe-oferta-sucesso">{ofertaSucesso}</p>}
+
+          <button type="submit" className="doe-form-button primary" disabled={enviandoOferta}>
+            {enviandoOferta ? "Enviando..." : "Quero doar"}
+          </button>
+        </form>
+      </section>
+        </div>
+      )}
+
+      {aba === "recebidas" && podeEditar && (
+        <div className="doe-tab-panel">
+          <DoacoesOfertas embedded />
+        </div>
       )}
 
       {modalVisivel && (

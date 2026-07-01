@@ -1,7 +1,9 @@
 import hashlib
+import logging
 import secrets
 from datetime import timedelta
 
+from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -36,7 +38,7 @@ from rest_framework_simplejwt.views import (
 
 from auditoria.models import RegistroAuditoria
 from auditoria.services import registrar_auditoria
-from core.captcha import get_client_ip, verificar_captcha
+from core.captcha import get_client_ip
 from core.throttling import (
     LoginDailyRateThrottle,
     LoginRateThrottle,
@@ -46,6 +48,8 @@ from core.throttling import (
     RegisterRateThrottle,
 )
 from .login_guard import conta_bloqueada, limpar_falhas, registrar_falha
+
+logger = logging.getLogger(__name__)
 
 
 class ThrottledLoginView(TokenObtainPairView):
@@ -100,24 +104,16 @@ class RegisterView(APIView):
     Endpoint público para registro de novos usuários.
 
     Fluxo:
-    - Verifica o CAPTCHA (quando habilitado) para barrar bots
     - Recebe dados (nome, email, telefone, senha)
     - Valida via serializer
     - Cria usuário usando create_user (hash automático da senha)
     - Retorna dados do usuário (sem senha)
+
+    Proteção contra automação fica a cargo do throttling por IP
+    (RegisterRateThrottle + RegisterDailyRateThrottle).
     """
 
     def post(self, request):
-        # Verificação anti-robô antes de qualquer escrita no banco.
-        if not verificar_captcha(
-            request.data.get("captcha_token"),
-            get_client_ip(request),
-        ):
-            return Response(
-                {"captcha": ["Falha na verificação anti-robô. Recarregue e tente novamente."]},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
         serializer = UsuarioSerializer(data=request.data)
 
         # Valida dados recebidos (gera erro automático se inválido)
@@ -343,21 +339,28 @@ class PasswordResetRequestView(APIView):
             ip_solicitante=get_client_ip(request),
         )
 
-        frontend_url = request.build_absolute_uri("/").rstrip("/")
+        # Usa a URL do FRONTEND (onde a rota /reset-senha existe), não a do
+        # backend que recebeu a requisição — senão o link cai em 404.
+        frontend_url = settings.FRONTEND_URL.rstrip("/")
         link = f"{frontend_url}/reset-senha?token={token_bruto}"
 
-        send_mail(
-            subject="Redefinição de senha — ACAPRA",
-            message=(
-                f"Olá, {usuario.nome}!\n\n"
-                f"Clique no link abaixo para redefinir sua senha. "
-                f"O link expira em 2 horas.\n\n{link}\n\n"
-                "Se você não solicitou isso, ignore este e-mail."
-            ),
-            from_email=None,
-            recipient_list=[usuario.email],
-            fail_silently=True,
-        )
+        try:
+            send_mail(
+                subject="Redefinição de senha — ACAPRA",
+                message=(
+                    f"Olá, {usuario.nome}!\n\n"
+                    f"Clique no link abaixo para redefinir sua senha. "
+                    f"O link expira em 2 horas.\n\n{link}\n\n"
+                    "Se você não solicitou isso, ignore este e-mail."
+                ),
+                from_email=None,
+                recipient_list=[usuario.email],
+                fail_silently=False,
+            )
+        except Exception:
+            # Mantém a resposta genérica ao cliente (não revela se o e-mail
+            # existe), mas registra a falha para ser diagnosticável nos logs.
+            logger.exception("Falha ao enviar e-mail de redefinição de senha para %s", email)
 
         return resposta
 

@@ -1,6 +1,7 @@
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
+from core.images import CompressImageOnSaveMixin
 from core.uploads import upload_fotos
 from core.validators import validate_image_upload
 
@@ -14,9 +15,14 @@ class EspecieAnimal(models.TextChoices):
 class SexoAnimal(models.TextChoices):
     MACHO = 'macho', 'Macho'
     FEMEA = 'femea', 'Fêmea'
+    AMBOS = 'ambos', 'Ambos'
 
 
-class Animal(models.Model):
+class Animal(CompressImageOnSaveMixin, models.Model):
+    campos_imagem_comprimir = ("foto",)
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
     nome_animal = models.CharField(max_length=30)
     
     nome_doador = models.CharField(max_length=30)
@@ -54,7 +60,9 @@ class Animal(models.Model):
         return f"{self.nome_doador} - {self.especie}"
 
 
-class AnimalImagem(models.Model):
+class AnimalImagem(CompressImageOnSaveMixin, models.Model):
+    campos_imagem_comprimir = ("imagem",)
+
     animal = models.ForeignKey(
         Animal,
         related_name="imagens",

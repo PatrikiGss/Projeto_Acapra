@@ -5,7 +5,7 @@ import { useAdminAccess } from "../../hooks/useAdminAccess";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import EmptyState from "../ui/EmptyState";
 import ConfirmModal from "../ui/ConfirmModal";
-import { getApiErrorMessage } from "../../utils/errorUtils";
+import { getApiErrorMessage, isNotFoundError } from "../../utils/errorUtils";
 import { getResponseItems } from "../../utils/collection";
 import { logError } from "../../utils/logger";
 import "./NewsArticle.css";
@@ -39,6 +39,17 @@ function NewsArticle({ backPath }) {
   const categoriaEfetiva = item?.categoria || "";
   const { podeEditar } = useAdminAccess(categoriaEfetiva);
   const [relacionados, setRelacionados] = useState([]);
+  const [imagemAtiva, setImagemAtiva] = useState(0);
+
+  const fotos = useMemo(() => {
+    if (!item) return [];
+    if (item.fotos?.length) return item.fotos;
+    return item.foto ? [item.foto] : [];
+  }, [item]);
+
+  useEffect(() => {
+    setImagemAtiva(0);
+  }, [item?.id]);
 
   useEffect(() => {
     if (!item?.categoria) return;
@@ -98,11 +109,15 @@ function NewsArticle({ backPath }) {
 
     try {
       await api.delete(`/api/noticias/publicacoes/${item.id}/`);
-      navigate(backPath || "/noticias");
     } catch (erro) {
-      setErroAcao(getApiErrorMessage(erro, "Não foi possível excluir a publicação."));
-      logError("NewsArticle", erro);
+      // 404 = publicação já não existe: segue para a navegação (já foi removida).
+      if (!isNotFoundError(erro)) {
+        setErroAcao(getApiErrorMessage(erro, "Não foi possível excluir a publicação."));
+        logError("NewsArticle", erro);
+        return;
+      }
     }
+    navigate(backPath || "/noticias");
   };
 
   const editarItem = () => {
@@ -136,12 +151,33 @@ function NewsArticle({ backPath }) {
             <div className="news-article-divider" />
 
             <div className="news-article-image">
-              {item.foto ? (
-                <img src={getMediaURL(item.foto)} alt={item.titulo} width="1200" height="675" />
+              {fotos.length > 0 ? (
+                <img
+                  src={getMediaURL(fotos[imagemAtiva] || fotos[0])}
+                  alt={item.titulo}
+                  width="1200"
+                  height="675"
+                />
               ) : (
                 <div className="news-article-placeholder">ACAPRA</div>
               )}
             </div>
+
+            {fotos.length > 1 && (
+              <div className="news-article-gallery">
+                {fotos.map((foto, indice) => (
+                  <button
+                    type="button"
+                    key={foto}
+                    className={`news-article-thumb${indice === imagemAtiva ? " active" : ""}`}
+                    onClick={() => setImagemAtiva(indice)}
+                    aria-label={`Ver foto ${indice + 1}`}
+                  >
+                    <img src={getMediaURL(foto)} alt={`${item.titulo} — foto ${indice + 1}`} />
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="news-article-text">
               {item.texto}

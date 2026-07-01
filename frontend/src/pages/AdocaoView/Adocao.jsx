@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import "./Adocao.css";
 import api, { getMediaURL } from "../../services/api";
@@ -8,8 +8,12 @@ import EmptyState from "../../components/ui/EmptyState";
 import ConfirmModal from "../../components/ui/ConfirmModal";
 import { getResponseItems } from "../../utils/collection";
 import { getApiErrorMessage } from "../../utils/errorUtils";
+import { excluirRecurso } from "../../utils/crud";
 import { logError } from "../../utils/logger";
-import { validateImageFile, IMAGE_ACCEPT } from "../../utils/upload";
+import { useEditorImagens } from "../../hooks/useEditorImagens";
+import EditorImagens from "../../components/ui/EditorImagens";
+import { usePaginacao } from "../../hooks/usePaginacao";
+import Paginacao from "../../components/ui/Paginacao";
 
 const formVazio = {
     nome_animal: "",
@@ -29,15 +33,14 @@ function Adocao() {
     const [modoFormulario, setModoFormulario] = useState("criar");
     const [animalEditando, setAnimalEditando] = useState(null);
     const [formulario, setFormulario] = useState(formVazio);
-    const [fotoPrincipal, setFotoPrincipal] = useState(null);
-    const [previewFotoPrincipal, setPreviewFotoPrincipal] = useState("");
-    const [fotosAdicionais, setFotosAdicionais] = useState([]);
+    const editorImagens = useEditorImagens(4);
     const [salvando, setSalvando] = useState(false);
     const [erroFormulario, setErroFormulario] = useState("");
     const [sucessoFormulario, setSucessoFormulario] = useState("");
     const [publicarRedes, setPublicarRedes] = useState(true);
     const [erroAcao, setErroAcao] = useState("");
     const [animalParaExclusao, setAnimalParaExclusao] = useState(null);
+    const fecharModalTimeoutRef = useRef(null);
 
     const carregarAnimais = () => {
         api.get("/api/adocao/animais/")
@@ -51,17 +54,11 @@ function Adocao() {
 
     useEffect(() => {
         return () => {
-            if (previewFotoPrincipal.startsWith("blob:")) {
-                URL.revokeObjectURL(previewFotoPrincipal);
+            if (fecharModalTimeoutRef.current) {
+                clearTimeout(fecharModalTimeoutRef.current);
             }
-
-            fotosAdicionais.forEach((foto) => {
-                if (foto.preview.startsWith("blob:")) {
-                    URL.revokeObjectURL(foto.preview);
-                }
-            });
         };
-    }, [previewFotoPrincipal, fotosAdicionais]);
+    }, []);
 
     const { totalDisponiveis, totalAdotados } = useMemo(() => ({
         totalDisponiveis: animais.filter((a) => a.disponivel !== false).length,
@@ -83,38 +80,26 @@ function Adocao() {
         });
     }, [animais, filtroEspecie]);
 
+    const { pagina, setPagina, totalPaginas, itensPagina } = usePaginacao(animaisFiltrados, 12);
+
     const formatarTexto = (texto) => {
         if (!texto) return "";
         return texto.charAt(0).toUpperCase() + texto.slice(1);
     };
 
-    const fotosAtuais = useMemo(() => {
-        if (!animalEditando) return [];
-
-        return [animalEditando.foto, ...(animalEditando.fotos || [])]
-            .filter(Boolean)
-            .map((foto) => getMediaURL(foto));
-    }, [animalEditando]);
-
     const abrirCriacao = () => {
+        if (fecharModalTimeoutRef.current) clearTimeout(fecharModalTimeoutRef.current);
         setModoFormulario("criar");
         setAnimalEditando(null);
         setFormulario(formVazio);
-        setFotoPrincipal(null);
-        setFotosAdicionais([]);
+        editorImagens.reiniciar([]);
         setErroFormulario("");
-        if (previewFotoPrincipal.startsWith("blob:")) URL.revokeObjectURL(previewFotoPrincipal);
-        fotosAdicionais.forEach((foto) => {
-            if (foto.preview.startsWith("blob:")) {
-                URL.revokeObjectURL(foto.preview);
-            }
-        });
-        setPreviewFotoPrincipal("");
-        setFotosAdicionais([]);
+        setSucessoFormulario("");
         setModalAberto(true);
     };
 
     const abrirEdicao = (animal) => {
+        if (fecharModalTimeoutRef.current) clearTimeout(fecharModalTimeoutRef.current);
         setModoFormulario("editar");
         setAnimalEditando(animal);
         setFormulario({
@@ -126,81 +111,29 @@ function Adocao() {
             descricao: animal.descricao || "",
             disponivel: animal.disponivel !== false,
         });
-        setFotoPrincipal(null);
-        setFotosAdicionais([]);
+        editorImagens.reiniciar(animal.galeria || []);
         setErroFormulario("");
-        if (previewFotoPrincipal.startsWith("blob:")) URL.revokeObjectURL(previewFotoPrincipal);
-        fotosAdicionais.forEach((foto) => {
-            if (foto.preview.startsWith("blob:")) {
-                URL.revokeObjectURL(foto.preview);
-            }
-        });
-        setPreviewFotoPrincipal("");
+        setSucessoFormulario("");
         setModalAberto(true);
     };
 
     const fecharModal = () => {
-        if (previewFotoPrincipal.startsWith("blob:")) URL.revokeObjectURL(previewFotoPrincipal);
-        fotosAdicionais.forEach((foto) => {
-            if (foto.preview.startsWith("blob:")) {
-                URL.revokeObjectURL(foto.preview);
-            }
-        });
+        if (fecharModalTimeoutRef.current) {
+            clearTimeout(fecharModalTimeoutRef.current);
+            fecharModalTimeoutRef.current = null;
+        }
+
         setModalAberto(false);
         setAnimalEditando(null);
         setFormulario(formVazio);
-        setFotoPrincipal(null);
-        setPreviewFotoPrincipal("");
-        setFotosAdicionais([]);
+        editorImagens.reiniciar([]);
         setErroFormulario("");
+        setSucessoFormulario("");
         setSalvando(false);
     };
 
     const extrairMensagemErro = (error) => {
         return getApiErrorMessage(error, "Não foi possível salvar o animal.");
-    };
-
-    const lidarComFotoPrincipal = (file) => {
-        if (file) {
-            const erroValidacao = validateImageFile(file);
-            if (erroValidacao) {
-                setErroFormulario(erroValidacao);
-                return;
-            }
-        }
-        setErroFormulario("");
-        if (previewFotoPrincipal.startsWith("blob:")) URL.revokeObjectURL(previewFotoPrincipal);
-        setFotoPrincipal(file || null);
-        setPreviewFotoPrincipal(file ? URL.createObjectURL(file) : "");
-    };
-
-    const lidarComFotosAdicionais = (files) => {
-        const lista = Array.from(files || []);
-
-        if (lista.length > 10) {
-            setErroFormulario("Selecione no máximo 10 imagens.");
-            return;
-        }
-
-        for (const file of lista) {
-            const erroValidacao = validateImageFile(file);
-            if (erroValidacao) {
-                setErroFormulario(erroValidacao);
-                return;
-            }
-        }
-        setErroFormulario("");
-
-        fotosAdicionais.forEach((foto) => {
-            if (foto.preview.startsWith("blob:")) {
-                URL.revokeObjectURL(foto.preview);
-            }
-        });
-
-        setFotosAdicionais(lista.map((file) => ({
-            file,
-            preview: URL.createObjectURL(file),
-        })));
     };
 
     const alterarCampo = (event) => {
@@ -231,13 +164,7 @@ function Adocao() {
         payload.append("descricao", formulario.descricao);
         payload.append("disponivel", formulario.disponivel ? "true" : "false");
 
-        if (fotoPrincipal) {
-            payload.append("foto", fotoPrincipal);
-        }
-
-        fotosAdicionais.forEach((foto) => {
-            payload.append("fotos", foto.file);
-        });
+        editorImagens.anexarAoFormData(payload);
 
         const ehCriacao = !(modoFormulario === "editar" && animalEditando);
         if (ehCriacao) {
@@ -252,7 +179,7 @@ function Adocao() {
             }
             await carregarAnimais();
             setSucessoFormulario("Animal adicionado com sucesso!");
-            setTimeout(() => fecharModal(), 2500);
+            fecharModalTimeoutRef.current = setTimeout(() => fecharModal(), 2500);
         } catch (error) {
             setErroFormulario(extrairMensagemErro(error));
         } finally {
@@ -266,15 +193,14 @@ function Adocao() {
 
     const confirmarExclusao = async () => {
         if (!animalParaExclusao) return;
-
-        try {
-            await api.delete(`/api/adocao/animais/${animalParaExclusao.id}/`);
-            await carregarAnimais();
-        } catch (error) {
-            setErroAcao(getApiErrorMessage(error, "Não foi possível excluir o animal."));
-        } finally {
-            setAnimalParaExclusao(null);
-        }
+        setErroAcao("");
+        await excluirRecurso(`/api/adocao/animais/${animalParaExclusao.id}/`, {
+            aoRemover: () => setAnimais((lista) => lista.filter((a) => a.id !== animalParaExclusao.id)),
+            recarregar: carregarAnimais,
+            aoErro: setErroAcao,
+            mensagemErro: "Não foi possível excluir o animal.",
+        });
+        setAnimalParaExclusao(null);
     };
 
     const renderAdotadoBadge = () => (
@@ -428,7 +354,7 @@ function Adocao() {
                 </div>
 
                 <div className="animals">
-                    {animaisFiltrados.map((animal) => renderAnimalCard(animal))}
+                    {itensPagina.map((animal) => renderAnimalCard(animal))}
 
                     {animaisFiltrados.length === 0 && (
                         <EmptyState
@@ -446,6 +372,8 @@ function Adocao() {
                     )}
                 </div>
 
+                <Paginacao pagina={pagina} totalPaginas={totalPaginas} onMudar={setPagina} />
+
                 {erroAcao && <p className="adocao-action-error">{erroAcao}</p>}
             </section>
 
@@ -454,11 +382,15 @@ function Adocao() {
                     <div className="product-modal" onClick={(event) => event.stopPropagation()}>
                         <div className="product-modal-header">
                             <h2>{modoFormulario === "editar" ? "Editar animal" : "Adicionar animal"}</h2>
-                            {!salvando && !sucessoFormulario && (
-                                <button type="button" className="product-modal-close" onClick={fecharModal}>
-                                    Fechar
-                                </button>
-                            )}
+                            <button
+                                type="button"
+                                className="product-modal-close product-modal-close--icon"
+                                onClick={fecharModal}
+                                aria-label="Fechar modal"
+                                title="Fechar"
+                            >
+                                ×
+                            </button>
                         </div>
 
                         {salvando && (
@@ -502,7 +434,7 @@ function Adocao() {
                                     />
                                 </label>
                                 <label>
-                                    Telefone do doador (+55)
+                                    Telefone(+55)
                                     <input
                                         name="telefone"
                                         value={formulario.telefone}
@@ -527,6 +459,7 @@ function Adocao() {
                                     <select name="sexo" value={formulario.sexo} onChange={alterarCampo}>
                                         <option value="macho">Macho</option>
                                         <option value="femea">Fêmea</option>
+                                        <option value="ambos">Ambos</option>
                                     </select>
                                 </label>
                             </div>
@@ -542,25 +475,6 @@ function Adocao() {
                             </label>
 
                             <div className="product-form-row">
-                                <label className="product-form-upload">
-                                    Foto principal
-                                    <input
-                                        type="file"
-                                        accept={IMAGE_ACCEPT}
-                                        onChange={(event) => lidarComFotoPrincipal(event.target.files?.[0] || null)}
-                                    />
-                                </label>
-
-                                <label className="product-form-upload">
-                                    Fotos adicionais
-                                    <input
-                                        type="file"
-                                        accept={IMAGE_ACCEPT}
-                                        multiple
-                                        onChange={(event) => lidarComFotosAdicionais(event.target.files)}
-                                    />
-                                </label>
-
                                 <label className="product-form-check">
                                     <input
                                         name="disponivel"
@@ -583,42 +497,7 @@ function Adocao() {
                                 )}
                             </div>
 
-                            {fotosAtuais.length > 0 && (
-                                <div className="product-form-gallery">
-                                    <p className="product-form-gallery-title">Fotos atuais</p>
-                                    <div className="product-form-preview-grid">
-                                        {fotosAtuais.map((foto) => (
-                                            <div className="product-form-preview-item" key={foto}>
-                                                <img src={foto} alt="Foto atual do animal" />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {previewFotoPrincipal && (
-                                <div className="product-form-gallery">
-                                    <p className="product-form-gallery-title">Foto principal selecionada</p>
-                                    <div className="product-form-preview-grid">
-                                        <div className="product-form-preview-item">
-                                            <img src={previewFotoPrincipal} alt="Pré-visualização da foto principal" />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {fotosAdicionais.length > 0 && (
-                                <div className="product-form-gallery">
-                                    <p className="product-form-gallery-title">Fotos adicionais selecionadas</p>
-                                    <div className="product-form-preview-grid">
-                                        {fotosAdicionais.map((foto) => (
-                                            <div className="product-form-preview-item" key={foto.preview}>
-                                                <img src={foto.preview} alt="Pré-visualização de foto adicional" />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
+                            <EditorImagens api={editorImagens} label="Fotos do animal" />
 
                             {erroFormulario && (
                                 <p className="product-form-error">{erroFormulario}</p>

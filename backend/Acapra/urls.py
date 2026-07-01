@@ -7,7 +7,7 @@ from django.urls import path, include, re_path
 from django.views.static import serve as serve_media
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('api/admin/', admin.site.urls),
 
     path('api/core/',          include('core.urls',          namespace='core')),
     path('api/auditoria/',     include('auditoria.urls',     namespace='auditoria')),
@@ -33,7 +33,7 @@ elif settings.SERVE_MEDIA:
     # cada request). Ligado via SERVE_MEDIA no .env.
     urlpatterns += [
         re_path(
-            r"^media/(?P<path>.*)$",
+            r"^api/media/(?P<path>.*)$",
             serve_media,
             {"document_root": settings.MEDIA_ROOT},
         ),

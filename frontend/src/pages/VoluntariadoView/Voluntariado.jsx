@@ -6,7 +6,7 @@ import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import EmptyState from "../../components/ui/EmptyState";
 import ConfirmModal from "../../components/ui/ConfirmModal";
 import { getResponseItems } from "../../utils/collection";
-import { getApiErrorMessage } from "../../utils/errorUtils";
+import { excluirRecurso } from "../../utils/crud";
 import "./Voluntariado.css";
 
 const initialFormVoluntario = {
@@ -66,24 +66,28 @@ function Voluntariado() {
   const [larParaExclusao, setLarParaExclusao] = useState(null);
 
   // --- Carregar listas admin ---
-  const carregarVoluntarios = useCallback(() => {
+  const carregarVoluntarios = useCallback(({ silencioso = false } = {}) => {
     if (!podeEditar) return;
-    setLoadingVoluntarios(true);
+    if (!silencioso) setLoadingVoluntarios(true);
     setErroVoluntarios("");
     api.get("/api/voluntariado/voluntarios/")
       .then((res) => setVoluntarios(getResponseItems(res.data)))
       .catch(() => setErroVoluntarios("Não foi possível carregar os voluntários."))
-      .finally(() => setLoadingVoluntarios(false));
+      .finally(() => {
+        if (!silencioso) setLoadingVoluntarios(false);
+      });
   }, [podeEditar]);
 
-  const carregarLares = useCallback(() => {
+  const carregarLares = useCallback(({ silencioso = false } = {}) => {
     if (!podeEditar) return;
-    setLoadingLares(true);
+    if (!silencioso) setLoadingLares(true);
     setErroLares("");
     api.get("/api/lares/lares/")
       .then((res) => setLares(getResponseItems(res.data)))
       .catch(() => setErroLares("Não foi possível carregar os lares voluntários."))
-      .finally(() => setLoadingLares(false));
+      .finally(() => {
+        if (!silencioso) setLoadingLares(false);
+      });
   }, [podeEditar]);
 
   useEffect(() => {
@@ -131,7 +135,13 @@ function Voluntariado() {
     const { name, value } = e.target;
     setFormVoluntario((c) => ({
       ...c,
-      [name]: name === "telefone" ? formatBrazilianPhone(value) : value,
+      [name]:
+        name === "telefone"
+          ? formatBrazilianPhone(value)
+          : name === "idade"
+            // Só dígitos e no máximo 3 (inputs number ignoram maxLength).
+            ? value.replace(/\D/g, "").slice(0, 3)
+            : value,
     }));
   };
 
@@ -165,14 +175,14 @@ function Voluntariado() {
 
   const confirmarExclusaoVoluntario = async () => {
     if (!voluntarioParaExclusao) return;
-    try {
-      await api.delete(`/api/voluntariado/voluntarios/${voluntarioParaExclusao.id}/`);
-      setVoluntarios((lista) => lista.filter((v) => v.id !== voluntarioParaExclusao.id));
-    } catch (err) {
-      setErroAcaoVoluntario(getApiErrorMessage(err, "Não foi possível remover o cadastro."));
-    } finally {
-      setVoluntarioParaExclusao(null);
-    }
+    setErroAcaoVoluntario("");
+    await excluirRecurso(`/api/voluntariado/voluntarios/${voluntarioParaExclusao.id}/`, {
+      aoRemover: () => setVoluntarios((lista) => lista.filter((v) => v.id !== voluntarioParaExclusao.id)),
+      recarregar: () => carregarVoluntarios({ silencioso: true }),
+      aoErro: setErroAcaoVoluntario,
+      mensagemErro: "Não foi possível remover o cadastro.",
+    });
+    setVoluntarioParaExclusao(null);
   };
 
   // --- Handlers lar ---
@@ -214,14 +224,14 @@ function Voluntariado() {
 
   const confirmarExclusaoLar = async () => {
     if (!larParaExclusao) return;
-    try {
-      await api.delete(`/api/lares/lares/${larParaExclusao.id}/`);
-      setLares((lista) => lista.filter((l) => l.id !== larParaExclusao.id));
-    } catch (err) {
-      setErroAcaoLar(getApiErrorMessage(err, "Não foi possível remover o cadastro."));
-    } finally {
-      setLarParaExclusao(null);
-    }
+    setErroAcaoLar("");
+    await excluirRecurso(`/api/lares/lares/${larParaExclusao.id}/`, {
+      aoRemover: () => setLares((lista) => lista.filter((l) => l.id !== larParaExclusao.id)),
+      recarregar: () => carregarLares({ silencioso: true }),
+      aoErro: setErroAcaoLar,
+      mensagemErro: "Não foi possível remover o cadastro.",
+    });
+    setLarParaExclusao(null);
   };
 
   return (
@@ -290,6 +300,8 @@ function Voluntariado() {
                     required
                     min="0"
                     max="150"
+                    maxLength={3}
+                    inputMode="numeric"
                   />
                 </label>
               </div>

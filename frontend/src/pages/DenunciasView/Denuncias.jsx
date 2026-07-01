@@ -3,6 +3,7 @@ import api from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
 import { formatBrazilianPhone, toBrazilianPhoneE164 } from "../../utils/phone";
 import { validateImageFile, IMAGE_ACCEPT } from "../../utils/upload";
+import { excluirRecurso } from "../../utils/crud";
 import ConfirmModal from "../../components/ui/ConfirmModal";
 import "../VoluntariadoView/Voluntariado.css";
 import "./Denuncias.css";
@@ -62,15 +63,17 @@ function Denuncias() {
   const [erroAcao, setErroAcao] = useState("");
   const [confirmacao, setConfirmacao] = useState(null);
 
-  const carregarDenuncias = () => {
+  const carregarDenuncias = ({ silencioso = false } = {}) => {
     if (!podeEditar) return;
-    setLoadingLista(true);
+    if (!silencioso) setLoadingLista(true);
     setErroLista("");
     api
       .get("/api/denuncias/denuncias/")
       .then((res) => setDenuncias(res.data || []))
       .catch(() => setErroLista("Não foi possível carregar as denúncias."))
-      .finally(() => setLoadingLista(false));
+      .finally(() => {
+        if (!silencioso) setLoadingLista(false);
+      });
   };
 
   useEffect(() => {
@@ -136,26 +139,20 @@ function Denuncias() {
   const atualizarStatus = (id, novoStatus) => {
     api
       .patch(`/api/denuncias/denuncias/${id}/`, { status: novoStatus })
-      .then((res) => {
-        setDenuncias((lista) =>
-          lista.map((d) => (d.id === id ? { ...d, ...res.data } : d))
-        );
-      })
+      .then(() => carregarDenuncias({ silencioso: true }))
       .catch(() => setErroAcao("Não foi possível atualizar o status."));
   };
 
-  const confirmarExclusao = () => {
+  const confirmarExclusao = async () => {
     if (!confirmacao) return;
-    api
-      .delete(`/api/denuncias/denuncias/${confirmacao.id}/`)
-      .then(() => {
-        setDenuncias((lista) => lista.filter((d) => d.id !== confirmacao.id));
-        setConfirmacao(null);
-      })
-      .catch(() => {
-        setErroAcao("Não foi possível remover a denúncia.");
-        setConfirmacao(null);
-      });
+    setErroAcao("");
+    await excluirRecurso(`/api/denuncias/denuncias/${confirmacao.id}/`, {
+      aoRemover: () => setDenuncias((lista) => lista.filter((d) => d.id !== confirmacao.id)),
+      recarregar: () => carregarDenuncias({ silencioso: true }),
+      aoErro: setErroAcao,
+      mensagemErro: "Não foi possível remover a denúncia.",
+    });
+    setConfirmacao(null);
   };
 
   return (

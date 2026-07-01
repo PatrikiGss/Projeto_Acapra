@@ -41,7 +41,9 @@ class Voluntario(models.Model):
     class Meta:
         verbose_name = "Voluntário"
         verbose_name_plural = "Voluntários"
-        ordering = ['-created_at']
+        # Desempate por -id garante ordem determinística quando dois registros
+        # compartilham o mesmo created_at (criados no mesmo instante).
+        ordering = ['-created_at', '-id']
     
     def __str__(self):
         return f"{self.nome} - {self.idade} anos"

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api, { getMediaURL } from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
@@ -6,8 +6,10 @@ import LoadingSpinner from "../ui/LoadingSpinner";
 import EmptyState from "../ui/EmptyState";
 import ConfirmModal from "../ui/ConfirmModal";
 import { getResponseItems } from "../../utils/collection";
-import { getApiErrorMessage } from "../../utils/errorUtils";
+import { excluirRecurso } from "../../utils/crud";
 import { logError } from "../../utils/logger";
+import { usePaginacao } from "../../hooks/usePaginacao";
+import Paginacao from "../ui/Paginacao";
 import "./NewsFeed.css";
 
 function formatarData(valor) {
@@ -36,9 +38,22 @@ function NewsFeed({ categoria, titulo, subtitulo, basePath, embedded = false, li
   const [acaoErro, setAcaoErro] = useState("");
   const [confirmacao, setConfirmacao] = useState(null);
   const { podeEditar } = useAdminAccess(categoria || "");
+  const { pagina, setPagina, totalPaginas, itensPagina } = usePaginacao(itens, 12);
 
   const rotaCategoria = basePath && categoria ? `${basePath}/${categoria}` : (basePath || `/${categoria || ""}`);
   const resolverLinkItem = (id) => linkBase ? `${linkBase}/${id}` : `${rotaCategoria}/${id}`;
+
+  // Releitura silenciosa da lista (usada após excluir, para refletir o servidor).
+  const recarregar = useCallback(async () => {
+    try {
+      const params = categoria ? { categoria } : {};
+      const response = await api.get("/api/noticias/publicacoes/", { params });
+      setItens(getResponseItems(response.data));
+      setError(false);
+    } catch (erro) {
+      logError("NewsFeed", erro);
+    }
+  }, [categoria]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -88,16 +103,14 @@ function NewsFeed({ categoria, titulo, subtitulo, basePath, embedded = false, li
 
   const excluirItem = async () => {
     if (!confirmacao) return;
-
-    try {
-      await api.delete(`/api/noticias/publicacoes/${confirmacao.id}/`);
-      setItens((atual) => atual.filter((publicacao) => publicacao.id !== confirmacao.id));
-      setConfirmacao(null);
-    } catch (erro) {
-      logError("NewsFeed", erro);
-      setConfirmacao(null);
-      setAcaoErro(getApiErrorMessage(erro, "Não foi possível excluir a publicação."));
-    }
+    setAcaoErro("");
+    await excluirRecurso(`/api/noticias/publicacoes/${confirmacao.id}/`, {
+      aoRemover: () => setItens((atual) => atual.filter((p) => p.id !== confirmacao.id)),
+      recarregar,
+      aoErro: setAcaoErro,
+      mensagemErro: "Não foi possível excluir a publicação.",
+    });
+    setConfirmacao(null);
   };
 
   return (
@@ -135,8 +148,9 @@ function NewsFeed({ categoria, titulo, subtitulo, basePath, embedded = false, li
         )}
 
         {!loading && !error && itens.length > 0 && (
+          <>
           <div className="news-list">
-            {itens.map((item) => (
+            {itensPagina.map((item) => (
               <article className="news-row" key={item.id}>
                 <Link className="news-row-link" to={resolverLinkItem(item.id)}>
                   <div className="news-row-image">
@@ -179,6 +193,8 @@ function NewsFeed({ categoria, titulo, subtitulo, basePath, embedded = false, li
               </article>
             ))}
           </div>
+          <Paginacao pagina={pagina} totalPaginas={totalPaginas} onMudar={setPagina} />
+          </>
         )}
 
         {acaoErro && <p className="news-message">{acaoErro}</p>}

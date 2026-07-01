@@ -12,6 +12,7 @@ from gerenciamento.permissions import require_module
 
 from django.shortcuts import get_object_or_404
 
+from core.images import apagar_arquivos, coletar_arquivos_instancia
 from .models import Animal
 from .serializers import (AnimalSerializer,GetAnimalSerializer,UpdateAnimalSerializer)
 
@@ -67,7 +68,7 @@ class AnimaisView(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        serializer = AnimalSerializer(data=request.data)
+        serializer = AnimalSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         animal = serializer.save()
 
@@ -141,7 +142,8 @@ class AnimalDetailView(APIView):
         serializer = UpdateAnimalSerializer(
             animal,
             data=request.data,
-            partial=True
+            partial=True,
+            context={'request': request},
         )
 
         serializer.is_valid(raise_exception=True)
@@ -157,9 +159,12 @@ class AnimalDetailView(APIView):
 
         animal = self.get_object(pk)
 
+        # Coleta os arquivos ANTES de excluir (cascata apaga a relação imagens),
+        # exclui o registro (operação autoritativa) e só então apaga os arquivos
+        # em melhor-esforço — assim uma falha de storage não vira 500.
+        arquivos = coletar_arquivos_instancia(animal)
         animal.delete()
+        apagar_arquivos(arquivos)
 
-        return Response(
-            {"detail": f"Animal {pk} removido com sucesso."},
-            status=status.HTTP_204_NO_CONTENT
-        )
+        # 204 não pode ter corpo (quebra parsers/proxies HTTP). Resposta vazia.
+        return Response(status=status.HTTP_204_NO_CONTENT)

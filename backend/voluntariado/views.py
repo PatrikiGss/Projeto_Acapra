@@ -151,7 +151,5 @@ class VoluntarioDetailView(APIView):
 
         voluntario.delete()
 
-        return Response(
-            {"detail": f"Voluntário {pk} removido com sucesso."},
-            status=status.HTTP_204_NO_CONTENT
-        )
+        # 204 não pode ter corpo (quebra parsers/proxies HTTP). Resposta vazia.
+        return Response(status=status.HTTP_204_NO_CONTENT)

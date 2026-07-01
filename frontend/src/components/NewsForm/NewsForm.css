@@ -65,33 +65,8 @@
   color: #c6a68b;
 }
 
-.news-form-image-zone {
-  display: grid;
-  gap: 0.75rem;
-  cursor: pointer;
-}
-
-.news-form-image-zone img,
-.news-form-image-placeholder {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  background: transparent;
-}
-
-.news-form-image-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #cf6510;
-  font-size: 1rem;
-  font-weight: 900;
-  letter-spacing: 1px;
-  border: 1px solid rgba(224, 224, 224, 0.9);
-}
-
-.news-form-image-zone input {
-  display: none;
+.news-form-image-editor {
+  margin: 0.25rem 0;
 }
 
 .news-form-text {
@@ -229,9 +204,7 @@
     width: 100%;
   }
 
-  .news-form-text textarea,
-  .news-form-image-zone img,
-  .news-form-image-placeholder {
+  .news-form-text textarea {
     min-height: 240px;
   }
 }

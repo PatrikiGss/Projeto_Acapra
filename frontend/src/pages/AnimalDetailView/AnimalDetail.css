@@ -112,6 +112,15 @@
     line-height: 1.1;
 }
 
+.animal-created-at {
+    margin: 0 0 1rem;
+    color: #6b6b6b;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
 .animal-specs {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

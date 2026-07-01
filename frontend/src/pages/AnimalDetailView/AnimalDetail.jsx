@@ -30,6 +30,15 @@ function AnimalDetail() {
         return texto.charAt(0).toUpperCase() + texto.slice(1);
     };
 
+    const formatarDataCadastro = (valor) => {
+        if (!valor) return "Data indisponível";
+
+        const data = new Date(valor);
+        if (Number.isNaN(data.getTime())) return "Data indisponível";
+
+        return data.toLocaleDateString("pt-BR");
+    };
+
     const criarLinkWhatsApp = (telefone) => {
         if (!telefone) return null;
 
@@ -146,6 +155,7 @@ function AnimalDetail() {
 
                 <div className="animal-summary">
                     <h1>{animal.nome_animal}</h1>
+                    <p className="animal-created-at">Cadastrado em {formatarDataCadastro(animal.created_at)}</p>
                     <dl className="animal-specs">
                         <div>
                             <dt>Espécie</dt>

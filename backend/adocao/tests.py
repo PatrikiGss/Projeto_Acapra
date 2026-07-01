@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from PIL import Image
 
-from .models import Animal, EspecieAnimal, SexoAnimal
+from .models import Animal, AnimalImagem, EspecieAnimal, SexoAnimal
 from .serializers import (
     AnimalSerializer,
     GetAnimalSerializer,
@@ -339,5 +339,102 @@ class AnimalDetailViewTests(APITestCase):
         self.client.force_authenticate(user=self.user)
         resp = self.client.delete(self.url_inexistente)
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+
+# =========================================================
+# GALERIA: visualizar, manter, remover e adicionar imagens
+# =========================================================
+class AnimalGaleriaTests(APITestCase):
+    """Edição granular de imagens (foto principal + galeria)."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="galeria@example.com",
+            password="senha123",
+            nome="Editor Galeria",
+            telefone="+5511900000000",
+        )
+        self.user.perfil_admin.nivel = "diretor_acapra"
+        self.user.perfil_admin.save()
+        self.animal = Animal.objects.create(
+            nome_animal="Rex",
+            nome_doador="Ana",
+            telefone="+5511911111111",
+            especie=EspecieAnimal.CACHORRO,
+            sexo=SexoAnimal.MACHO,
+            foto=criar_imagem("principal.png"),
+        )
+        self.img1 = AnimalImagem.objects.create(
+            animal=self.animal, imagem=criar_imagem("g1.png"), ordem=0
+        )
+        self.img2 = AnimalImagem.objects.create(
+            animal=self.animal, imagem=criar_imagem("g2.png"), ordem=1
+        )
+        self.url = reverse("adocao:animal_detail", kwargs={"pk": self.animal.pk})
+
+    def test_galeria_lista_principal_e_imagens_com_id(self):
+        serializer = GetAnimalSerializer(self.animal, context={"request": None})
+        galeria = serializer.data["galeria"]
+        self.assertEqual(len(galeria), 3)
+        self.assertEqual(galeria[0]["tipo"], "principal")
+        self.assertIsNone(galeria[0]["id"])
+        self.assertEqual(galeria[1]["tipo"], "galeria")
+        self.assertEqual(galeria[1]["id"], self.img1.id)
+
+    def test_patch_remove_imagem_individual_mantendo_as_demais(self):
+        self.client.force_authenticate(user=self.user)
+        resp = self.client.patch(
+            self.url, {"remover_imagens": [self.img1.id]}, format="multipart"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK, resp.data)
+        self.assertFalse(self.animal.imagens.filter(id=self.img1.id).exists())
+        self.assertTrue(self.animal.imagens.filter(id=self.img2.id).exists())
+
+    def test_patch_remove_foto_principal(self):
+        self.client.force_authenticate(user=self.user)
+        resp = self.client.patch(self.url, {"remover_foto": "true"}, format="multipart")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK, resp.data)
+        self.animal.refresh_from_db()
+        self.assertFalse(self.animal.foto)
+        # A galeria permanece intacta.
+        self.assertEqual(self.animal.imagens.count(), 2)
+
+    def test_patch_adiciona_novas_sem_remover_existentes(self):
+        self.client.force_authenticate(user=self.user)
+        resp = self.client.patch(
+            self.url, {"fotos": [criar_imagem("nova.png")]}, format="multipart"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK, resp.data)
+        self.assertEqual(self.animal.imagens.count(), 3)
+
+    def test_patch_remove_e_adiciona_no_mesmo_envio(self):
+        self.client.force_authenticate(user=self.user)
+        resp = self.client.patch(
+            self.url,
+            {"remover_imagens": [self.img1.id], "fotos": [criar_imagem("nova.png")]},
+            format="multipart",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK, resp.data)
+        self.assertFalse(self.animal.imagens.filter(id=self.img1.id).exists())
+        self.assertEqual(self.animal.imagens.count(), 2)
+
+    def test_patch_ids_de_outro_animal_sao_ignorados(self):
+        outro = Animal.objects.create(
+            nome_animal="Bidu",
+            nome_doador="Zé",
+            telefone="+5511922222222",
+            especie=EspecieAnimal.CACHORRO,
+            sexo=SexoAnimal.MACHO,
+        )
+        img_outro = AnimalImagem.objects.create(
+            animal=outro, imagem=criar_imagem("outro.png"), ordem=0
+        )
+        self.client.force_authenticate(user=self.user)
+        resp = self.client.patch(
+            self.url, {"remover_imagens": [img_outro.id]}, format="multipart"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK, resp.data)
+        # A imagem do outro animal não pode ter sido removida.
+        self.assertTrue(AnimalImagem.objects.filter(id=img_outro.id).exists())
 
 

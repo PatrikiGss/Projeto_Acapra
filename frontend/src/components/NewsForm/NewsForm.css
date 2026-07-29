@@ -155,11 +155,19 @@
   align-items: flex-start;
 }
 
+/* Mesmo visual do formulário de animais (.product-form-check--redes). */
+.news-form-check--redes {
+  border: 1px dashed #d0c8be;
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  background: #fdf9f5;
+}
+
 /* Destinos da publicação (Feed / Story), aninhados sob o checkbox de redes. */
 .news-form-redes-destinos {
   display: flex;
   gap: 1.25rem;
-  margin-left: 1.25rem;
+  margin: 0.35rem 0 0 1.25rem;
   padding-left: 0.75rem;
   border-left: 2px solid #e8ddd2;
 }

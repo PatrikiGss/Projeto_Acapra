@@ -225,7 +225,7 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
 
               {mode !== "edit" && (
                 <>
-                  <label className="news-form-check">
+                  <label className="news-form-check news-form-check--redes">
                     <input
                       type="checkbox"
                       checked={publicarRedes}

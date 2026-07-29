@@ -18,6 +18,15 @@ _LOCAL_URL = re.compile(
     re.IGNORECASE,
 )
 
+# Log de publicações fica ENXUTO: só falhas/pulados são gravados, e ainda assim
+# podamos para as últimas N linhas — mínimo impacto no SQLite do cliente.
+LIMITE_LOGS_META = 200
+
+
+# =========================================================
+# MENSAGENS
+# =========================================================
+
 def build_post_message(animal):
     especie_map = {'cachorro': 'Cachorro', 'gato': 'Gato', 'outros': 'Animal'}
     sexo_map = {'macho': 'Macho', 'femea': 'Fêmea', 'ambos': 'Ambos'}
@@ -39,6 +48,19 @@ def build_post_message(animal):
     return "\n".join(lines)
 
 
+def build_post_message_publicacao(publicacao):
+    linhas = [publicacao.titulo]
+    resumo = getattr(publicacao, 'resumo', '') or ''
+    if resumo.strip():
+        linhas += ["", resumo.strip()]
+    linhas += ["", "Acompanhe as novidades da ACAPRA no nosso site."]
+    return "\n".join(linhas)
+
+
+# =========================================================
+# FOTO MOLDURADA (genérica: qualquer objeto com .foto e .pk)
+# =========================================================
+
 def get_photo_absolute_url(animal):
     if not animal.foto:
         return None
@@ -52,23 +74,28 @@ def get_photo_absolute_url(animal):
     return f"{site_url}/api{settings.MEDIA_URL}{animal.foto}"
 
 
-def _local_photo_path(animal):
-    if not animal.foto:
+def _local_photo_path(obj):
+    if not obj.foto:
         return None
 
-    path = os.path.join(settings.MEDIA_ROOT, str(animal.foto))
+    path = os.path.join(settings.MEDIA_ROOT, str(obj.foto))
     return path if os.path.exists(path) else None
 
 
-def _framed_photo_path(animal):
-    source_path = _local_photo_path(animal)
+def _framed_photo_path(obj, prefixo="item"):
+    """Gera (e cacheia) uma versão da foto com a logo da ACAPRA no canto.
+
+    `obj` só precisa ter `.foto` e `.pk`, então serve para Animal e Publicação.
+    `prefixo` evita colisão de nomes entre tipos diferentes (ex.: animal_5 x pub_5).
+    """
+    source_path = _local_photo_path(obj)
     if not source_path:
         return None
 
     source = Path(source_path)
     framed_dir = Path(settings.MEDIA_ROOT) / "social_frames"
     framed_dir.mkdir(parents=True, exist_ok=True)
-    framed_path = framed_dir / f"animal_{animal.pk}_{source.stem}.jpg"
+    framed_path = framed_dir / f"{prefixo}_{obj.pk}_{source.stem}.jpg"
 
     logo_candidates = [
         Path(settings.BASE_DIR) / "media" / "social_assets" / "acapra-logo-com-texto.png",
@@ -113,8 +140,8 @@ def _framed_photo_path(animal):
     return str(framed_path)
 
 
-def get_framed_photo_absolute_url(animal):
-    framed_path = _framed_photo_path(animal)
+def _framed_public_url(framed_path):
+    """URL pública (com /api) da imagem moldurada, para o Instagram baixar."""
     if not framed_path:
         return None
 
@@ -127,50 +154,24 @@ def get_framed_photo_absolute_url(animal):
     return f"{site_url}/api{settings.MEDIA_URL}{relative_path}"
 
 
+def get_framed_photo_absolute_url(animal):
+    # Mantido por compatibilidade (usado no fluxo/testes de animais).
+    return _framed_public_url(_framed_photo_path(animal, prefixo="animal"))
+
+
 def _mime_type(file_path):
     ext = file_path.rsplit('.', 1)[-1].lower()
     return {'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'gif': 'image/gif'}.get(ext, 'image/jpeg')
 
 
-def post_to_facebook(connection, animal):
-    message = build_post_message(animal)
-    local_file = _framed_photo_path(animal)
-
-    if local_file:
-        import os
-        filename = os.path.basename(local_file)
-        mime = _mime_type(local_file)
-        # Upload binário direto com MIME type explícito
-        with open(local_file, 'rb') as f:
-            response = requests.post(
-                f"{GRAPH_API_BASE}/{connection.page_id}/photos",
-                data={
-                    'message': message,
-                    'access_token': connection.page_access_token,
-                },
-                files={'source': (filename, f, mime)},
-                timeout=60,
-            )
-    else:
-        # Sem foto: post somente texto
-        response = requests.post(
-            f"{GRAPH_API_BASE}/{connection.page_id}/feed",
-            data={
-                'message': message,
-                'access_token': connection.page_access_token,
-            },
-            timeout=15,
-        )
-
-    response.raise_for_status()
-    return response.json()
-
+# =========================================================
+# CHAMADAS DE BAIXO NÍVEL (Graph API)
+# =========================================================
 
 def _esperar_container_pronto(connection, creation_id, tentativas=15, intervalo=2):
     """
     O Instagram processa o container de mídia de forma ASSÍNCRONA. Publicar
-    antes de o processamento terminar falha de forma intermitente (é a causa de
-    "umas fotos foram, outras não" mesmo com imagens idênticas). Aqui
+    antes de o processamento terminar falha de forma intermitente. Aqui
     consultamos o status_code até virar FINISHED (ou erro/timeout).
     """
     for _ in range(tentativas):
@@ -189,75 +190,118 @@ def _esperar_container_pronto(connection, creation_id, tentativas=15, intervalo=
     raise TimeoutError("Container do Instagram não ficou pronto (FINISHED) a tempo.")
 
 
+def _fb_feed_photo(connection, message, local_file):
+    """Publica uma foto (ou texto puro) no feed da Página do Facebook."""
+    if local_file:
+        with open(local_file, 'rb') as f:
+            response = requests.post(
+                f"{GRAPH_API_BASE}/{connection.page_id}/photos",
+                data={'message': message, 'access_token': connection.page_access_token},
+                files={'source': (os.path.basename(local_file), f, _mime_type(local_file))},
+                timeout=60,
+            )
+    else:
+        response = requests.post(
+            f"{GRAPH_API_BASE}/{connection.page_id}/feed",
+            data={'message': message, 'access_token': connection.page_access_token},
+            timeout=15,
+        )
+    response.raise_for_status()
+    return response.json()
+
+
+def _fb_story(connection, local_file):
+    """Publica a foto como STORY da Página (sobe como não publicada e cria o story).
+
+    Requer que a Página tenha stories habilitados/permissão adequada — por isso
+    é chamada de forma tolerante (falha aqui não impede feed/Instagram).
+    """
+    if not local_file:
+        return None
+
+    with open(local_file, 'rb') as f:
+        upload = requests.post(
+            f"{GRAPH_API_BASE}/{connection.page_id}/photos",
+            data={'published': 'false', 'access_token': connection.page_access_token},
+            files={'source': (os.path.basename(local_file), f, _mime_type(local_file))},
+            timeout=60,
+        )
+    upload.raise_for_status()
+    photo_id = upload.json()['id']
+
+    response = requests.post(
+        f"{GRAPH_API_BASE}/{connection.page_id}/photo_stories",
+        data={'photo_id': photo_id, 'access_token': connection.page_access_token},
+        timeout=30,
+    )
+    response.raise_for_status()
+    return response.json()
+
+
+def _ig_container(connection, image_url, caption=None, media_type=None):
+    data = {'image_url': image_url, 'access_token': connection.page_access_token}
+    if caption is not None:
+        data['caption'] = caption
+    if media_type:
+        data['media_type'] = media_type
+    resp = requests.post(f"{GRAPH_API_BASE}/{connection.instagram_id}/media", data=data, timeout=15)
+    resp.raise_for_status()
+    return resp.json()['id']
+
+
+def _ig_publish(connection, creation_id):
+    resp = requests.post(
+        f"{GRAPH_API_BASE}/{connection.instagram_id}/media_publish",
+        data={'creation_id': creation_id, 'access_token': connection.page_access_token},
+        timeout=15,
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+
+def _ig_feed(connection, image_url, caption):
+    creation_id = _ig_container(connection, image_url, caption=caption)
+    _esperar_container_pronto(connection, creation_id)
+    return _ig_publish(connection, creation_id)
+
+
+def _ig_story(connection, image_url):
+    creation_id = _ig_container(connection, image_url, media_type="STORIES")
+    _esperar_container_pronto(connection, creation_id)
+    return _ig_publish(connection, creation_id)
+
+
+# --- Wrappers de compatibilidade (fluxo/testes de animais) ---
+
+def post_to_facebook(connection, animal):
+    return _fb_feed_photo(connection, build_post_message(animal), _framed_photo_path(animal, prefixo="animal"))
+
+
 def post_to_instagram(connection, animal):
     if not connection.instagram_id:
-        logger.warning(
-            "Instagram não configurado na conexão da página '%s'. "
-            "Vincule uma conta Instagram Business à página no Meta Business Suite.",
-            connection.page_name,
-        )
         return None
-
     photo_url = get_framed_photo_absolute_url(animal)
     if not photo_url:
-        logger.warning(
-            "Pulando Instagram (%s): não foi possível gerar uma URL pública da versão moldurada. "
-            "Defina SITE_URL com URL pública no .env.",
-            animal.nome_animal,
-        )
         return None
+    return _ig_feed(connection, photo_url, build_post_message(animal))
 
-    logger.info("Tentando publicar no Instagram (%s): %s", animal.nome_animal, photo_url)
 
-    caption = build_post_message(animal)
-
-    # Step 1: Create media container
-    container_resp = requests.post(
-        f"{GRAPH_API_BASE}/{connection.instagram_id}/media",
-        data={
-            'image_url': photo_url,
-            'caption': caption,
-            'access_token': connection.page_access_token,
-        },
-        timeout=15,
-    )
-    container_resp.raise_for_status()
-    creation_id = container_resp.json()['id']
-
-    # Step 1.5: aguarda o Instagram terminar de processar o container antes de
-    # publicar (evita a falha intermitente de publicar cedo demais).
-    _esperar_container_pronto(connection, creation_id)
-
-    # Step 2: Publish container
-    publish_resp = requests.post(
-        f"{GRAPH_API_BASE}/{connection.instagram_id}/media_publish",
-        data={
-            'creation_id': creation_id,
-            'access_token': connection.page_access_token,
-        },
-        timeout=15,
-    )
-    publish_resp.raise_for_status()
-    return publish_resp.json()
-
+# =========================================================
+# LOG DE FALHAS (só falhas/pulados; com poda automática)
+# =========================================================
 
 def _redact_token(texto):
     # Evita gravar tokens que possam aparecer em URLs de erro (ex.: params de GET).
     return re.sub(r'(access_token=)[^&\s"\']+', r'\1REDACTED', str(texto))
 
 
-# Log de publicações fica ENXUTO: só falhas/pulados são gravados, e ainda assim
-# podamos para as últimas N linhas — mínimo impacto no SQLite do cliente.
-LIMITE_LOGS_META = 200
-
-
-def _registrar_falha_meta(animal, rede, detalhe):
-    """Grava SÓ falhas/pulados e poda a tabela; nunca derruba o fluxo de cadastro."""
+def _registrar_falha_meta(objeto_id, objeto_nome, rede, detalhe):
+    """Grava SÓ falhas/pulados e poda a tabela; nunca derruba o fluxo."""
     from .models import MetaPostLog
     try:
         MetaPostLog.objects.create(
-            animal_id=animal.pk,
-            animal_nome=(animal.nome_animal or "")[:60],
+            animal_id=objeto_id,
+            animal_nome=(objeto_nome or "")[:60],
             rede=rede,
             sucesso=False,
             detalhe=_redact_token(detalhe)[:4000],
@@ -272,36 +316,98 @@ def _registrar_falha_meta(animal, rede, detalhe):
         logger.exception("Não foi possível gravar/podar o MetaPostLog (%s)", rede)
 
 
-def auto_post_animal(animal):
+def _tentar(objeto_id, objeto_nome, rede, funcao, story=False):
+    """Executa uma publicação isolando falhas: loga sucesso, registra falha."""
+    rotulo = f"{rede}/{'story' if story else 'feed'}"
+    try:
+        funcao()
+        logger.info("Publicado em %s: %s", rotulo, objeto_nome)
+    except Exception as exc:
+        detail = getattr(getattr(exc, 'response', None), 'text', '') or str(exc)
+        marcador = "[STORY] " if story else ""
+        _registrar_falha_meta(objeto_id, objeto_nome, rede, f"{marcador}{exc} | {detail}")
+        logger.error("Falha ao publicar em %s (%s): %s %s", rotulo, objeto_nome, exc, detail)
+
+
+# =========================================================
+# ORQUESTRADORES
+# =========================================================
+
+def _flag(dados, nome, default=True):
+    valor = dados.get(nome)
+    if valor is None or valor == "":
+        return default
+    return str(valor).strip().lower() in ("true", "1", "on", "yes")
+
+
+def flags_publicacao(dados):
+    """Lê do payload o que publicar nas redes.
+
+    Retorna (publicar, feed, story):
+      - `publicar_redes` (default true) liga/desliga tudo;
+      - `publicar_feed` e `publicar_story` (default true) escolhem os destinos.
+    """
+    publicar = _flag(dados, "publicar_redes", True)
+    feed = _flag(dados, "publicar_feed", True)
+    story = _flag(dados, "publicar_story", True)
+    return publicar and (feed or story), feed, story
+
+def _publicar(objeto, prefixo, nome_log, message, caption, feed=True, story=True):
+    """Publica em todas as conexões ativas.
+
+    `feed` e `story` permitem escolher os destinos: publicar só no feed, só no
+    story, ou em ambos (padrão).
+    """
     from .models import MetaConnection
+
+    if not feed and not story:
+        return
 
     connections = MetaConnection.objects.filter(is_active=True)
     if not connections.exists():
         return
 
-    for connection in connections:
-        # --- Facebook (sucesso vai só para o log do servidor, não para o banco) ---
-        try:
-            post_to_facebook(connection, animal)
-            logger.info("Publicado no Facebook: %s", animal.nome_animal)
-        except Exception as exc:
-            detail = getattr(getattr(exc, 'response', None), 'text', '') or str(exc)
-            _registrar_falha_meta(animal, "facebook", f"{exc} | {detail}")
-            logger.error("Falha ao publicar no Facebook (%s): %s %s", animal.nome_animal, exc, detail)
+    local_file = _framed_photo_path(objeto, prefixo=prefixo)
+    image_url = _framed_public_url(local_file) if local_file else None
+    obj_id = objeto.pk
 
-        # --- Instagram ---
-        try:
-            resp = post_to_instagram(connection, animal)
-            if resp is None:
-                _registrar_falha_meta(
-                    animal,
-                    "instagram",
-                    "Pulado: Instagram não configurado na conexão (sem instagram_id) "
-                    "ou sem URL pública da foto (verifique SITE_URL).",
-                )
-            else:
-                logger.info("Publicado no Instagram: %s", animal.nome_animal)
-        except Exception as exc:
-            detail = getattr(getattr(exc, 'response', None), 'text', '') or str(exc)
-            _registrar_falha_meta(animal, "instagram", f"{exc} | {detail}")
-            logger.error("Falha ao publicar no Instagram (%s): %s %s", animal.nome_animal, exc, detail)
+    for connection in connections:
+        # Facebook — feed
+        if feed:
+            _tentar(obj_id, nome_log, "facebook",
+                    lambda c=connection: _fb_feed_photo(c, message, local_file))
+        # Facebook — story (best-effort; só se houver imagem)
+        if story and local_file:
+            _tentar(obj_id, nome_log, "facebook",
+                    lambda c=connection: _fb_story(c, local_file), story=True)
+
+        # Instagram — exige instagram_id e URL pública da foto
+        if connection.instagram_id and image_url:
+            if feed:
+                _tentar(obj_id, nome_log, "instagram",
+                        lambda c=connection: _ig_feed(c, image_url, caption))
+            if story:
+                _tentar(obj_id, nome_log, "instagram",
+                        lambda c=connection: _ig_story(c, image_url), story=True)
+        else:
+            _registrar_falha_meta(
+                obj_id, nome_log, "instagram",
+                "Pulado: Instagram não configurado (sem instagram_id) ou sem URL "
+                "pública da foto (verifique SITE_URL).",
+            )
+
+
+def auto_post_animal(animal, feed=True, story=True):
+    mensagem = build_post_message(animal)
+    _publicar(
+        animal, prefixo="animal", nome_log=animal.nome_animal,
+        message=mensagem, caption=mensagem, feed=feed, story=story,
+    )
+
+
+def auto_post_publicacao(publicacao, feed=True, story=True):
+    mensagem = build_post_message_publicacao(publicacao)
+    _publicar(
+        publicacao, prefixo="pub", nome_log=publicacao.titulo,
+        message=mensagem, caption=mensagem, feed=feed, story=story,
+    )

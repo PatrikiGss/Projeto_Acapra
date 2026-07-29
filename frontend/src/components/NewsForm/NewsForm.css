@@ -148,6 +148,22 @@
   font-weight: 700;
 }
 
+.news-form-check-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+/* Destinos da publicação (Feed / Story), aninhados sob o checkbox de redes. */
+.news-form-redes-destinos {
+  display: flex;
+  gap: 1.25rem;
+  margin-left: 1.25rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid #e8ddd2;
+}
+
 .news-form-actions {
   display: flex;
   gap: 0.75rem;

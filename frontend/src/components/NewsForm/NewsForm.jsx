@@ -35,6 +35,10 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
   const [item, setItem] = useState(null);
   const [formulario, setFormulario] = useState(formVazio);
   const editorImagens = useEditorImagens(LIMITE_FOTOS);
+  // Publicação nas redes só acontece na criação.
+  const [publicarRedes, setPublicarRedes] = useState(true);
+  const [publicarFeed, setPublicarFeed] = useState(true);
+  const [publicarStory, setPublicarStory] = useState(true);
 
   const categoriaLabel = useMemo(
     () => categoriaLabels[categoria] || "Publicação",
@@ -115,6 +119,12 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
     payload.append("resumo", formulario.resumo);
     payload.append("texto", formulario.texto);
     payload.append("ativo", formulario.ativo ? "true" : "false");
+
+    if (mode !== "edit") {
+      payload.append("publicar_redes", publicarRedes ? "true" : "false");
+      payload.append("publicar_feed", publicarFeed ? "true" : "false");
+      payload.append("publicar_story", publicarStory ? "true" : "false");
+    }
 
     editorImagens.anexarAoFormData(payload);
 
@@ -202,15 +212,51 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
           </label>
 
           <div className="news-form-footer">
-            <label className="news-form-check">
-              <input
-                name="ativo"
-                type="checkbox"
-                checked={formulario.ativo}
-                onChange={alterarCampo}
-              />
-              Publicação ativa
-            </label>
+            <div className="news-form-check-group">
+              <label className="news-form-check">
+                <input
+                  name="ativo"
+                  type="checkbox"
+                  checked={formulario.ativo}
+                  onChange={alterarCampo}
+                />
+                Publicação ativa
+              </label>
+
+              {mode !== "edit" && (
+                <>
+                  <label className="news-form-check">
+                    <input
+                      type="checkbox"
+                      checked={publicarRedes}
+                      onChange={(event) => setPublicarRedes(event.target.checked)}
+                    />
+                    Publicar no Facebook / Instagram
+                  </label>
+
+                  {publicarRedes && (
+                    <div className="news-form-redes-destinos">
+                      <label className="news-form-check">
+                        <input
+                          type="checkbox"
+                          checked={publicarFeed}
+                          onChange={(event) => setPublicarFeed(event.target.checked)}
+                        />
+                        Feed
+                      </label>
+                      <label className="news-form-check">
+                        <input
+                          type="checkbox"
+                          checked={publicarStory}
+                          onChange={(event) => setPublicarStory(event.target.checked)}
+                        />
+                        Story
+                      </label>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
 
             <div className="news-form-actions">
               <Link className="news-form-button secondary" to={backPath}>

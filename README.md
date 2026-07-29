@@ -2,6 +2,8 @@
 
 Sistema web da Acapra, organizado em uma API backend com Django e uma interface frontend com React.
 
+> 📄 Para o **estado atual do projeto, particularidades do deploy (cPanel/Passenger sob `/api`) e o histórico de mudanças recentes**, veja **[context.md](context.md)**. Para arquitetura interna, veja [DOCUMENTACAO.md](DOCUMENTACAO.md).
+
 ## Tecnologias
 
 ### Backend

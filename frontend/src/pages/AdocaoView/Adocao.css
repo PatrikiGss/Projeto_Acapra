@@ -446,6 +446,15 @@
     background: #fdf9f5;
 }
 
+/* Destinos da publicação (Feed / Story), aninhados sob o checkbox de redes. */
+.product-form-redes-destinos {
+    display: flex;
+    gap: 1.25rem;
+    margin: 0.35rem 0 0 1.25rem;
+    padding-left: 0.75rem;
+    border-left: 2px solid #e8ddd2;
+}
+
 .product-modal-close--icon {
     display: inline-flex;
     align-items: center;

@@ -38,6 +38,8 @@ function Adocao() {
     const [erroFormulario, setErroFormulario] = useState("");
     const [sucessoFormulario, setSucessoFormulario] = useState("");
     const [publicarRedes, setPublicarRedes] = useState(true);
+    const [publicarFeed, setPublicarFeed] = useState(true);
+    const [publicarStory, setPublicarStory] = useState(true);
     const [erroAcao, setErroAcao] = useState("");
     const [animalParaExclusao, setAnimalParaExclusao] = useState(null);
     const fecharModalTimeoutRef = useRef(null);
@@ -169,6 +171,8 @@ function Adocao() {
         const ehCriacao = !(modoFormulario === "editar" && animalEditando);
         if (ehCriacao) {
             payload.append("publicar_redes", publicarRedes ? "true" : "false");
+            payload.append("publicar_feed", publicarFeed ? "true" : "false");
+            payload.append("publicar_story", publicarStory ? "true" : "false");
         }
 
         try {
@@ -486,14 +490,37 @@ function Adocao() {
                                 </label>
 
                                 {modoFormulario !== "editar" && (
-                                    <label className="product-form-check product-form-check--redes">
-                                        <input
-                                            type="checkbox"
-                                            checked={publicarRedes}
-                                            onChange={(e) => setPublicarRedes(e.target.checked)}
-                                        />
-                                        Publicar no Facebook / Instagram
-                                    </label>
+                                    <>
+                                        <label className="product-form-check product-form-check--redes">
+                                            <input
+                                                type="checkbox"
+                                                checked={publicarRedes}
+                                                onChange={(e) => setPublicarRedes(e.target.checked)}
+                                            />
+                                            Publicar no Facebook / Instagram
+                                        </label>
+
+                                        {publicarRedes && (
+                                            <div className="product-form-redes-destinos">
+                                                <label className="product-form-check">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={publicarFeed}
+                                                        onChange={(e) => setPublicarFeed(e.target.checked)}
+                                                    />
+                                                    Feed
+                                                </label>
+                                                <label className="product-form-check">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={publicarStory}
+                                                        onChange={(e) => setPublicarStory(e.target.checked)}
+                                                    />
+                                                    Story
+                                                </label>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
 

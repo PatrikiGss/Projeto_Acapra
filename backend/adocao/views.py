@@ -72,13 +72,14 @@ class AnimaisView(APIView):
         serializer.is_valid(raise_exception=True)
         animal = serializer.save()
 
-        publicar = request.data.get('publicar_redes', 'true') == 'true'
-        if publicar:
-            try:
-                from meta_integration.services import auto_post_animal
-                auto_post_animal(animal)
-            except Exception as exc:
-                logger.error("Erro ao publicar animal nas redes sociais: %s", exc)
+        # Destinos escolhidos no formulário: feed e/ou story (ou nenhum).
+        try:
+            from meta_integration.services import auto_post_animal, flags_publicacao
+            publicar, feed, story = flags_publicacao(request.data)
+            if publicar:
+                auto_post_animal(animal, feed=feed, story=story)
+        except Exception as exc:
+            logger.error("Erro ao publicar animal nas redes sociais: %s", exc)
 
         return Response(
             GetAnimalSerializer(animal, context={'request': request}).data,

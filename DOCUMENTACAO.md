@@ -4,6 +4,20 @@
 > projeto como um todo. Para **instalar e rodar**, veja o [README.md](README.md).
 > Este documento explica **como o sistema funciona por dentro**.
 
+> ⚠️ **Atualizações recentes:** este documento contém trechos legados. Para o
+> estado atual e o histórico das últimas mudanças, use o **[context.md](context.md)**
+> como fonte da verdade. Mudanças que ainda **não** estão refletidas abaixo:
+> - **CAPTCHA (Turnstile) foi REMOVIDO** por completo (front e back) — ignore as
+>   seções de captcha/Turnstile. Proteção do registro é só rate-limit por IP.
+> - **Transparência não tem mais Financeiro (`Categoria`/`Movimento`) nem
+>   Parcerias** — só Indicadores e Documentos.
+> - **Fotos** são comprimidas para WebP no upload; adoção/produtos/notícias
+>   aceitam **até 4 fotos**; listas têm **paginação (12/tela)**.
+> - **Doações** têm formulário público de oferta de itens (`OfertaDoacao`).
+> - **Meta**: publica **feed + story** (FB/IG) para animais **e notícias**, com
+>   log de falhas (`MetaPostLog`). Em produção a app roda sob **`/api`** (admin em
+>   `api/admin/`, mídia em `api/media/`, estáticos em `/api/static/`).
+
 ---
 
 ## Sumário

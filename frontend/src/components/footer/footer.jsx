@@ -14,10 +14,6 @@ const DESENVOLVEDORES = [
   "kauekluska@gmail.com",
   "patrikigss321@gmail.com",
   "iagoamaral607@gmail.com",
-  "mateuscorreiacoelho706@gmail.com",
-  "anderson.bolduan@gmail.com",
-  "vanderlei.junior1993@gmail.com",
-  "tonetto.irai@gmail.com",
 ];
 
 function Footer() {

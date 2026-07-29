@@ -28,6 +28,7 @@ Cobre:
 import shutil
 import tempfile
 from io import BytesIO
+from unittest import mock
 
 from django.contrib import admin
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -284,6 +285,53 @@ class PublicacoesViewTests(TestCase):
         # falta de campos obrigatórios (titulo/texto/foto)
         response = self.client.post(self.url, {"categoria": "noticias"}, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    # ---- Publicação automática nas redes sociais (Meta) ----
+    def _payload_criacao(self, titulo, **extra):
+        payload = {
+            "categoria": "resgates",
+            "titulo": titulo,
+            "resumo": "Resumo curto",
+            "foto": make_image_file("redes.png"),
+            "texto": "Conteúdo da publicação.",
+            "ativo": True,
+        }
+        payload.update(extra)
+        return payload
+
+    def test_post_dispara_publicacao_nas_redes(self):
+        self.client.force_authenticate(user=self.user_master)
+        with mock.patch("meta_integration.services.auto_post_publicacao") as auto_post:
+            response = self.client.post(
+                self.url, self._payload_criacao("Com redes"), format="multipart"
+            )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+        auto_post.assert_called_once()
+        # Recebe a publicação recém-criada.
+        self.assertEqual(auto_post.call_args.args[0].titulo, "Com redes")
+
+    def test_post_com_publicar_redes_false_nao_publica(self):
+        self.client.force_authenticate(user=self.user_master)
+        with mock.patch("meta_integration.services.auto_post_publicacao") as auto_post:
+            response = self.client.post(
+                self.url,
+                self._payload_criacao("Sem redes", publicar_redes="false"),
+                format="multipart",
+            )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+        auto_post.assert_not_called()
+
+    def test_falha_nas_redes_nao_impede_criacao(self):
+        self.client.force_authenticate(user=self.user_master)
+        with mock.patch(
+            "meta_integration.services.auto_post_publicacao",
+            side_effect=RuntimeError("meta fora do ar"),
+        ):
+            response = self.client.post(
+                self.url, self._payload_criacao("Resiliente"), format="multipart"
+            )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+        self.assertTrue(Publicacao.objects.filter(titulo="Resiliente").exists())
 
 
 # ----------------------------------------------------------------------

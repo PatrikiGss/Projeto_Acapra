@@ -1,3 +1,5 @@
+import logging
+
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -8,6 +10,8 @@ from rest_framework.views import APIView
 from core.images import apagar_arquivos, coletar_arquivos_instancia
 from .models import CategoriaNoticia, Publicacao
 from .serializers import GetPublicacaoSerializer, PublicacaoWriteSerializer
+
+logger = logging.getLogger(__name__)
 
 
 class PublicacoesView(APIView):
@@ -45,6 +49,17 @@ class PublicacoesView(APIView):
         serializer = PublicacaoWriteSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         publicacao = serializer.save()
+
+        # Publica nas redes nos destinos escolhidos (feed e/ou story). Opcional
+        # via publicar_redes=false; falha aqui não impede a criação.
+        try:
+            from meta_integration.services import auto_post_publicacao, flags_publicacao
+            publicar, feed, story = flags_publicacao(request.data)
+            if publicar:
+                auto_post_publicacao(publicacao, feed=feed, story=story)
+        except Exception as exc:
+            logger.error("Erro ao publicar notícia nas redes sociais: %s", exc)
+
         return Response(
             GetPublicacaoSerializer(publicacao, context={"request": request}).data,
             status=status.HTTP_201_CREATED,

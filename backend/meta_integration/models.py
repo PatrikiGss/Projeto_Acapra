@@ -41,3 +41,38 @@ class MetaConnection(models.Model):
 
     def __str__(self):
         return f"{self.page_name} ({self.user})"
+
+
+class MetaPostLog(models.Model):
+    """
+    Registro de cada tentativa de publicação nas redes (Facebook/Instagram).
+
+    Antes, uma falha só ia para o log do servidor (erro silencioso, difícil de
+    achar no cPanel). Aqui cada tentativa fica gravada e visível no admin, com o
+    ID do post (sucesso) ou a mensagem de erro (falha). Guardamos o id/nome do
+    animal como texto (não FK) para o log sobreviver à exclusão do animal.
+    """
+
+    class Rede(models.TextChoices):
+        FACEBOOK = "facebook", "Facebook"
+        INSTAGRAM = "instagram", "Instagram"
+
+    animal_id = models.IntegerField(null=True, blank=True)
+    animal_nome = models.CharField(max_length=60, blank=True, default="")
+    rede = models.CharField(max_length=20, choices=Rede.choices, db_index=True)
+    sucesso = models.BooleanField(default=False, db_index=True)
+    detalhe = models.TextField(
+        blank=True,
+        default="",
+        help_text="ID do post publicado (sucesso) ou a mensagem de erro (falha).",
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Log de publicação (Meta)"
+        verbose_name_plural = "Logs de publicação (Meta)"
+
+    def __str__(self):
+        status = "OK" if self.sucesso else "FALHA"
+        return f"[{status}] {self.get_rede_display()} — {self.animal_nome}"

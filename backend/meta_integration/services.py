@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+import time
 from pathlib import Path
 
 import requests
@@ -46,7 +47,9 @@ def get_photo_absolute_url(animal):
     if not site_url or _LOCAL_URL.match(site_url):
         return None
 
-    return f"{site_url}{settings.MEDIA_URL}{animal.foto}"
+    # No deploy a app roda sob o sub-URI /api, então a mídia pública fica em
+    # /api/media/ (o Instagram baixa a imagem por essa URL).
+    return f"{site_url}/api{settings.MEDIA_URL}{animal.foto}"
 
 
 def _local_photo_path(animal):
@@ -120,7 +123,8 @@ def get_framed_photo_absolute_url(animal):
         return None
 
     relative_path = Path(framed_path).relative_to(settings.MEDIA_ROOT).as_posix()
-    return f"{site_url}{settings.MEDIA_URL}{relative_path}"
+    # Mídia pública sob /api/media/ (a app roda no sub-URI /api no deploy).
+    return f"{site_url}/api{settings.MEDIA_URL}{relative_path}"
 
 
 def _mime_type(file_path):
@@ -162,6 +166,29 @@ def post_to_facebook(connection, animal):
     return response.json()
 
 
+def _esperar_container_pronto(connection, creation_id, tentativas=15, intervalo=2):
+    """
+    O Instagram processa o container de mídia de forma ASSÍNCRONA. Publicar
+    antes de o processamento terminar falha de forma intermitente (é a causa de
+    "umas fotos foram, outras não" mesmo com imagens idênticas). Aqui
+    consultamos o status_code até virar FINISHED (ou erro/timeout).
+    """
+    for _ in range(tentativas):
+        resp = requests.get(
+            f"{GRAPH_API_BASE}/{creation_id}",
+            params={"fields": "status_code", "access_token": connection.page_access_token},
+            timeout=15,
+        )
+        resp.raise_for_status()
+        status = resp.json().get("status_code")
+        if status == "FINISHED":
+            return
+        if status in ("ERROR", "EXPIRED"):
+            raise RuntimeError(f"Container do Instagram não pôde ser processado (status={status}).")
+        time.sleep(intervalo)
+    raise TimeoutError("Container do Instagram não ficou pronto (FINISHED) a tempo.")
+
+
 def post_to_instagram(connection, animal):
     if not connection.instagram_id:
         logger.warning(
@@ -197,6 +224,10 @@ def post_to_instagram(connection, animal):
     container_resp.raise_for_status()
     creation_id = container_resp.json()['id']
 
+    # Step 1.5: aguarda o Instagram terminar de processar o container antes de
+    # publicar (evita a falha intermitente de publicar cedo demais).
+    _esperar_container_pronto(connection, creation_id)
+
     # Step 2: Publish container
     publish_resp = requests.post(
         f"{GRAPH_API_BASE}/{connection.instagram_id}/media_publish",
@@ -210,6 +241,37 @@ def post_to_instagram(connection, animal):
     return publish_resp.json()
 
 
+def _redact_token(texto):
+    # Evita gravar tokens que possam aparecer em URLs de erro (ex.: params de GET).
+    return re.sub(r'(access_token=)[^&\s"\']+', r'\1REDACTED', str(texto))
+
+
+# Log de publicações fica ENXUTO: só falhas/pulados são gravados, e ainda assim
+# podamos para as últimas N linhas — mínimo impacto no SQLite do cliente.
+LIMITE_LOGS_META = 200
+
+
+def _registrar_falha_meta(animal, rede, detalhe):
+    """Grava SÓ falhas/pulados e poda a tabela; nunca derruba o fluxo de cadastro."""
+    from .models import MetaPostLog
+    try:
+        MetaPostLog.objects.create(
+            animal_id=animal.pk,
+            animal_nome=(animal.nome_animal or "")[:60],
+            rede=rede,
+            sucesso=False,
+            detalhe=_redact_token(detalhe)[:4000],
+        )
+        # Poda: mantém apenas as últimas LIMITE_LOGS_META linhas.
+        ids_manter = list(
+            MetaPostLog.objects.order_by("-id").values_list("id", flat=True)[:LIMITE_LOGS_META]
+        )
+        if ids_manter:
+            MetaPostLog.objects.exclude(id__in=ids_manter).delete()
+    except Exception:
+        logger.exception("Não foi possível gravar/podar o MetaPostLog (%s)", rede)
+
+
 def auto_post_animal(animal):
     from .models import MetaConnection
 
@@ -218,16 +280,28 @@ def auto_post_animal(animal):
         return
 
     for connection in connections:
+        # --- Facebook (sucesso vai só para o log do servidor, não para o banco) ---
         try:
             post_to_facebook(connection, animal)
             logger.info("Publicado no Facebook: %s", animal.nome_animal)
         except Exception as exc:
-            detail = getattr(getattr(exc, 'response', None), 'text', '')
+            detail = getattr(getattr(exc, 'response', None), 'text', '') or str(exc)
+            _registrar_falha_meta(animal, "facebook", f"{exc} | {detail}")
             logger.error("Falha ao publicar no Facebook (%s): %s %s", animal.nome_animal, exc, detail)
 
+        # --- Instagram ---
         try:
-            post_to_instagram(connection, animal)
-            logger.info("Publicado no Instagram: %s", animal.nome_animal)
+            resp = post_to_instagram(connection, animal)
+            if resp is None:
+                _registrar_falha_meta(
+                    animal,
+                    "instagram",
+                    "Pulado: Instagram não configurado na conexão (sem instagram_id) "
+                    "ou sem URL pública da foto (verifique SITE_URL).",
+                )
+            else:
+                logger.info("Publicado no Instagram: %s", animal.nome_animal)
         except Exception as exc:
-            detail = getattr(getattr(exc, 'response', None), 'text', '')
+            detail = getattr(getattr(exc, 'response', None), 'text', '') or str(exc)
+            _registrar_falha_meta(animal, "instagram", f"{exc} | {detail}")
             logger.error("Falha ao publicar no Instagram (%s): %s %s", animal.nome_animal, exc, detail)

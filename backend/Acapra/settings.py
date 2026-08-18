@@ -324,6 +324,10 @@ META_REDIRECT_URI = config(
 )
 FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:5173')
 SITE_URL = config('SITE_URL', default='http://localhost:8000')
+MEDIA_PUBLIC_URL = config(
+    'MEDIA_PUBLIC_URL',
+    default=f'{SITE_URL.rstrip("/")}/api{MEDIA_URL}',
+)
 
 
 # =========================================================

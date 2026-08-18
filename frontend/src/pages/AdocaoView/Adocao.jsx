@@ -12,6 +12,7 @@ import { excluirRecurso } from "../../utils/crud";
 import { logError } from "../../utils/logger";
 import { useEditorImagens } from "../../hooks/useEditorImagens";
 import EditorImagens from "../../components/ui/EditorImagens";
+import SocialCropPreview from "../../components/ui/SocialCropPreview";
 import { usePaginacao } from "../../hooks/usePaginacao";
 import Paginacao from "../../components/ui/Paginacao";
 
@@ -24,6 +25,8 @@ const formVazio = {
     descricao: "",
     disponivel: true,
 };
+
+const SOCIAL_PUBLISH_TIMEOUT = 180000;
 
 function Adocao() {
     const [animais, setAnimais] = useState([]);
@@ -40,12 +43,13 @@ function Adocao() {
     const [publicarRedes, setPublicarRedes] = useState(true);
     const [publicarFeed, setPublicarFeed] = useState(true);
     const [publicarStory, setPublicarStory] = useState(true);
+    const [fotoFoco, setFotoFoco] = useState({ x: 0.5, y: 0.5 });
     const [erroAcao, setErroAcao] = useState("");
     const [animalParaExclusao, setAnimalParaExclusao] = useState(null);
     const fecharModalTimeoutRef = useRef(null);
 
     const carregarAnimais = () => {
-        api.get("/api/adocao/animais/")
+        return api.get("/api/adocao/animais/")
             .then((response) => setAnimais(getResponseItems(response.data)))
             .catch((error) => logError("Adocao", error));
     };
@@ -94,6 +98,7 @@ function Adocao() {
         setModoFormulario("criar");
         setAnimalEditando(null);
         setFormulario(formVazio);
+        setFotoFoco({ x: 0.5, y: 0.5 });
         editorImagens.reiniciar([]);
         setErroFormulario("");
         setSucessoFormulario("");
@@ -114,6 +119,7 @@ function Adocao() {
             disponivel: animal.disponivel !== false,
         });
         editorImagens.reiniciar(animal.galeria || []);
+        setFotoFoco({ x: animal.foto_foco_x ?? 0.5, y: animal.foto_foco_y ?? 0.5 });
         setErroFormulario("");
         setSucessoFormulario("");
         setModalAberto(true);
@@ -128,6 +134,7 @@ function Adocao() {
         setModalAberto(false);
         setAnimalEditando(null);
         setFormulario(formVazio);
+        setFotoFoco({ x: 0.5, y: 0.5 });
         editorImagens.reiniciar([]);
         setErroFormulario("");
         setSucessoFormulario("");
@@ -136,6 +143,18 @@ function Adocao() {
 
     const extrairMensagemErro = (error) => {
         return getApiErrorMessage(error, "Não foi possível salvar o animal.");
+    };
+
+    const mensagemResultadoRedes = (resultado) => {
+        if (!resultado) return "Animal salvo no site.";
+
+        const statusDaRede = (rede) => {
+            if (!rede?.tentativas) return "não foi publicado";
+            if (rede.sucessos && rede.falhas) return "foi publicado parcialmente";
+            return rede.sucessos ? "foi publicado" : "não foi publicado";
+        };
+
+        return `Animal salvo no site. No Facebook ${statusDaRede(resultado.facebook)} e no Instagram ${statusDaRede(resultado.instagram)}.`;
     };
 
     const alterarCampo = (event) => {
@@ -165,6 +184,8 @@ function Adocao() {
         payload.append("sexo", formulario.sexo);
         payload.append("descricao", formulario.descricao);
         payload.append("disponivel", formulario.disponivel ? "true" : "false");
+        payload.append("foto_foco_x", String(fotoFoco.x));
+        payload.append("foto_foco_y", String(fotoFoco.y));
 
         editorImagens.anexarAoFormData(payload);
 
@@ -176,13 +197,20 @@ function Adocao() {
         }
 
         try {
+            let response;
             if (!ehCriacao) {
-                await api.patch(`/api/adocao/animais/${animalEditando.id}/`, payload);
+                response = await api.patch(`/api/adocao/animais/${animalEditando.id}/`, payload);
             } else {
-                await api.post("/api/adocao/animais/", payload);
+                response = await api.post("/api/adocao/animais/", payload, {
+                    timeout: SOCIAL_PUBLISH_TIMEOUT,
+                });
             }
             await carregarAnimais();
-            setSucessoFormulario("Animal adicionado com sucesso!");
+            setSucessoFormulario(
+                ehCriacao
+                    ? mensagemResultadoRedes(response.data?.publicacao_redes)
+                    : "Animal atualizado com sucesso!"
+            );
             fecharModalTimeoutRef.current = setTimeout(() => fecharModal(), 2500);
         } catch (error) {
             setErroFormulario(extrairMensagemErro(error));
@@ -214,6 +242,7 @@ function Adocao() {
     const renderAnimalCard = (animal) => {
         const imagem = animal.foto || animal.fotos?.[0];
         const adotado = animal.disponivel === false;
+        const fotoPosition = `${(animal.foto_foco_x ?? 0.5) * 100}% ${(animal.foto_foco_y ?? 0.5) * 100}%`;
 
         if (!podeEditar) {
             return (
@@ -229,6 +258,7 @@ function Adocao() {
                                 alt={animal.nome_animal}
                                 width="640"
                                 height="480"
+                                style={{ objectPosition: fotoPosition }}
                             />
                         ) : (
                             <div className="animal-placeholder">ACAPRA</div>
@@ -261,6 +291,7 @@ function Adocao() {
                                     alt={animal.nome_animal}
                                     width="640"
                                     height="480"
+                                    style={{ objectPosition: fotoPosition }}
                                 />
                             ) : (
                                 <div className="animal-placeholder">ACAPRA</div>
@@ -392,6 +423,7 @@ function Adocao() {
                                 onClick={fecharModal}
                                 aria-label="Fechar modal"
                                 title="Fechar"
+                                disabled={salvando}
                             >
                                 ×
                             </button>
@@ -525,13 +557,19 @@ function Adocao() {
                             </div>
 
                             <EditorImagens api={editorImagens} label="Fotos do animal" />
+                            <SocialCropPreview
+                                imageUrl={editorImagens.novas[0]?.preview || animalEditando?.foto || null}
+                                focusX={fotoFoco.x}
+                                focusY={fotoFoco.y}
+                                onChange={setFotoFoco}
+                            />
 
                             {erroFormulario && (
                                 <p className="product-form-error">{erroFormulario}</p>
                             )}
 
                             <div className="product-form-actions">
-                                <button type="button" className="product-form-button secondary" onClick={fecharModal}>
+                                <button type="button" className="product-form-button secondary" onClick={fecharModal} disabled={salvando}>
                                     Cancelar
                                 </button>
                                 <button type="submit" className="product-form-button primary" disabled={salvando}>

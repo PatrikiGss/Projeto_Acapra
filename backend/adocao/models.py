@@ -48,6 +48,9 @@ class Animal(CompressImageOnSaveMixin, models.Model):
         validators=[validate_image_upload],
     )
 
+    foto_foco_x = models.FloatField(default=0.5)
+    foto_foco_y = models.FloatField(default=0.5)
+
     descricao = models.TextField(
         max_length=500,
         blank=True,

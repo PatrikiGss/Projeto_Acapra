@@ -16,6 +16,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from PIL import Image
 
+from adocao.models import Animal
 from meta_integration import services
 from meta_integration.models import MetaConnection, MetaPostLog
 from noticias.models import CategoriaNoticia, Publicacao
@@ -137,7 +138,38 @@ class FacebookStoryTests(MetaBaseTestCase):
         self.assertIsNone(services._fb_story(self.connection, None))
 
 
-@override_settings(SITE_URL="https://acapra.org.br")
+class SocialFrameTests(MetaBaseTestCase):
+    def test_foto_moldurada_usa_canvas_padrao_do_instagram(self):
+        publicacao = self.criar_publicacao()
+
+        caminho = services._framed_photo_path(publicacao, prefixo="pub")
+
+        with Image.open(caminho) as imagem:
+            self.assertEqual(imagem.size, services.SOCIAL_IMAGE_SIZE)
+
+    def test_story_de_adocao_usa_arte_vertical(self):
+        animal = Animal.objects.create(
+            nome_animal="Bidu",
+            nome_doador="QA",
+            telefone="+5511999999999",
+            especie="cachorro",
+            sexo="macho",
+            foto=imagem_valida("bidu.jpg"),
+        )
+
+        caminho = services._story_photo_path(animal)
+
+        with Image.open(caminho) as imagem:
+            self.assertEqual(imagem.size, services.STORY_IMAGE_SIZE)
+            pixel = imagem.getpixel((0, 0))
+            for valor, esperado in zip(pixel, services.STORY_HEADER_COLOR):
+                self.assertLessEqual(abs(valor - esperado), 2)
+
+
+@override_settings(
+    SITE_URL="https://acapra.org.br",
+    MEDIA_PUBLIC_URL="https://acapra.org.br/api/media/",
+)
 class UrlPublicaTests(MetaBaseTestCase):
     """A URL que o Instagram baixa precisa do prefixo /api (deploy sob sub-URI)."""
 
@@ -148,7 +180,10 @@ class UrlPublicaTests(MetaBaseTestCase):
         self.assertIsNotNone(url)
         self.assertTrue(url.startswith("https://acapra.org.br/api/media/"), url)
 
-    @override_settings(SITE_URL="http://localhost:8000")
+    @override_settings(
+        SITE_URL="http://localhost:8000",
+        MEDIA_PUBLIC_URL="http://localhost:8000/api/media/",
+    )
     def test_url_local_nao_e_usada(self):
         publicacao = self.criar_publicacao()
         caminho = services._framed_photo_path(publicacao, prefixo="pub")

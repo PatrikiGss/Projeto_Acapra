@@ -72,10 +72,12 @@ class AnimalSerializer(serializers.ModelSerializer):
         write_only=True,
         max_length=LIMITE_FOTOS,
     )
+    foto_foco_x = serializers.FloatField(required=False, min_value=0, max_value=1, default=0.5)
+    foto_foco_y = serializers.FloatField(required=False, min_value=0, max_value=1, default=0.5)
 
     class Meta:
         model = Animal
-        fields = ['nome_animal', 'nome_doador', 'telefone', 'especie', 'sexo', 'foto', 'fotos', 'descricao', 'disponivel']
+        fields = ['nome_animal', 'nome_doador', 'telefone', 'especie', 'sexo', 'foto', 'fotos', 'foto_foco_x', 'foto_foco_y', 'descricao', 'disponivel']
 
     def validate(self, attrs):
         validar_limite_fotos(self.instance, bool(attrs.get("foto")), _contar_fotos_novas(self, attrs))
@@ -97,7 +99,7 @@ class GetAnimalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Animal
-        fields = ['id','created_at','nome_animal', 'nome_doador','telefone','especie','sexo','foto','fotos','galeria','descricao','disponivel']
+        fields = ['id','created_at','nome_animal', 'nome_doador','telefone','especie','sexo','foto','fotos','galeria','foto_foco_x','foto_foco_y','descricao','disponivel']
 
     def get_galeria(self, obj):
         return galeria_editavel(obj)
@@ -129,10 +131,12 @@ class UpdateAnimalSerializer(serializers.ModelSerializer):
         max_length=LIMITE_FOTOS,
     )
     remover_foto = serializers.BooleanField(required=False, write_only=True, default=False)
+    foto_foco_x = serializers.FloatField(required=False, min_value=0, max_value=1)
+    foto_foco_y = serializers.FloatField(required=False, min_value=0, max_value=1)
 
     class Meta:
         model = Animal
-        fields = ['nome_animal', 'nome_doador', 'especie', 'sexo', 'foto', 'fotos', 'remover_foto', 'descricao', 'disponivel']
+        fields = ['nome_animal', 'nome_doador', 'especie', 'sexo', 'foto', 'fotos', 'foto_foco_x', 'foto_foco_y', 'remover_foto', 'descricao', 'disponivel']
 
     def validate(self, attrs):
         validar_limite_fotos(

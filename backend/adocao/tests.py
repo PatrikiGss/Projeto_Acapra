@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase
 from PIL import Image
+from unittest import mock
 
 from .models import Animal, AnimalImagem, EspecieAnimal, SexoAnimal
 from .serializers import (
@@ -222,6 +223,30 @@ class AnimaisViewTests(APITestCase):
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Animal.objects.count(), 1)
         self.assertEqual(Animal.objects.first().nome_doador, "Fernanda")
+
+    def test_post_salva_foco_do_recorte(self):
+        self.client.force_authenticate(user=self.user)
+        dados = {**self.dados, "foto_foco_x": 0.2, "foto_foco_y": 0.8}
+
+        resp = self.client.post(self.url, dados, format="json")
+
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(resp.data["foto_foco_x"], 0.2)
+        self.assertEqual(resp.data["foto_foco_y"], 0.8)
+
+    @mock.patch("meta_integration.services.auto_post_animal")
+    def test_post_retorna_resultado_da_publicacao_por_rede(self, auto_post_animal):
+        self.client.force_authenticate(user=self.user)
+        auto_post_animal.return_value = {
+            "facebook": {"tentativas": 1, "sucessos": 1, "falhas": 0},
+            "instagram": {"tentativas": 1, "sucessos": 0, "falhas": 1},
+        }
+        dados = {**self.dados, "publicar_redes": "true", "publicar_story": "true"}
+
+        resp = self.client.post(self.url, dados, format="json")
+
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(resp.data["publicacao_redes"], auto_post_animal.return_value)
 
     def test_post_autenticado_dados_invalidos_retorna_400(self):
         self.client.force_authenticate(user=self.user)

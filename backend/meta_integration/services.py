@@ -6,7 +6,7 @@ from pathlib import Path
 
 import requests
 from django.conf import settings
-from PIL import Image, ImageOps
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +21,15 @@ _LOCAL_URL = re.compile(
 # Log de publicações fica ENXUTO: só falhas/pulados são gravados, e ainda assim
 # podamos para as últimas N linhas — mínimo impacto no SQLite do cliente.
 LIMITE_LOGS_META = 200
+
+SOCIAL_IMAGE_SIZE = (1080, 1350)
+SOCIAL_BACKGROUND_COLOR = (255, 255, 255)
+SOCIAL_LOGO_MAX_SIZE = (260, 180)
+SOCIAL_LOGO_MARGIN = 48
+STORY_IMAGE_SIZE = (1080, 1920)
+STORY_HEADER_HEIGHT = 190
+STORY_HEADER_COLOR = (232, 119, 34)
+STORY_HEADER_TEXT = "DISPONÍVEL PARA ADOÇÃO"
 
 
 # =========================================================
@@ -69,9 +78,8 @@ def get_photo_absolute_url(animal):
     if not site_url or _LOCAL_URL.match(site_url):
         return None
 
-    # No deploy a app roda sob o sub-URI /api, então a mídia pública fica em
-    # /api/media/ (o Instagram baixa a imagem por essa URL).
-    return f"{site_url}/api{settings.MEDIA_URL}{animal.foto}"
+    media_url = settings.MEDIA_PUBLIC_URL.rstrip('/')
+    return f"{media_url}/{animal.foto}"
 
 
 def _local_photo_path(obj):
@@ -80,6 +88,12 @@ def _local_photo_path(obj):
 
     path = os.path.join(settings.MEDIA_ROOT, str(obj.foto))
     return path if os.path.exists(path) else None
+
+
+def _crop_centering(obj):
+    focus_x = min(1, max(0, float(getattr(obj, "foto_foco_x", 0.5))))
+    focus_y = min(1, max(0, float(getattr(obj, "foto_foco_y", 0.5))))
+    return focus_x, focus_y
 
 
 def _framed_photo_path(obj, prefixo="item"):
@@ -95,7 +109,7 @@ def _framed_photo_path(obj, prefixo="item"):
     source = Path(source_path)
     framed_dir = Path(settings.MEDIA_ROOT) / "social_frames"
     framed_dir.mkdir(parents=True, exist_ok=True)
-    framed_path = framed_dir / f"{prefixo}_{obj.pk}_{source.stem}.jpg"
+    framed_path = framed_dir / f"{prefixo}_{obj.pk}_{source.stem}_v3.jpg"
 
     logo_candidates = [
         Path(settings.BASE_DIR) / "media" / "social_assets" / "acapra-logo-com-texto.png",
@@ -112,7 +126,13 @@ def _framed_photo_path(obj, prefixo="item"):
 
     with Image.open(source) as image:
         image = ImageOps.exif_transpose(image).convert("RGB")
-        canvas = image.copy()
+        # Preenche o formato 4:5 do feed com corte centralizado, como o Instagram.
+        canvas = ImageOps.fit(
+            image,
+            SOCIAL_IMAGE_SIZE,
+            method=Image.Resampling.LANCZOS,
+            centering=_crop_centering(obj),
+        )
 
         if not logo_path:
             logger.warning(
@@ -126,18 +146,94 @@ def _framed_photo_path(obj, prefixo="item"):
                 if logo.mode != "RGBA":
                     logo = logo.convert("RGBA")
 
-                max_logo_width = max(220, canvas.width // 3)
-                max_logo_height = max(120, canvas.height // 5)
-                logo.thumbnail((max_logo_width, max_logo_height), Image.Resampling.LANCZOS)
+                logo.thumbnail(SOCIAL_LOGO_MAX_SIZE, Image.Resampling.LANCZOS)
 
-                logo_x = canvas.width - logo.width - 32
-                logo_y = canvas.height - logo.height - 32
+                logo_x = canvas.width - logo.width - SOCIAL_LOGO_MARGIN
+                logo_y = canvas.height - logo.height - SOCIAL_LOGO_MARGIN
 
                 canvas.paste(logo, (logo_x, logo_y), logo)
 
         canvas.save(framed_path, format="JPEG", quality=92, optimize=True)
 
     return str(framed_path)
+
+
+def _story_font(size):
+    font_candidates = [
+        "C:/Windows/Fonts/arialbd.ttf",
+        "arialbd.ttf",
+        "DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+    ]
+    for font_path in font_candidates:
+        try:
+            return ImageFont.truetype(font_path, size)
+        except OSError:
+            continue
+    return ImageFont.load_default()
+
+
+def _story_photo_path(animal):
+    """Gera a arte vertical de Story com a chamada de adoção no topo."""
+    source_path = _local_photo_path(animal)
+    if not source_path:
+        return None
+
+    source = Path(source_path)
+    framed_dir = Path(settings.MEDIA_ROOT) / "social_frames"
+    framed_dir.mkdir(parents=True, exist_ok=True)
+    story_path = framed_dir / f"animal_{animal.pk}_{source.stem}_story_v3.jpg"
+
+    logo_candidates = [
+        Path(settings.BASE_DIR) / "media" / "social_assets" / "acapra-logo-com-texto.png",
+        Path(settings.BASE_DIR) / "media" / "social_assets" / "Acapra_logo - Sfundo.png",
+    ]
+    logo_path = next((candidate for candidate in logo_candidates if candidate.exists()), None)
+
+    if story_path.exists():
+        story_mtime = story_path.stat().st_mtime
+        source_mtime = source.stat().st_mtime
+        logo_mtime = logo_path.stat().st_mtime if logo_path else 0
+        if story_mtime >= source_mtime and story_mtime >= logo_mtime:
+            return str(story_path)
+
+    with Image.open(source) as image:
+        image = ImageOps.exif_transpose(image).convert("RGB")
+        canvas = Image.new("RGB", STORY_IMAGE_SIZE, "white")
+        draw = ImageDraw.Draw(canvas)
+        draw.rectangle((0, 0, canvas.width, STORY_HEADER_HEIGHT), fill=STORY_HEADER_COLOR)
+
+        font = _story_font(54)
+        text_box = draw.textbbox((0, 0), STORY_HEADER_TEXT, font=font)
+        text_width = text_box[2] - text_box[0]
+        text_height = text_box[3] - text_box[1]
+        draw.text(
+            ((canvas.width - text_width) // 2, (STORY_HEADER_HEIGHT - text_height) // 2 - text_box[1]),
+            STORY_HEADER_TEXT,
+            fill="white",
+            font=font,
+        )
+
+        available_height = canvas.height - STORY_HEADER_HEIGHT
+        photo = ImageOps.fit(
+            image,
+            (canvas.width, available_height),
+            method=Image.Resampling.LANCZOS,
+            centering=_crop_centering(animal),
+        )
+        canvas.paste(photo, (0, STORY_HEADER_HEIGHT))
+
+        if logo_path:
+            with Image.open(logo_path) as logo:
+                logo = ImageOps.exif_transpose(logo).convert("RGBA")
+                logo.thumbnail(SOCIAL_LOGO_MAX_SIZE, Image.Resampling.LANCZOS)
+                logo_x = canvas.width - logo.width - SOCIAL_LOGO_MARGIN
+                logo_y = canvas.height - logo.height - SOCIAL_LOGO_MARGIN
+                canvas.paste(logo, (logo_x, logo_y), logo)
+
+        canvas.save(story_path, format="JPEG", quality=92, optimize=True)
+
+    return str(story_path)
 
 
 def _framed_public_url(framed_path):
@@ -150,8 +246,8 @@ def _framed_public_url(framed_path):
         return None
 
     relative_path = Path(framed_path).relative_to(settings.MEDIA_ROOT).as_posix()
-    # Mídia pública sob /api/media/ (a app roda no sub-URI /api no deploy).
-    return f"{site_url}/api{settings.MEDIA_URL}{relative_path}"
+    media_url = settings.MEDIA_PUBLIC_URL.rstrip('/')
+    return f"{media_url}/{relative_path}"
 
 
 def get_framed_photo_absolute_url(animal):
@@ -322,11 +418,13 @@ def _tentar(objeto_id, objeto_nome, rede, funcao, story=False):
     try:
         funcao()
         logger.info("Publicado em %s: %s", rotulo, objeto_nome)
+        return True
     except Exception as exc:
         detail = getattr(getattr(exc, 'response', None), 'text', '') or str(exc)
         marcador = "[STORY] " if story else ""
         _registrar_falha_meta(objeto_id, objeto_nome, rede, f"{marcador}{exc} | {detail}")
         logger.error("Falha ao publicar em %s (%s): %s %s", rotulo, objeto_nome, exc, detail)
+        return False
 
 
 # =========================================================
@@ -352,7 +450,7 @@ def flags_publicacao(dados):
     story = _flag(dados, "publicar_story", True)
     return publicar and (feed or story), feed, story
 
-def _publicar(objeto, prefixo, nome_log, message, caption, feed=True, story=True):
+def _publicar(objeto, prefixo, nome_log, message, caption, feed=True, story=True, story_path=None):
     """Publica em todas as conexões ativas.
 
     `feed` e `story` permitem escolher os destinos: publicar só no feed, só no
@@ -360,54 +458,85 @@ def _publicar(objeto, prefixo, nome_log, message, caption, feed=True, story=True
     """
     from .models import MetaConnection
 
+    resultado = {
+        "facebook": {"tentativas": 0, "sucessos": 0, "falhas": 0},
+        "instagram": {"tentativas": 0, "sucessos": 0, "falhas": 0},
+    }
+
     if not feed and not story:
-        return
+        return resultado
 
     connections = MetaConnection.objects.filter(is_active=True)
     if not connections.exists():
-        return
+        return resultado
 
     local_file = _framed_photo_path(objeto, prefixo=prefixo)
     image_url = _framed_public_url(local_file) if local_file else None
+    story_file = story_path(objeto) if story and story_path else local_file
+    story_url = _framed_public_url(story_file) if story_file else None
     obj_id = objeto.pk
+
+    def registrar_resultado(rede, sucesso):
+        resultado[rede]["tentativas"] += 1
+        if sucesso:
+            resultado[rede]["sucessos"] += 1
+        else:
+            resultado[rede]["falhas"] += 1
 
     for connection in connections:
         # Facebook — feed
         if feed:
-            _tentar(obj_id, nome_log, "facebook",
-                    lambda c=connection: _fb_feed_photo(c, message, local_file))
+            registrar_resultado(
+                "facebook",
+                _tentar(obj_id, nome_log, "facebook",
+                        lambda c=connection: _fb_feed_photo(c, message, local_file)),
+            )
         # Facebook — story (best-effort; só se houver imagem)
-        if story and local_file:
-            _tentar(obj_id, nome_log, "facebook",
-                    lambda c=connection: _fb_story(c, local_file), story=True)
+        if story and story_file:
+            registrar_resultado(
+                "facebook",
+                _tentar(obj_id, nome_log, "facebook",
+                        lambda c=connection: _fb_story(c, story_file), story=True),
+            )
 
         # Instagram — exige instagram_id e URL pública da foto
         if connection.instagram_id and image_url:
             if feed:
-                _tentar(obj_id, nome_log, "instagram",
-                        lambda c=connection: _ig_feed(c, image_url, caption))
-            if story:
-                _tentar(obj_id, nome_log, "instagram",
-                        lambda c=connection: _ig_story(c, image_url), story=True)
+                registrar_resultado(
+                    "instagram",
+                    _tentar(obj_id, nome_log, "instagram",
+                            lambda c=connection: _ig_feed(c, image_url, caption)),
+                )
+            if story and story_url:
+                registrar_resultado(
+                    "instagram",
+                    _tentar(obj_id, nome_log, "instagram",
+                            lambda c=connection: _ig_story(c, story_url), story=True),
+                )
         else:
+            resultado["instagram"]["tentativas"] += 1
+            resultado["instagram"]["falhas"] += 1
             _registrar_falha_meta(
                 obj_id, nome_log, "instagram",
                 "Pulado: Instagram não configurado (sem instagram_id) ou sem URL "
                 "pública da foto (verifique SITE_URL).",
             )
 
+    return resultado
+
 
 def auto_post_animal(animal, feed=True, story=True):
     mensagem = build_post_message(animal)
-    _publicar(
+    return _publicar(
         animal, prefixo="animal", nome_log=animal.nome_animal,
         message=mensagem, caption=mensagem, feed=feed, story=story,
+        story_path=_story_photo_path,
     )
 
 
 def auto_post_publicacao(publicacao, feed=True, story=True):
     mensagem = build_post_message_publicacao(publicacao)
-    _publicar(
+    return _publicar(
         publicacao, prefixo="pub", nome_log=publicacao.titulo,
         message=mensagem, caption=mensagem, feed=feed, story=story,
     )

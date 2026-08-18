@@ -38,6 +38,7 @@ function Vendas() {
     const [erroFormulario, setErroFormulario] = useState("");
     const [erroAcao, setErroAcao] = useState("");
     const [produtoParaExclusao, setProdutoParaExclusao] = useState(null);
+    const [acoesAdminAbertas, setAcoesAdminAbertas] = useState(null);
 
     const carregarProdutos = () => {
         api.get("/api/vendas/produtos/")
@@ -241,7 +242,16 @@ function Vendas() {
                     </Link>
                 </div>
 
-                <div className="product-admin-actions">
+                <div className={`product-admin-actions${acoesAdminAbertas === produto.id ? " is-open" : ""}`}>
+                    <button
+                        type="button"
+                        className="product-admin-toggle"
+                        onClick={() => setAcoesAdminAbertas((atual) => atual === produto.id ? null : produto.id)}
+                        aria-label="Mostrar ações do produto"
+                        aria-expanded={acoesAdminAbertas === produto.id}
+                    >
+                        +
+                    </button>
                     <button type="button" className="product-admin-button edit" onClick={() => abrirEdicao(produto)}>
                         Editar
                     </button>

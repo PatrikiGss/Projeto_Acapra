@@ -46,7 +46,7 @@ function toWhatsAppHref(numero) {
 const WHATSAPP_CAMPOS = [
   { key: "whatsapp_castracoes", label: "Castrações" },
   { key: "whatsapp_doacoes", label: "Adoção" },
-  { key: "whatsapp_financeiro", label: "Financeiro" },
+  { key: "whatsapp_financeiro", label: "Denúncias" },
 ];
 
 function Contato() {
@@ -146,7 +146,7 @@ function Contato() {
   return (
     <div className="contato-page">
       <section className="contato-content">
-        <div clconstassName="contato-heading-row">
+        <div className="contato-heading-row">
           <div className="contato-heading">
             <h1>Contato</h1>
             <p>Fale com a ACAPRA. Estamos disponíveis para dúvidas sobre adoção, castrações, doações e parcerias.</p>

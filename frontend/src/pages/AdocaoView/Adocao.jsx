@@ -46,6 +46,7 @@ function Adocao() {
     const [fotoFoco, setFotoFoco] = useState({ x: 0.5, y: 0.5 });
     const [erroAcao, setErroAcao] = useState("");
     const [animalParaExclusao, setAnimalParaExclusao] = useState(null);
+    const [acoesAdminAbertas, setAcoesAdminAbertas] = useState(null);
     const fecharModalTimeoutRef = useRef(null);
 
     const carregarAnimais = () => {
@@ -310,7 +311,16 @@ function Adocao() {
                     </Link>
                 </div>
 
-                <div className="animal-admin-actions">
+                <div className={`animal-admin-actions${acoesAdminAbertas === animal.id ? " is-open" : ""}`}>
+                    <button
+                        type="button"
+                        className="animal-admin-toggle"
+                        onClick={() => setAcoesAdminAbertas((atual) => atual === animal.id ? null : animal.id)}
+                        aria-label="Mostrar ações do animal"
+                        aria-expanded={acoesAdminAbertas === animal.id}
+                    >
+                        +
+                    </button>
                     <button type="button" className="animal-admin-button edit" onClick={() => abrirEdicao(animal)}>
                         Editar
                     </button>

@@ -95,6 +95,9 @@ function Home() {
   }, [animais]);
 
   const destaqueInfo = destaquesInfo[destaqueAtual] || destaqueExemplo;
+  const formatarTexto = (texto) => texto
+    ? texto.charAt(0).toUpperCase() + texto.slice(1)
+    : "";
 
   return (
     <div className="main">
@@ -183,18 +186,24 @@ function Home() {
                   aria-hidden={index !== animalSlideAtual ? "true" : undefined}
                   tabIndex={index !== animalSlideAtual ? -1 : undefined}
                 >
-                  <img
-                    src={animal.foto || animal.fotos?.[0] || "/adocao-cachorro.webp"}
-                    alt={animal.nome_animal || "Animal para adoção"}
-                  />
+                  <div className="home-animal-card-image">
+                    <img
+                      src={animal.foto || animal.fotos?.[0] || "/adocao-cachorro.webp"}
+                      alt={animal.nome_animal || "Animal para adoção"}
+                      style={{
+                        objectPosition: `${(animal.foto_foco_x ?? 0.5) * 100}% ${(animal.foto_foco_y ?? 0.5) * 100}%`,
+                      }}
+                    />
+                  </div>
 
                   <div className="home-animal-card-content">
-                    <span>{animal.especie}</span>
+                    <div className="home-animal-tags">
+                      <span>{formatarTexto(animal.sexo)}</span>
+                      <span>{formatarTexto(animal.especie)}</span>
+                    </div>
                     <h3>{animal.nome_animal}</h3>
-                    <p>
-                      {animal.descricao ||
-                        "Animal acolhido pela Acapra e pronto para encontrar um novo lar."}
-                    </p>
+                    <p className="home-animal-owner">Doador: {animal.nome_doador}</p>
+                    <span className="home-animal-cta">Ver animal</span>
                   </div>
                 </Link>
               ))}
@@ -208,6 +217,7 @@ function Home() {
                     className={index === animalSlideAtual ? "active" : ""}
                     onClick={() => setAnimalSlideAtual(index)}
                     aria-label={`Ir para animal ${index + 1}`}
+                    aria-current={index === animalSlideAtual ? "true" : undefined}
                   />
                 ))}
               </div>

@@ -278,6 +278,10 @@
     padding: 0 1rem 1rem;
 }
 
+.product-admin-toggle {
+    display: none;
+}
+
 .product-admin-button {
     min-height: 2.6rem;
     border: 0;
@@ -508,6 +512,119 @@
         grid-template-columns: 1fr;
     }
 
+
+@media (max-width: 600px) {
+    .product-card,
+    .product-card-admin {
+        min-height: 0;
+        height: clamp(9rem, 33vw, 10.5rem);
+    }
+
+    .product-card-admin {
+        position: relative;
+        height: clamp(9rem, 33vw, 10.5rem);
+    }
+
+    .product-card,
+    .product-card-main-link {
+        flex-direction: row;
+    }
+
+    .product-card-link {
+        min-height: 0;
+    }
+
+    .product-card-image {
+        width: 42%;
+        height: auto;
+        min-height: 0;
+    }
+
+    .product-card-info {
+        align-items: flex-start;
+        min-width: 0;
+        min-height: 0;
+        padding: 0.85rem;
+        text-align: left;
+    }
+
+    .product-card-info .name {
+        order: 1;
+        width: 100%;
+        height: auto;
+        margin: 0 0 0.35rem;
+        font-size: 1rem;
+        line-height: 1.1;
+    }
+
+    .product-tags {
+        order: 2;
+        justify-content: flex-start;
+        min-height: 0;
+        margin: 0 0 0.35rem;
+    }
+
+    .product-tags span {
+        padding: 0.28rem 0.45rem;
+        font-size: 0.68rem;
+    }
+
+    .product-card-info .price {
+        order: 3;
+        margin: 0;
+        font-size: 1.05rem;
+    }
+
+    .product-action {
+        order: 4;
+        min-height: 2.2rem;
+        margin-top: auto;
+        font-size: 0.74rem;
+    }
+
+    .product-status {
+        top: 0.4rem;
+        right: 0.4rem;
+        font-size: 0.62rem;
+    }
+
+    .product-admin-actions {
+        position: absolute;
+        top: 0.45rem;
+        right: 0.45rem;
+        z-index: 3;
+        display: block;
+        padding: 0;
+    }
+
+    .product-admin-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        border: 0;
+        border-radius: 50%;
+        background: #1a1a1a;
+        color: #fff;
+        font: inherit;
+        font-size: 1.35rem;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .product-admin-actions .product-admin-button {
+        display: none;
+    }
+
+    .product-admin-actions.is-open .product-admin-button {
+        display: block;
+        width: 7rem;
+        min-height: 2.25rem;
+        margin-top: 0.35rem;
+        box-shadow: 0 6px 14px rgba(26, 26, 26, 0.18);
+    }
+}
     .product-form-actions {
         flex-direction: column-reverse;
     }

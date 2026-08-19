@@ -16,6 +16,10 @@ django-phonenumber-field==8.4.0
 phonenumbers==9.0.32
 python-decouple==3.8
 
+# Driver MySQL/MariaDB (Python puro — compila sem toolchain no cPanel).
+# Ativado como MySQLdb pelo shim em Acapra/__init__.py.
+PyMySQL==1.1.1
+
 # Criptografia de campos sensiveis (Fernet) e chamadas HTTP (captcha/Meta)
 cryptography==48.0.1
 requests==2.34.2

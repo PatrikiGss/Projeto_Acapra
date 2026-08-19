@@ -1,12 +1,12 @@
 .informacoes-page {
   min-height: calc(100vh - 75px);
-  padding: clamp(2rem, 4vw, 3.5rem) clamp(1rem, 4vw, 3rem) 4rem;
+  padding: clamp(2rem, 4vw, 3.5rem) var(--page-content-padding-x) 4rem;
   background: #fbfaf8;
   color: #1a1a1a;
 }
 
 .informacoes-header {
-  width: min(100%, 1160px);
+  width: min(100%, var(--page-content-width));
   margin: 0 auto 1.5rem;
 }
 
@@ -24,7 +24,7 @@
 }
 
 .informacoes-tabs {
-  width: min(100%, 1160px);
+  width: min(100%, var(--page-content-width));
   margin: 0 auto 1.5rem;
   display: flex;
   flex-wrap: wrap;

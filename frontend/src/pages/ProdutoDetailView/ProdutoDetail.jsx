@@ -96,7 +96,7 @@ function ProdutoDetail() {
                     <div className="produto-main-image">
                         {fotoAtual ? (
                             <>
-                                <img src={fotoAtual} alt={produto.nome} width="1200" height="900" />
+                                <img src={fotoAtual} alt={produto.nome} width="1200" height="960" />
 
                                 {fotos.length > 1 && (
                                     <>

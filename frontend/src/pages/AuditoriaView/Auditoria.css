@@ -1,13 +1,14 @@
 .auditoria-page {
   min-height: 75vh;
   background: whitesmoke;
-  padding: 2.5rem 1rem 3.5rem;
+  padding: 0;
   text-align: center;
 }
 
 .auditoria-container {
-  max-width: 760px;
+  width: min(100%, var(--page-content-width));
   margin: 0 auto;
+  padding: clamp(2rem, 4vw, 3.5rem) var(--page-content-padding-x) 4rem;
 }
 
 .auditoria-titulo {

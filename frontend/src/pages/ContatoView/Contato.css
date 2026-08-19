@@ -5,9 +5,9 @@
 }
 
 .contato-content {
-  width: min(100%, 860px);
+  width: min(100%, var(--page-content-width));
   margin: 0 auto;
-  padding: clamp(2rem, 4vw, 3.5rem) clamp(1rem, 4vw, 2rem) 4rem;
+  padding: clamp(2rem, 4vw, 3.5rem) var(--page-content-padding-x) 4rem;
 }
 
 .contato-heading-row {

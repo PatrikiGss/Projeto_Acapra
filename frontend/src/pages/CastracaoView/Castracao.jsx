@@ -200,8 +200,9 @@ function Castracao() {
           </p>
         </div>
 
-        <div className="voluntariado-layout">
-          <form className="voluntariado-form" onSubmit={handleSubmit}>
+        {!podeEditar && (
+          <div className="voluntariado-layout">
+            <form className="voluntariado-form" onSubmit={handleSubmit}>
             <label>
               Nome da pessoa responsável
               <input
@@ -290,8 +291,9 @@ function Castracao() {
             <button type="submit" disabled={enviando}>
               {enviando ? "Enviando..." : "Enviar pedido"}
             </button>
-          </form>
-        </div>
+            </form>
+          </div>
+        )}
 
         {podeEditar && (
           <section className="voluntariado-admin">

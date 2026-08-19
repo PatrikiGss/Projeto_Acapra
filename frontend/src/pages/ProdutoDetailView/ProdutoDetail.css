@@ -1,6 +1,6 @@
 .produto-detail-page {
     min-height: 100vh;
-    padding: clamp(1.5rem, 4vw, 3.5rem) clamp(1rem, 5vw, 4rem);
+    padding: clamp(2rem, 4vw, 3.5rem) var(--page-content-padding-x) 4rem;
     background: #fff;
     color: #1a1a1a;
 }
@@ -9,7 +9,7 @@
     display: grid;
     grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
     gap: clamp(1.5rem, 5vw, 4rem);
-    width: min(100%, 1180px);
+    width: min(100%, var(--page-content-width));
     margin: 0 auto;
     align-items: start;
 }
@@ -28,7 +28,7 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 34rem;
+    aspect-ratio: 5 / 4;
     background: #fff;
     border-radius: 8px;
     overflow: hidden;
@@ -39,7 +39,7 @@
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
 }
 
 .produto-carousel-arrow {
@@ -227,9 +227,6 @@
         grid-template-columns: 1fr;
     }
 
-    .produto-main-image {
-        height: 24rem;
-    }
 }
 
 @media (max-width: 560px) {

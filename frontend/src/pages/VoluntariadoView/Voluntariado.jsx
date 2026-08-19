@@ -242,24 +242,26 @@ function Voluntariado() {
           <p>Escolha como você quer ajudar a ACAPRA</p>
         </div>
 
-        <div className="voluntariado-tabs">
-          <button
-            type="button"
-            className={`voluntariado-tab ${abaAtiva === "voluntario" ? "active" : ""}`}
-            onClick={() => setAbaAtiva("voluntario")}
-          >
-            Quero ser voluntário
-          </button>
-          <button
-            type="button"
-            className={`voluntariado-tab ${abaAtiva === "lar" ? "active" : ""}`}
-            onClick={() => setAbaAtiva("lar")}
-          >
-            Quero ser lar temporário
-          </button>
-        </div>
+        {!podeEditar && (
+          <>
+            <div className="voluntariado-tabs">
+              <button
+                type="button"
+                className={`voluntariado-tab ${abaAtiva === "voluntario" ? "active" : ""}`}
+                onClick={() => setAbaAtiva("voluntario")}
+              >
+                Quero ser voluntário
+              </button>
+              <button
+                type="button"
+                className={`voluntariado-tab ${abaAtiva === "lar" ? "active" : ""}`}
+                onClick={() => setAbaAtiva("lar")}
+              >
+                Quero ser lar temporário
+              </button>
+            </div>
 
-        <div className="voluntariado-layout">
+            <div className="voluntariado-layout">
           {abaAtiva === "voluntario" && (
             <form className="voluntariado-form" onSubmit={handleSubmitVoluntario}>
               <label>
@@ -443,7 +445,9 @@ function Voluntariado() {
               </button>
             </form>
           )}
-        </div>
+            </div>
+          </>
+        )}
 
         {podeEditar && (
           <>

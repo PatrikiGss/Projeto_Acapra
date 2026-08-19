@@ -110,7 +110,15 @@ function AnimalDetail() {
                     <div className="animal-main-image">
                         {fotoAtual ? (
                             <>
-                                <img src={fotoAtual} alt={animal.nome_animal} width="1200" height="900" />
+                                <img
+                                    src={fotoAtual}
+                                    alt={animal.nome_animal}
+                                    width="1200"
+                                    height="960"
+                                    style={{
+                                        objectPosition: `${(animal.foto_foco_x ?? 0.5) * 100}% ${(animal.foto_foco_y ?? 0.5) * 100}%`,
+                                    }}
+                                />
 
                                 {fotos.length > 1 && (
                                     <>

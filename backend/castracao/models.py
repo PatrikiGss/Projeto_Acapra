@@ -72,9 +72,9 @@ class PedidoCastracao(models.Model):
     class Meta:
         verbose_name = "Pedido de castração"
         verbose_name_plural = "Pedidos de castração"
-        # Desempate por -id garante ordem determinística quando dois registros
+        # Desempate por id garante ordem determinística quando dois registros
         # compartilham o mesmo created_at (criados no mesmo instante).
-        ordering = ['-created_at', '-id']
+        ordering = ['created_at', 'id']
 
     def __str__(self):
         return f"{self.nome} - {self.get_tipo_animal_display()} ({self.get_sexo_display()})"

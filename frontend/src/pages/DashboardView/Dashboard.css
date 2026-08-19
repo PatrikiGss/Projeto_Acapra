@@ -1,12 +1,13 @@
 .dashboard-page {
   min-height: calc(100vh - 8rem);
   background: #fbfaf8;
-  padding: 2.5rem 1.5rem 4rem;
+  padding: 0;
 }
 
 .dashboard-container {
-  max-width: 1100px;
+  width: min(100%, var(--page-content-width));
   margin: 0 auto;
+  padding: clamp(2rem, 4vw, 3.5rem) var(--page-content-padding-x) 4rem;
 }
 
 .dashboard-header {

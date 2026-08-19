@@ -80,12 +80,12 @@ class PedidoCastracaoModelTests(TestCase):
         pedido = make_pedido(nome="João Souza", tipo_animal="cachorro", sexo="macho")
         self.assertEqual(str(pedido), "João Souza - Cachorro (Macho)")
 
-    def test_ordering_mais_recente_primeiro(self):
+    def test_ordering_fifo(self):
         antigo = make_pedido(nome="Antigo")
         novo = make_pedido(nome="Novo", telefone=ANOTHER_PHONE)
         ids = list(PedidoCastracao.objects.values_list("id", flat=True))
-        self.assertEqual(ids[0], novo.id)
-        self.assertEqual(ids[-1], antigo.id)
+        self.assertEqual(ids[0], antigo.id)
+        self.assertEqual(ids[-1], novo.id)
 
     def test_email_e_observacoes_sao_opcionais(self):
         pedido = make_pedido(email=None, observacoes="")
@@ -223,15 +223,14 @@ class CastracoesViewTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_get_admin_lista_pedidos(self):
-        make_pedido(nome="P1")
-        make_pedido(nome="P2", telefone=ANOTHER_PHONE)
+        primeiro = make_pedido(nome="P1")
+        segundo = make_pedido(nome="P2", telefone=ANOTHER_PHONE)
 
         self.auth()
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         nomes = [item["nome"] for item in response.data]
-        self.assertIn("P1", nomes)
-        self.assertIn("P2", nomes)
+        self.assertEqual(nomes, [primeiro.nome, segundo.nome])
 
     def test_auxiliar_geral_tem_acesso(self):
         auxiliar = make_admin_user(

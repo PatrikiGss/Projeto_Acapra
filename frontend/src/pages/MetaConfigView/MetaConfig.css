@@ -1,7 +1,7 @@
 .meta-config-page {
   min-height: calc(100vh - 8rem);
   background: #fbfaf8;
-  padding: 2.5rem 1.5rem 4rem;
+  padding: 0;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -9,7 +9,8 @@
 
 .meta-config-container {
   width: 100%;
-  max-width: 560px;
+  max-width: var(--page-content-width);
+  padding: clamp(2rem, 4vw, 3.5rem) var(--page-content-padding-x) 4rem;
 }
 
 .meta-config-container h1 {

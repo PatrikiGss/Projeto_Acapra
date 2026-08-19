@@ -43,6 +43,7 @@ const MODULO_ACESSO = {
   adocao: TODOS_ADMINS,
   vendas: TODOS_ADMINS,
   voluntariado: TODOS_ADMINS,
+  castracao: TODOS_ADMINS,
   transparencia: [NIVEIS.DIRETOR_ACAPRA, NIVEIS.TESOUREIRO, NIVEIS.ADMIN],
   denuncias: [NIVEIS.DIRETOR_ACAPRA, NIVEIS.TESOUREIRO, NIVEIS.ADMIN],
   gerenciamento_usuarios: [NIVEIS.DIRETOR_ACAPRA],

@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "core.apps.CoreConfig",
     "auditoria.apps.AuditoriaConfig",
     "adocao.apps.AdocaoConfig",
+    "castracao.apps.CastracaoConfig",
     "meta_integration.apps.MetaIntegrationConfig",
     "contato.apps.ContatoConfig",
     "doacoes.apps.DoacoesConfig",

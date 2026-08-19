@@ -18,6 +18,7 @@ MODULOS_POR_NIVEL = {
         "adocao",
         "vendas",
         "voluntariado",
+        "castracao",
         "gerenciamento_usuarios",
         "transparencia",
         "denuncias",
@@ -30,6 +31,7 @@ MODULOS_POR_NIVEL = {
         "adocao",
         "vendas",
         "voluntariado",
+        "castracao",
         "transparencia",
         "denuncias",
     },
@@ -40,6 +42,7 @@ MODULOS_POR_NIVEL = {
         "adocao",
         "vendas",
         "voluntariado",
+        "castracao",
         "transparencia",
         "denuncias",
     },
@@ -50,6 +53,7 @@ MODULOS_POR_NIVEL = {
         "adocao",
         "vendas",
         "voluntariado",
+        "castracao",
     },
 }
 

@@ -1,0 +1,77 @@
+/* Complementa Voluntariado.css: apenas o que é específico da castração
+   (badge de andamento e a linha de ações do card admin). */
+
+.castracao-admin-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.castracao-export-button {
+  border: 1px solid rgba(232, 119, 34, 0.35);
+  border-radius: 8px;
+  background: #fff;
+  color: #cf6510;
+  padding: 0.55rem 0.95rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.castracao-export-button:hover:not(:disabled),
+.castracao-export-button:focus-visible:not(:disabled) {
+  background: #fff4e0;
+}
+
+.castracao-export-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.castracao-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.25rem;
+}
+
+.castracao-card-title-row h3 {
+  margin: 0;
+}
+
+.castracao-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.castracao-status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.status-pendente { background: #fff4e0; color: #996300; }
+.status-agendada { background: #e7f0fd; color: #1b4f9c; }
+.status-realizada { background: #e6f4ea; color: #1e7e3a; }
+
+.status-select {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(232, 119, 34, 0.28);
+  border-radius: 6px;
+  background: #fbfaf8;
+  color: #1a1a1a;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}

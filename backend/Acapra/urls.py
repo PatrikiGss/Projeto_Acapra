@@ -12,6 +12,7 @@ urlpatterns = [
     path('api/core/',          include('core.urls',          namespace='core')),
     path('api/auditoria/',     include('auditoria.urls',     namespace='auditoria')),
     path('api/adocao/',        include('adocao.urls',        namespace='adocao')),
+    path('api/castracao/',     include('castracao.urls',     namespace='castracao')),
     path('api/doacoes/',       include('doacoes.urls',       namespace='doacoes')),
     path('api/denuncias/',     include('denuncias.urls',     namespace='denuncias')),
     path('api/gerenciamento/', include('gerenciamento.urls', namespace='gerenciamento')),

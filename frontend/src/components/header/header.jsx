@@ -1,28 +1,27 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import api from "../../services/api";
 import { getStoredUser, isLoggedIn, subscribeToAuthChanges } from "../../utils/auth";
 import { temAcessoDashboard } from "../../utils/permissions";
 import "./header.css";
 
 function Header() {
-  const navigate = useNavigate();
   const { pathname } = useLocation();
 
   const noticiasPaths = ["/informacoes", "/resgates", "/campanhas", "/desaparecidos"];
-  const participarPaths = ["/voluntariado", "/denuncias"];
+  const apoiePaths = ["/doe", "/transparencia"];
   const noticiastActive = noticiasPaths.some((p) => pathname.startsWith(p));
-  const participarActive = participarPaths.some((p) => pathname.startsWith(p));
+  const apoieActive = apoiePaths.some((p) => pathname.startsWith(p));
   const [menuOpen, setMenuOpen] = useState(false);
   const [newsOpen, setNewsOpen] = useState(false);
-  const [participarOpen, setParticiparOpen] = useState(false);
+  const [apoieOpen, setApoieOpen] = useState(false);
   const [estaLogado, setEstaLogado] = useState(isLoggedIn());
   const [usuario, setUsuario] = useState(getStoredUser());
 
   const closeMenu = () => {
     setMenuOpen(false);
     setNewsOpen(false);
-    setParticiparOpen(false);
+    setApoieOpen(false);
   };
 
   useEffect(() => {
@@ -60,18 +59,18 @@ function Header() {
   }, [usuario]);
 
   const refNoticias = useRef(null);
-  const refParticipar = useRef(null);
+  const refApoie = useRef(null);
 
   const toggleNoticias = () => setNewsOpen((c) => !c);
-  const toggleParticipar = () => setParticiparOpen((c) => !c);
+  const toggleApoie = () => setApoieOpen((c) => !c);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (refNoticias.current && !refNoticias.current.contains(e.target)) {
         setNewsOpen(false);
       }
-      if (refParticipar.current && !refParticipar.current.contains(e.target)) {
-        setParticiparOpen(false);
+      if (refApoie.current && !refApoie.current.contains(e.target)) {
+        setApoieOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -117,6 +116,8 @@ function Header() {
       >
         <NavLink className={({ isActive }) => `site-nav-link${isActive ? " site-nav-link--active" : ""}`} to="/" onClick={closeMenu} end>Início</NavLink>
         <NavLink className={({ isActive }) => `site-nav-link${isActive ? " site-nav-link--active" : ""}`} to="/adocao" onClick={closeMenu}>Adotar</NavLink>
+        <NavLink className={({ isActive }) => `site-nav-link${isActive ? " site-nav-link--active" : ""}`} to="/castracao" onClick={closeMenu}>Castração</NavLink>
+        <NavLink className={({ isActive }) => `site-nav-link${isActive ? " site-nav-link--active" : ""}`} to="/denuncias" onClick={closeMenu}>Denuncie</NavLink>
         <NavLink className={({ isActive }) => `site-nav-link${isActive ? " site-nav-link--active" : ""}`} to="/produtos" onClick={closeMenu}>Produtos</NavLink>
 
         <div
@@ -140,27 +141,26 @@ function Header() {
           </div>
         </div>
 
-        <NavLink className={({ isActive }) => `site-nav-link${isActive ? " site-nav-link--active" : ""}`} to="/doe" onClick={closeMenu}>Apoie</NavLink>
-        <NavLink className={({ isActive }) => `site-nav-link${isActive ? " site-nav-link--active" : ""}`} to="/transparencia" onClick={closeMenu}>Transparência</NavLink>
-
         <div
-          ref={refParticipar}
-          className={`site-news-dropdown ${participarOpen ? "open" : ""}`}
+          ref={refApoie}
+          className={`site-news-dropdown ${apoieOpen ? "open" : ""}`}
         >
           <button
             type="button"
-            className={`site-nav-link site-dropdown-toggle${participarActive ? " site-nav-link--active" : ""}`}
-            onClick={toggleParticipar}
-            aria-expanded={participarOpen}
+            className={`site-nav-link site-dropdown-toggle${apoieActive ? " site-nav-link--active" : ""}`}
+            onClick={toggleApoie}
+            aria-expanded={apoieOpen}
             aria-haspopup="menu"
           >
-            Participe
+            Apoie
           </button>
-          <div className="site-dropdown-menu" role="menu" aria-label="Seções de participação">
-            <Link className="site-dropdown-link" to="/voluntariado" onClick={closeMenu}>Faça Parte</Link>
-            <Link className="site-dropdown-link" to="/denuncias" onClick={closeMenu}>Denúncias</Link>
+          <div className="site-dropdown-menu" role="menu" aria-label="Seções de apoio">
+            <Link className="site-dropdown-link" to="/doe" onClick={closeMenu}>Doe</Link>
+            <Link className="site-dropdown-link" to="/transparencia" onClick={closeMenu}>Transparência</Link>
           </div>
         </div>
+
+        <NavLink className={({ isActive }) => `site-nav-link${isActive ? " site-nav-link--active" : ""}`} to="/voluntariado" onClick={closeMenu}>Participe</NavLink>
 
         {estaLogado && temAcessoDashboard(usuario) && (
           <Link className="site-nav-link" to="/dashboard" onClick={closeMenu}>

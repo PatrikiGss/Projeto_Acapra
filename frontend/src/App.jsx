@@ -11,6 +11,7 @@ import AnimalDetail from "./pages/AnimalDetailView/AnimalDetail";
 import Vendas from "./pages/VendasView/Vendas";
 import ProdutoDetail from "./pages/ProdutoDetailView/ProdutoDetail";
 import Voluntariado from "./pages/VoluntariadoView/Voluntariado";
+import Castracao from "./pages/CastracaoView/Castracao";
 import Noticias from "./pages/NoticiasView/Noticias";
 import Resgates from "./pages/ResgatesView/Resgates";
 import Campanhas from "./pages/CampanhasView/Campanhas";
@@ -93,6 +94,7 @@ function App() {
           <Route path="/produtos" element={<Vendas />} />
           <Route path="/produtos/:id" element={<ProdutoDetail />} />
           <Route path="/voluntariado" element={<Voluntariado />} />
+          <Route path="/castracao" element={<Castracao />} />
           <Route path="/denuncias" element={<Denuncias />} />
           <Route path="/desaparecidos" element={<Desaparecidos />} />
           <Route path="/desaparecidos/nova" element={<DesaparecidosNova />} />

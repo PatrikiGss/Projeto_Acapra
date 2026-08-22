@@ -2,9 +2,7 @@
 
 Sistema web da Acapra, organizado em uma API backend com Django e uma interface frontend com React.
 
-O código é público, mas não é open source: o uso livre é da Acapra. Veja a [licença](#licença) antes de reutilizar qualquer parte.
-
-Se você vai mexer no projeto, comece pelo [context.md](context.md) — ele resume o estado atual e as manhas do deploy. A arquitetura por dentro está no [DOCUMENTACAO.md](DOCUMENTACAO.md).
+## O código é público, mas não é open source: o uso livre é da Acapra. Veja a [licença](#licença) antes de reutilizar qualquer parte.
 
 ## Tecnologias
 

@@ -1,6 +1,5 @@
 # Projeto Acapra
-## Link: acapra.org.br/
-
+## Link:<a href="acapra.org.br/">Clique aqui</a>
 Sistema web da Acapra, organizado em uma API backend com Django e uma interface frontend com React.
 
 ## O código é público, mas não é open source: o uso livre é da Acapra. Veja a [licença](#licença) antes de reutilizar qualquer parte.

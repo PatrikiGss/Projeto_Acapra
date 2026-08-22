@@ -2,9 +2,9 @@
 
 Sistema web da Acapra, organizado em uma API backend com Django e uma interface frontend com React.
 
-> ⚖️ **Este projeto não é software de código aberto.** O código é público apenas para transparência e demonstração — veja [Licença](#licença).
+O código é público, mas não é open source: o uso livre é da Acapra. Veja a [licença](#licença) antes de reutilizar qualquer parte.
 
-> 📄 Para o **estado atual do projeto, particularidades do deploy (cPanel/Passenger sob `/api`) e o histórico de mudanças recentes**, veja **[context.md](context.md)**. Para arquitetura interna, veja [DOCUMENTACAO.md](DOCUMENTACAO.md).
+Se você vai mexer no projeto, comece pelo [context.md](context.md) — ele resume o estado atual e as manhas do deploy. A arquitetura por dentro está no [DOCUMENTACAO.md](DOCUMENTACAO.md).
 
 ## Tecnologias
 
@@ -217,25 +217,18 @@ Depois disso, rode as migrations novamente e ajuste `SECRET_KEY`, `ALLOWED_HOSTS
 
 ## Licença
 
-**Este projeto não é software de código aberto.**
+Este projeto não é open source.
 
-Copyright © 2026 **Patriki de Oliveira Góss, Kauê Kluska e Iago Amaral**.
-Todos os direitos reservados.
+Copyright © 2026 Patriki de Oliveira Góss, Kauê Kluska e Iago Amaral. Todos os direitos reservados.
 
-O código-fonte é disponibilizado publicamente exclusivamente para fins de
-transparência, demonstração técnica e portfólio.
+Deixamos o código público por transparência e como portfólio. A Acapra tem uma licença
+gratuita para usar o sistema nas atividades da associação.
 
-A **ACAPRA** possui uma licença gratuita e específica para utilizar o sistema em
-suas atividades institucionais.
+Para qualquer outra pessoa ou empresa, usar, copiar, modificar, redistribuir, vender ou
+oferecer o sistema como SaaS depende de autorização nossa. Ver o repositório ou dar fork
+no GitHub não conta como licença de uso.
 
-A utilização, cópia, modificação, redistribuição, sublicenciamento,
-comercialização ou oferta como SaaS por terceiros **depende de autorização
-expressa** dos titulares dos direitos autorais.
+Quem tiver interesse em uma licença comercial pode falar com a gente pelo
+patrikigss321@gmail.com.
 
-Visualizar o repositório ou fazer *fork* no GitHub não concede qualquer licença
-de uso.
-
-Para licenciamento comercial ou outras formas de utilização, entre em contato com
-os titulares — ponto de contato: **patrikigss321@gmail.com**.
-
-Termos completos: [LICENSE.md](LICENSE.md).
+Os termos completos estão no [LICENSE.md](LICENSE.md).

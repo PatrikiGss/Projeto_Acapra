@@ -2,6 +2,8 @@
 
 Sistema web da Acapra, organizado em uma API backend com Django e uma interface frontend com React.
 
+> ⚖️ **Este projeto não é software de código aberto.** O código é público apenas para transparência e demonstração — veja [Licença](#licença).
+
 > 📄 Para o **estado atual do projeto, particularidades do deploy (cPanel/Passenger sob `/api`) e o histórico de mudanças recentes**, veja **[context.md](context.md)**. Para arquitetura interna, veja [DOCUMENTACAO.md](DOCUMENTACAO.md).
 
 ## Tecnologias
@@ -212,3 +214,28 @@ DB_PORT=5432
 
 Depois disso, rode as migrations novamente e ajuste `SECRET_KEY`, `ALLOWED_HOSTS` e
 `CORS_ALLOWED_ORIGINS` conforme o ambiente real.
+
+## Licença
+
+**Este projeto não é software de código aberto.**
+
+Copyright © 2026 **Patriki de Oliveira Góss, Kauê Kluska e Iago Amaral**.
+Todos os direitos reservados.
+
+O código-fonte é disponibilizado publicamente exclusivamente para fins de
+transparência, demonstração técnica e portfólio.
+
+A **ACAPRA** possui uma licença gratuita e específica para utilizar o sistema em
+suas atividades institucionais.
+
+A utilização, cópia, modificação, redistribuição, sublicenciamento,
+comercialização ou oferta como SaaS por terceiros **depende de autorização
+expressa** dos titulares dos direitos autorais.
+
+Visualizar o repositório ou fazer *fork* no GitHub não concede qualquer licença
+de uso.
+
+Para licenciamento comercial ou outras formas de utilização, entre em contato com
+os titulares — ponto de contato: **patrikigss321@gmail.com**.
+
+Termos completos: [LICENSE.md](LICENSE.md).

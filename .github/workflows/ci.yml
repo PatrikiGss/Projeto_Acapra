@@ -46,6 +46,11 @@ jobs:
       DB_PASSWORD: postgres
       DB_HOST: localhost
       DB_PORT: '5432'
+      # Com DEBUG=False o settings liga SECURE_SSL_REDIRECT por padrao
+      # (default=True). O test client fala HTTP, entao o SecurityMiddleware
+      # responderia 301 em toda requisicao e a suite inteira quebraria.
+      # Desligamos aqui e ligamos apenas no step do `check --deploy`.
+      SECURE_SSL_REDIRECT: 'False'
 
     defaults:
       run:

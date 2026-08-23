@@ -28,7 +28,6 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
   const navigate = useNavigate();
   const { id } = useParams();
   const { podeEditar } = useAdminAccess(categoria);
-  const rotaCategoria = `/noticias/${categoria}`;
   const [loading, setLoading] = useState(mode === "edit");
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");

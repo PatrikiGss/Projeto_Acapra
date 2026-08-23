@@ -2,7 +2,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import api from "../../services/api";
 import {
-  clearAuthSession,
   getStoredUser,
   isLoggedIn,
   setAuthSession,
@@ -95,23 +94,6 @@ function Login() {
       }
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    const refresh = localStorage.getItem("refresh");
-
-    try {
-      if (refresh) {
-        await api.post("/api/gerenciamento/auth/logout/", { refresh });
-      }
-    } catch {
-      // Se o logout remoto falhar, limpamos a sessão local de qualquer forma.
-    } finally {
-      clearAuthSession();
-      setEstaLogado(false);
-      setUsuario(null);
-      navigate("/");
     }
   };
 

@@ -47,9 +47,13 @@ function NewsArticle({ backPath }) {
     return item.foto ? [item.foto] : [];
   }, [item]);
 
-  useEffect(() => {
+  // Volta para a primeira foto quando muda de publicação. Ajuste durante o
+  // render (padrão do React), sem o render extra de um useEffect.
+  const [idAnterior, setIdAnterior] = useState(item?.id);
+  if (item?.id !== idAnterior) {
+    setIdAnterior(item?.id);
     setImagemAtiva(0);
-  }, [item?.id]);
+  }
 
   useEffect(() => {
     if (!item?.categoria) return;

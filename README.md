@@ -1,4 +1,5 @@
 # Projeto Acapra
+[![CI](https://github.com/PatrikiGss/Projeto_Acapra/actions/workflows/ci.yml/badge.svg)](https://github.com/PatrikiGss/Projeto_Acapra/actions/workflows/ci.yml)
 ## Link: [Acapra](https://acapra.org.br)
 Sistema web da Acapra, organizado em uma API backend com Django e uma interface frontend com React.
 

@@ -46,8 +46,6 @@ jobs:
       DB_PASSWORD: postgres
       DB_HOST: localhost
       DB_PORT: '5432'
-      # Exigido pelo `check --deploy`: sem isto o job falha com security.W008.
-      SECURE_SSL_REDIRECT: 'True'
 
     defaults:
       run:
@@ -69,6 +67,11 @@ jobs:
         run: python manage.py makemigrations --check --dry-run
 
       - name: Configuracao de producao esta segura
+        # SECURE_SSL_REDIRECT so vale AQUI. Se ficasse no env do job, o
+        # SecurityMiddleware responderia 301 a todas as requisicoes do test
+        # client e a suite inteira quebraria.
+        env:
+          SECURE_SSL_REDIRECT: 'True'
         run: python manage.py check --deploy --fail-level WARNING
 
       - name: Suite de testes

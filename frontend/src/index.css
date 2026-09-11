@@ -1,0 +1,43 @@
+:root {
+  --navbar-h: 75px;
+  --page-content-width: 1220px;
+  --page-content-padding-x: clamp(1rem, 4vw, 2rem);
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Rubik", sans-serif;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Rubik', sans-serif;
+  color: #1a1a1a;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4.2vw, 3.6rem);
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 1.8rem;
+  }
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}

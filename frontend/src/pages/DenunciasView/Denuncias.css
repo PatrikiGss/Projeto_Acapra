@@ -1,0 +1,223 @@
+.denuncias-page {
+  min-height: 100vh;
+  background: #fbfaf8;
+  color: #1a1a1a;
+}
+
+.denuncias-content {
+  width: min(100%, var(--page-content-width));
+  margin: 0 auto;
+  padding: clamp(2rem, 4vw, 3.5rem) var(--page-content-padding-x) 4rem;
+}
+
+.denuncias-heading {
+  margin-bottom: 2rem;
+}
+
+.denuncias-heading h1 {
+  margin: 0 0 0.6rem;
+}
+
+.denuncias-heading p {
+  max-width: 600px;
+  color: #545454;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.campo-obrigatorio {
+  color: #e87722;
+}
+
+/* ---- Admin section ---- */
+
+.denuncias-admin {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(224, 224, 224, 0.85);
+}
+
+.denuncias-admin-header h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.6rem;
+}
+
+.denuncias-admin-header p {
+  margin: 0 0 1.5rem;
+  color: #545454;
+}
+
+.denuncias-admin-message {
+  margin: 0;
+  padding: 1rem 1.1rem;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid rgba(224, 224, 224, 0.85);
+  color: #545454;
+}
+
+.denuncias-admin-message.error {
+  background: #fdebea;
+  color: #b42318;
+  border-color: rgba(180, 35, 24, 0.15);
+}
+
+.denuncias-admin-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.denuncias-erro-acao {
+  color: #8a1f1f;
+  padding: 0 1.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+/* ---- Card ---- */
+
+.denuncia-card {
+  background: #fff;
+  border: 1px solid rgba(224, 224, 224, 0.85);
+  border-radius: 8px;
+  padding: 1.25rem;
+  box-shadow: 0 10px 24px rgba(26, 26, 26, 0.06);
+}
+
+.denuncia-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.denuncia-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.denuncia-card-title-row h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.denuncia-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.status-select {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(232, 119, 34, 0.28);
+  border-radius: 6px;
+  background: #fbfaf8;
+  color: #1a1a1a;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.denuncia-delete-button {
+  border: 1px solid rgba(180, 35, 24, 0.25);
+  border-radius: 6px;
+  background: #fff;
+  color: #b42318;
+  padding: 0.45rem 0.85rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.denuncia-delete-button:hover,
+.denuncia-delete-button:focus-visible {
+  background: #fdebea;
+}
+
+/* Gravidade badges */
+
+.gravidade-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.gravidade-baixo  { background: #e6f4ea; color: #1e7e3a; }
+.gravidade-medio  { background: #fff4e0; color: #996300; }
+.gravidade-alta   { background: #fff0e0; color: #c45200; }
+.gravidade-urgente { background: #fdebea; color: #b01c1c; }
+
+/* Card details */
+
+.denuncia-card-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.85rem;
+  margin: 0 0 1rem;
+}
+
+.denuncia-card-details div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.denuncia-card-details dt {
+  color: #cf6510;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.denuncia-card-details dd {
+  margin: 0;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.denuncia-card-descricao span,
+.denuncia-card-foto span {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #cf6510;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.denuncia-card-descricao p {
+  margin: 0;
+  color: #333;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.denuncia-card-foto {
+  margin-top: 1rem;
+}
+
+.denuncia-card-foto img {
+  max-width: 100%;
+  max-height: 260px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid rgba(224, 224, 224, 0.85);
+  display: block;
+}
+
+@media (max-width: 620px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}

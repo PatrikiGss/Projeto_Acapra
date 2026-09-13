@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import api from "../../services/api";
+import api, { getMediaURL } from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
 import { formatBrazilianPhone, toBrazilianPhoneE164 } from "../../utils/phone";
 import { validateImageFile, IMAGE_ACCEPT } from "../../utils/upload";
@@ -327,8 +327,8 @@ function Denuncias() {
                     {d.foto && (
                       <div className="denuncia-card-foto">
                         <span>Foto</span>
-                        <a href={d.foto} target="_blank" rel="noopener noreferrer">
-                          <img src={d.foto} alt="Foto da denúncia" />
+                        <a href={getMediaURL(d.foto)} target="_blank" rel="noopener noreferrer">
+                          <img src={getMediaURL(d.foto)} alt="Foto da denúncia" />
                         </a>
                       </div>
                     )}

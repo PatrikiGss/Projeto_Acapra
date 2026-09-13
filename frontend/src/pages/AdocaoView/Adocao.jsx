@@ -272,7 +272,7 @@ function Adocao() {
                             <span>{formatarTexto(animal.especie)}</span>
                         </div>
                         <h2 className="name">{animal.nome_animal}</h2>
-                        <p className="owner">Doador: {animal.nome_doador}</p>
+                        {animal.nome_doador && <p className="owner">Dono: {animal.nome_doador}</p>}
                         <span className="animal-card-cta">
                             {adotado ? "Ver detalhes" : "Ver animal"}
                         </span>
@@ -305,7 +305,7 @@ function Adocao() {
                                 <span>{formatarTexto(animal.especie)}</span>
                             </div>
                             <h2 className="name">{animal.nome_animal}</h2>
-                            <p className="owner">Doador: {animal.nome_doador}</p>
+                            {animal.nome_doador && <p className="owner">Dono: {animal.nome_doador}</p>}
                             <span className="animal-card-cta">Ver animal</span>
                         </div>
                     </Link>

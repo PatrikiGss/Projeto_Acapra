@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import api from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
-import { formatBrazilianPhone, toBrazilianPhoneE164 } from "../../utils/phone";
+import { usePaginacao } from "../../hooks/usePaginacao";
+import { formatBrazilianPhone, toBrazilianPhoneE164, toWhatsAppHref } from "../../utils/phone";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import EmptyState from "../../components/ui/EmptyState";
 import ConfirmModal from "../../components/ui/ConfirmModal";
+import Paginacao from "../../components/ui/Paginacao";
 import { getResponseItems } from "../../utils/collection";
 import { excluirRecurso } from "../../utils/crud";
 import { carimboDeData, exportarCsv } from "../../utils/csv";
@@ -33,6 +35,19 @@ const STATUS_COR = {
   agendada: "status-agendada",
   realizada: "status-realizada",
 };
+
+// Botões de filtro do topo da lista (os rótulos se referem aos pedidos).
+const FILTROS_STATUS = [
+  { value: "todos", label: "Todos" },
+  { value: "pendente", label: "Pendentes" },
+  { value: "agendada", label: "Agendados" },
+  { value: "realizada", label: "Realizados" },
+];
+
+// Pendentes sobem (ainda precisam de contato); agendadas e realizadas descem.
+const PRIORIDADE_STATUS = { pendente: 0, agendada: 1, realizada: 2 };
+
+const PEDIDOS_POR_PAGINA = 12;
 
 const initialForm = {
   nome: "",
@@ -66,6 +81,14 @@ function formatarDataCsv(valor) {
   }).format(new Date(valor));
 }
 
+// O sort é estável: dentro do mesmo andamento mantém a ordem da API (mais
+// antigos primeiro), então quem pediu antes continua sendo atendido antes.
+function ordenarPorAndamento(pedidos) {
+  return [...pedidos].sort(
+    (a, b) => (PRIORIDADE_STATUS[a.status] ?? 99) - (PRIORIDADE_STATUS[b.status] ?? 99),
+  );
+}
+
 const COLUNAS_CSV = [
   { label: "Nome", valor: (p) => p.nome },
   { label: "Telefone", valor: (p) => formatBrazilianPhone(p.telefone || "") },
@@ -92,6 +115,7 @@ function Castracao() {
   const [erroLista, setErroLista] = useState("");
   const [erroAcao, setErroAcao] = useState("");
   const [pedidoParaExclusao, setPedidoParaExclusao] = useState(null);
+  const [filtroStatus, setFiltroStatus] = useState("todos");
 
   const carregarPedidos = useCallback(({ silencioso = false } = {}) => {
     if (!podeEditar) return;
@@ -127,6 +151,33 @@ function Castracao() {
     void carregar();
     return () => { ativo = false; };
   }, [podeEditar]);
+
+  const totaisPorStatus = useMemo(
+    () => pedidos.reduce(
+      (acc, p) => {
+        acc.todos += 1;
+        acc[p.status] = (acc[p.status] || 0) + 1;
+        return acc;
+      },
+      { todos: 0, pendente: 0, agendada: 0, realizada: 0 },
+    ),
+    [pedidos],
+  );
+
+  const pedidosVisiveis = useMemo(() => {
+    const filtrados = filtroStatus === "todos"
+      ? pedidos
+      : pedidos.filter((p) => p.status === filtroStatus);
+    return ordenarPorAndamento(filtrados);
+  }, [pedidos, filtroStatus]);
+
+  // Só volta para a 1ª página ao trocar o filtro. Mudar o andamento de um
+  // pedido recarrega a lista, mas o admin continua na página em que estava.
+  const { pagina, setPagina, totalPaginas, itensPagina } = usePaginacao(
+    pedidosVisiveis,
+    PEDIDOS_POR_PAGINA,
+    filtroStatus,
+  );
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -188,6 +239,8 @@ function Castracao() {
     });
     setPedidoParaExclusao(null);
   };
+
+  const listaCarregada = !loadingLista && !erroLista;
 
   return (
     <div className="voluntariado-page">
@@ -313,72 +366,123 @@ function Castracao() {
               <p>Lista de pedidos enviados pelo site. Visível apenas para administradores.</p>
             </div>
 
+            {listaCarregada && pedidos.length > 0 && (
+              <div
+                className="castracao-toolbar"
+                role="group"
+                aria-label="Filtrar pedidos por andamento"
+              >
+                {FILTROS_STATUS.map((filtro) => (
+                  <button
+                    key={filtro.value}
+                    type="button"
+                    className={filtroStatus === filtro.value ? "active" : ""}
+                    aria-pressed={filtroStatus === filtro.value}
+                    onClick={() => setFiltroStatus(filtro.value)}
+                  >
+                    {filtro.label} ({totaisPorStatus[filtro.value] || 0})
+                  </button>
+                ))}
+              </div>
+            )}
+
             {loadingLista && <LoadingSpinner label="Carregando pedidos..." />}
 
             {!loadingLista && erroLista && (
               <EmptyState title="Não foi possível carregar os pedidos." description={erroLista} />
             )}
 
-            {!loadingLista && !erroLista && pedidos.length === 0 && (
+            {listaCarregada && pedidos.length === 0 && (
               <EmptyState
                 title="Nenhum pedido de castração até o momento."
                 description="Os pedidos enviados pelo formulário aparecerão aqui."
               />
             )}
 
-            {!loadingLista && !erroLista && pedidos.length > 0 && (
-              <div className="voluntariado-admin-list">
-                {pedidos.map((pedido) => (
-                  <article className="voluntariado-card" key={pedido.id}>
-                    <div className="voluntariado-card-header">
-                      <div>
-                        <div className="castracao-card-title-row">
-                          <h3>{pedido.nome}</h3>
-                          <span className={`castracao-status-badge ${STATUS_COR[pedido.status] || ""}`}>
-                            {pedido.status_display}
-                          </span>
+            {listaCarregada && pedidos.length > 0 && pedidosVisiveis.length === 0 && (
+              <EmptyState
+                title="Nenhum pedido com este andamento."
+                description="Escolha outro filtro para ver os demais pedidos."
+              />
+            )}
+
+            {listaCarregada && pedidosVisiveis.length > 0 && (
+              <>
+                <div className="voluntariado-admin-list">
+                  {itensPagina.map((pedido) => {
+                    const whatsapp = toWhatsAppHref(pedido.telefone);
+                    return (
+                      <article className="voluntariado-card" key={pedido.id}>
+                        <div className="voluntariado-card-header">
+                          <div>
+                            <div className="castracao-card-title-row">
+                              <h3>{pedido.nome}</h3>
+                              <span className={`castracao-status-badge ${STATUS_COR[pedido.status] || ""}`}>
+                                {pedido.status_display}
+                              </span>
+                            </div>
+                            <p>{formatarData(pedido.created_at)}</p>
+                          </div>
+                          <div className="castracao-card-actions">
+                            <select
+                              className="status-select"
+                              value={pedido.status}
+                              onChange={(e) => atualizarStatus(pedido.id, e.target.value)}
+                              aria-label={`Andamento do pedido de ${pedido.nome}`}
+                            >
+                              {STATUS_OPCOES.map((op) => (
+                                <option key={op.value} value={op.value}>{op.label}</option>
+                              ))}
+                            </select>
+                            <button
+                              type="button"
+                              className="voluntariado-delete-button"
+                              onClick={() => setPedidoParaExclusao(pedido)}
+                            >
+                              Remover
+                            </button>
+                          </div>
                         </div>
-                        <p>{formatarData(pedido.created_at)}</p>
-                      </div>
-                      <div className="castracao-card-actions">
-                        <select
-                          className="status-select"
-                          value={pedido.status}
-                          onChange={(e) => atualizarStatus(pedido.id, e.target.value)}
-                          aria-label={`Andamento do pedido de ${pedido.nome}`}
-                        >
-                          {STATUS_OPCOES.map((op) => (
-                            <option key={op.value} value={op.value}>{op.label}</option>
-                          ))}
-                        </select>
-                        <button
-                          type="button"
-                          className="voluntariado-delete-button"
-                          onClick={() => setPedidoParaExclusao(pedido)}
-                        >
-                          Remover
-                        </button>
-                      </div>
-                    </div>
 
-                    <dl className="voluntariado-card-details">
-                      <div><dt>Telefone</dt><dd>{pedido.telefone}</dd></div>
-                      <div><dt>Tipo do animal</dt><dd>{pedido.tipo_animal_display}</dd></div>
-                      <div><dt>Sexo do animal</dt><dd>{pedido.sexo_display}</dd></div>
-                      {pedido.email && (
-                        <div><dt>E-mail</dt><dd>{pedido.email}</dd></div>
-                      )}
-                    </dl>
+                        <dl className="voluntariado-card-details">
+                          <div>
+                            <dt>Telefone</dt>
+                            <dd>
+                              {whatsapp ? (
+                                <a
+                                  className="castracao-whatsapp-link"
+                                  href={whatsapp}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title="Abrir conversa no WhatsApp"
+                                >
+                                  {formatBrazilianPhone(pedido.telefone)}
+                                </a>
+                              ) : (
+                                pedido.telefone || "—"
+                              )}
+                            </dd>
+                          </div>
+                          <div><dt>Tipo do animal</dt><dd>{pedido.tipo_animal_display}</dd></div>
+                          <div><dt>Sexo do animal</dt><dd>{pedido.sexo_display}</dd></div>
+                          {pedido.email && (
+                            <div><dt>E-mail</dt><dd>{pedido.email}</dd></div>
+                          )}
+                        </dl>
 
-                    {pedido.observacoes && (
-                      <div className="voluntariado-card-motivo">
-                        <span>Observações</span>
-                        <p>{pedido.observacoes}</p>
-                      </div>
-                    )}
-                  </article>
-                ))}
-              </div>
+                        {pedido.observacoes && (
+                          <div className="voluntariado-card-motivo">
+                            <span>Observações</span>
+                            <p>{pedido.observacoes}</p>
+                          </div>
+                        )}
+                      </article>
+                    );
+                  })}
+                </div>
+
+                <Paginacao pagina={pagina} totalPaginas={totalPaginas} onMudar={setPagina} />
+              </>
             )}
 
             {erroAcao && (

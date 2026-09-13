@@ -133,7 +133,9 @@ function NewsForm({ categoria, backPath, mode = "create" }) {
       if (mode === "edit" && item) {
         response = await api.patch(`/api/noticias/publicacoes/${item.id}/`, payload);
       } else {
-        response = await api.post("/api/noticias/publicacoes/", payload);
+        response = await api.post("/api/noticias/publicacoes/", payload, {
+          timeout: 180000,
+        });
       }
 
       navigate(`/noticias/${response.data.id}`);

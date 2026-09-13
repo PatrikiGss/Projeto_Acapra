@@ -40,7 +40,7 @@ function Footer() {
         <img src="/logo.png" alt="Logo Acapra" />
         <div>
           <strong>ACAPRA</strong>
-          <p>Associação Joaquinense de Proteção aos Animais</p>
+          <p>Associação Catarinense de Proteção aos Animais</p>
         </div>
       </div>
 

@@ -201,7 +201,14 @@ export function getMediaURL(path) {
   }
 
   const finalPath = buildMediaPath(path);
-  return MEDIA_BASE_URL ? `${MEDIA_BASE_URL}${finalPath}` : finalPath;
+  if (!MEDIA_BASE_URL) return finalPath;
+
+  // A base de produção já inclui /api; remova o prefixo legado para evitar
+  // URLs inválidas como /api/api/media/... .
+  const mediaPath = finalPath.startsWith("/api/")
+    ? finalPath.slice(4)
+    : finalPath;
+  return `${MEDIA_BASE_URL}${mediaPath}`;
 }
 
 export default api;

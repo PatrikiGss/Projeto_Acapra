@@ -132,7 +132,7 @@ function DoacoesOfertas({ embedded = false }) {
             <h1>Doações recebidas</h1>
             <p>
               Ofertas de itens enviadas pelo público através do formulário “Quero doar algo” na
-              página Apoie. Atualize o andamento do contato com cada doador.
+              página Apoie. Atualize o andamento de cada contato.
             </p>
           </div>
         )}
@@ -204,7 +204,6 @@ function DoacoesOfertas({ embedded = false }) {
                   </div>
 
                   <dl className="doacao-card-details">
-                    <div><dt>Doador</dt><dd>{oferta.nome_doador}</dd></div>
                     <div>
                       <dt>Telefone</dt>
                       <dd>
@@ -242,7 +241,7 @@ function DoacoesOfertas({ embedded = false }) {
       <ConfirmModal
         open={Boolean(confirmacao)}
         title="Remover doação"
-        message={`Tem certeza que deseja remover a oferta de "${confirmacao?.nome_doador || ""}"?`}
+        message="Tem certeza que deseja remover esta oferta?"
         confirmLabel="Remover"
         onConfirm={confirmarExclusao}
         onClose={() => setConfirmacao(null)}

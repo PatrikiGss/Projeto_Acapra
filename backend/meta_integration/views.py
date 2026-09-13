@@ -17,6 +17,7 @@ from .services import GRAPH_API_BASE, GRAPH_API_VERSION
 logger = logging.getLogger(__name__)
 
 SCOPES = [
+    'pages_show_list',
     'pages_manage_posts',
     'pages_read_engagement',
     'instagram_content_publish',
@@ -76,7 +77,7 @@ def meta_callback(request):
                 'redirect_uri': settings.META_REDIRECT_URI,
                 'code': code,
             },
-            timeout=15,
+            timeout=30,
         )
         token_resp.raise_for_status()
         user_access_token = token_resp.json()['access_token']
@@ -127,7 +128,7 @@ class MetaPagesView(APIView):
             pages_resp = requests.get(
                 f"{GRAPH_API_BASE}/me/accounts",
                 params={'access_token': state_obj.user_access_token},
-                timeout=15,
+                timeout=30,
             )
             pages_resp.raise_for_status()
             pages = pages_resp.json().get('data', [])
@@ -181,7 +182,7 @@ class MetaSaveConnectionView(APIView):
             accounts_resp = requests.get(
                 f"{GRAPH_API_BASE}/me/accounts",
                 params={'access_token': user_access_token},
-                timeout=15,
+                timeout=30,
             )
             accounts_resp.raise_for_status()
             accounts = accounts_resp.json().get('data', [])
@@ -201,26 +202,55 @@ class MetaSaveConnectionView(APIView):
                 status=status.HTTP_502_BAD_GATEWAY,
             )
 
-        # Get Instagram business account linked to this page
+        # Get Instagram business/creator account linked to this page
         instagram_id = ''
         try:
             ig_resp = requests.get(
                 f"{GRAPH_API_BASE}/{page_id}",
                 params={
-                    'fields': 'instagram_business_account',
+                    'fields': 'instagram_business_account,connected_instagram_account',
                     'access_token': page_access_token,
                 },
-                timeout=15,
+                timeout=30,
             )
-            ig_resp.raise_for_status()
-            instagram_id = ig_resp.json().get('instagram_business_account', {}).get('id', '')
+            if ig_resp.ok:
+                ig_data = ig_resp.json()
+                instagram_id = (
+                    ig_data.get('instagram_business_account', {}).get('id', '') or
+                    ig_data.get('connected_instagram_account', {}).get('id', '')
+                )
         except Exception as exc:
-            logger.warning("Não foi possível obter Instagram vinculado à página: %s", exc)
+            logger.warning("Não foi possível obter Instagram vinculado à página %s: %s", page_id, exc)
+
+        if not instagram_id:
+            try:
+                me_resp = requests.get(
+                    f"{GRAPH_API_BASE}/me/accounts",
+                    params={
+                        'fields': 'id,instagram_business_account,connected_instagram_account',
+                        'access_token': user_access_token,
+                    },
+                    timeout=30,
+                )
+                if me_resp.ok:
+                    for p in me_resp.json().get('data', []):
+                        if p.get('id') == page_id:
+                            instagram_id = (
+                                p.get('instagram_business_account', {}).get('id', '') or
+                                p.get('connected_instagram_account', {}).get('id', '')
+                            )
+                            break
+            except Exception as exc:
+                logger.warning("Fallback de busca do Instagram via /me/accounts falhou: %s", exc)
+
+        # Conexão única da ONG: desativa/remove eventuais outras conexões ativas
+        # para garantir que a ONG tenha apenas 1 conexão ativa por vez.
+        MetaConnection.objects.filter(is_active=True).exclude(page_id=page_id).delete()
 
         connection, created = MetaConnection.objects.update_or_create(
-            user=request.user,
             page_id=page_id,
             defaults={
+                'user': request.user,
                 'page_name': page_name,
                 'page_access_token': page_access_token,
                 'instagram_id': instagram_id,
@@ -244,8 +274,8 @@ class MetaStatusView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        # A conexão da ONG é compartilhada e visível para todos os administradores autenticados.
         connections = MetaConnection.objects.filter(
-            user=request.user,
             is_active=True,
         ).values('id', 'page_name', 'page_id', 'instagram_id', 'created_at')
 
@@ -257,7 +287,7 @@ class MetaDisconnectView(APIView):
 
     def delete(self, request, pk):
         try:
-            connection = MetaConnection.objects.get(pk=pk, user=request.user)
+            connection = MetaConnection.objects.get(pk=pk, is_active=True)
         except MetaConnection.DoesNotExist:
             return Response(
                 {'detail': 'Conexão não encontrada.'},

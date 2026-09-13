@@ -24,7 +24,7 @@ function Home() {
   const noticiasPausada = useRef(false);
 
   useEffect(() => {
-    api.get("/api/adocao/animais/")
+    api.get("/api/adocao/animais/?disponivel=true")
       .then((response) => {
         setAnimais(response.data.slice(0, 3));
       })
@@ -75,6 +75,8 @@ function Home() {
   }, [destaquesInfo.length]);
 
   useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
+
     const elementosAnimados = document.querySelectorAll(".scroll-reveal");
 
     const observer = new IntersectionObserver((entries) => {
@@ -188,7 +190,7 @@ function Home() {
                 >
                   <div className="home-animal-card-image">
                     <img
-                      src={animal.foto || animal.fotos?.[0] || "/adocao-cachorro.webp"}
+                      src={getMediaURL(animal.foto || animal.fotos?.[0])}
                       alt={animal.nome_animal || "Animal para adoção"}
                       style={{
                         objectPosition: `${(animal.foto_foco_x ?? 0.5) * 100}% ${(animal.foto_foco_y ?? 0.5) * 100}%`,
@@ -202,7 +204,6 @@ function Home() {
                       <span>{formatarTexto(animal.especie)}</span>
                     </div>
                     <h3>{animal.nome_animal}</h3>
-                    <p className="home-animal-owner">Doador: {animal.nome_doador}</p>
                     <span className="home-animal-cta">Ver animal</span>
                   </div>
                 </Link>
@@ -250,8 +251,7 @@ function Home() {
             <h2>Compre e ajude a manter o cuidado com os animais</h2>
             <p>
               Todo o valor arrecadado com os produtos da Acapra é reutilizado na
-              ONG para apoiar resgates, alimentação, medicação, castrações e a
-              manutenção dos animais acolhidos.
+              ONG para apoiar resgates, alimentação, medicação e castrações.
             </p>
             <Link to="/produtos" className="link produtos-link">
               Conheça nossos produtos
@@ -301,9 +301,11 @@ function Home() {
           >
             <div className="fresh-news-image">
               <img
-                src={destaqueInfo.foto?.startsWith("/")
-                  ? destaqueInfo.foto
-                  : getMediaURL(destaqueInfo.foto)}
+                src={
+                  destaqueInfo.id === "exemplo"
+                    ? (destaqueInfo.foto || "/carousel-voluntariado.jpg")
+                    : getMediaURL(destaqueInfo.foto || destaqueInfo.fotos?.[0])
+                }
                 alt={destaqueInfo.titulo}
               />
             </div>

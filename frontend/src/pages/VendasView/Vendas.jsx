@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import api from "../../services/api";
+import api, { getMediaURL } from "../../services/api";
 import { useAdminAccess } from "../../hooks/useAdminAccess";
 import EmptyState from "../../components/ui/EmptyState";
 import ConfirmModal from "../../components/ui/ConfirmModal";
@@ -195,7 +195,7 @@ function Vendas() {
 
                     <div className="product-card-image">
                         {imagem ? (
-                            <img src={imagem} alt={produto.nome} width="640" height="640" />
+                            <img src={getMediaURL(imagem)} alt={produto.nome} width="640" height="640" />
                         ) : (
                             <div className="product-placeholder">ACAPRA</div>
                         )}
@@ -225,7 +225,7 @@ function Vendas() {
 
                         <div className="product-card-image">
                             {imagem ? (
-                                <img src={imagem} alt={produto.nome} width="640" height="640" />
+                                <img src={getMediaURL(imagem)} alt={produto.nome} width="640" height="640" />
                             ) : (
                                 <div className="product-placeholder">ACAPRA</div>
                             )}

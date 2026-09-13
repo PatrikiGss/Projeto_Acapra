@@ -15,6 +15,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from PIL import Image
+from rest_framework.test import APIClient
 
 from adocao.models import Animal
 from meta_integration import services
@@ -158,6 +159,16 @@ class SocialFrameTests(MetaBaseTestCase):
         )
 
         caminho = services._story_photo_path(animal)
+
+        with Image.open(caminho) as imagem:
+            self.assertEqual(imagem.size, services.STORY_IMAGE_SIZE)
+            pixel = imagem.getpixel((0, 0))
+            for valor, esperado in zip(pixel, services.STORY_HEADER_COLOR):
+                self.assertLessEqual(abs(valor - esperado), 2)
+
+    def test_story_de_publicacao_usa_arte_vertical(self):
+        publicacao = self.criar_publicacao()
+        caminho = services._story_photo_path(publicacao, prefixo="pub")
 
         with Image.open(caminho) as imagem:
             self.assertEqual(imagem.size, services.STORY_IMAGE_SIZE)
@@ -379,3 +390,55 @@ class MetaPostLogTests(TestCase):
         self.assertFalse(log.sucesso)
         self.assertEqual(log.rede, "facebook")
         self.assertEqual(log.animal_nome, "Bidu")
+
+
+class MetaConnectionUnicaECompartilhadaTests(MetaBaseTestCase):
+    """A conexão com o Facebook/Instagram deve ser única para a ONG e visível a todos os admins."""
+
+    # A API autentica só por JWT: `force_authenticate` é do APIClient do DRF
+    # (o Client padrão do Django não tem esse método).
+    client_class = APIClient
+
+    def test_status_retorna_conexao_para_outro_administrador(self):
+        User = get_user_model()
+        outro_admin = User.objects.create_user(
+            email="admin2@test.com", password="Senha123!", nome="Admin 2"
+        )
+        self.client.force_authenticate(user=outro_admin)
+
+        resp = self.client.get("/api/meta/status/")
+        self.assertEqual(resp.status_code, 200)
+        connections = resp.data.get("connections", [])
+        self.assertEqual(len(connections), 1)
+        self.assertEqual(connections[0]["page_id"], "PAGE123")
+        self.assertEqual(connections[0]["page_name"], "ACAPRA Teste")
+
+    def test_outro_admin_pode_desconectar_conexao(self):
+        User = get_user_model()
+        outro_admin = User.objects.create_user(
+            email="admin3@test.com", password="Senha123!", nome="Admin 3"
+        )
+        self.client.force_authenticate(user=outro_admin)
+
+        resp = self.client.delete(f"/api/meta/disconnect/{self.connection.pk}/")
+        self.assertEqual(resp.status_code, 204)
+        self.assertFalse(MetaConnection.objects.filter(pk=self.connection.pk).exists())
+
+    def test_fallback_foto_usa_galeria_quando_foto_principal_vazia(self):
+        publicacao = Publicacao.objects.create(
+            categoria=CategoriaNoticia.NOTICIAS,
+            titulo="Sem foto principal",
+            texto="Texto",
+            foto="",
+            ativo=True,
+        )
+        from noticias.models import PublicacaoImagem
+        PublicacaoImagem.objects.create(
+            publicacao=publicacao,
+            imagem=imagem_valida("galeria.jpg"),
+            ordem=0,
+        )
+
+        caminho = services._local_photo_path(publicacao)
+        self.assertIsNotNone(caminho)
+        self.assertTrue(caminho.endswith(".webp") or caminho.endswith(".jpg"))

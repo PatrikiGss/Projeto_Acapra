@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import api from "../../services/api";
+import api, { getMediaURL } from "../../services/api";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import { logError } from "../../utils/logger";
 import "./AnimalDetail.css";
@@ -111,7 +111,7 @@ function AnimalDetail() {
                         {fotoAtual ? (
                             <>
                                 <img
-                                    src={fotoAtual}
+                                    src={getMediaURL(fotoAtual)}
                                     alt={animal.nome_animal}
                                     width="1200"
                                     height="960"
@@ -165,6 +165,12 @@ function AnimalDetail() {
                     <h1>{animal.nome_animal}</h1>
                     <p className="animal-created-at">Cadastrado em {formatarDataCadastro(animal.created_at)}</p>
                     <dl className="animal-specs">
+                        {animal.nome_doador && (
+                            <div>
+                                <dt>Dono</dt>
+                                <dd>{animal.nome_doador}</dd>
+                            </div>
+                        )}
                         <div>
                             <dt>Espécie</dt>
                             <dd>{formatarTexto(animal.especie)}</dd>
@@ -209,11 +215,6 @@ function AnimalDetail() {
                             Quero adotar
                         </button>
                     )}
-
-                    <section className="description-panel">
-                        <h2>Doador</h2>
-                        <p>{animal.nome_doador}</p>
-                    </section>
 
                     {animal.descricao && (
                         <section className="description-panel">

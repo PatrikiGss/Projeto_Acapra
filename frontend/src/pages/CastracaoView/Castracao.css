@@ -75,3 +75,48 @@
   font-weight: 600;
   cursor: pointer;
 }
+
+/* Filtro por andamento (mesmo visual da toolbar de Doações recebidas). */
+.castracao-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.castracao-toolbar button {
+  border: 1px solid rgba(232, 119, 34, 0.28);
+  border-radius: 999px;
+  background: #fff;
+  color: #545454;
+  padding: 0.45rem 0.95rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.castracao-toolbar button:hover,
+.castracao-toolbar button:focus-visible {
+  background: #fff4ea;
+}
+
+.castracao-toolbar button.active {
+  background: #e87722;
+  border-color: #e87722;
+  color: #fff;
+}
+
+/* Telefone do card abre a conversa direto no WhatsApp. */
+.castracao-whatsapp-link {
+  color: #1e7e3a;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.castracao-whatsapp-link:hover,
+.castracao-whatsapp-link:focus-visible {
+  color: #145c29;
+}

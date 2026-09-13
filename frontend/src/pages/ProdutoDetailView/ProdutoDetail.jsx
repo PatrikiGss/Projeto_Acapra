@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import api from "../../services/api";
+import api, { getMediaURL } from "../../services/api";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
 import { logError } from "../../utils/logger";
 import "./ProdutoDetail.css";
@@ -96,7 +96,7 @@ function ProdutoDetail() {
                     <div className="produto-main-image">
                         {fotoAtual ? (
                             <>
-                                <img src={fotoAtual} alt={produto.nome} width="1200" height="960" />
+                                <img src={getMediaURL(fotoAtual)} alt={produto.nome} width="1200" height="960" />
 
                                 {fotos.length > 1 && (
                                     <>

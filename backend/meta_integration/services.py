@@ -83,11 +83,19 @@ def get_photo_absolute_url(animal):
 
 
 def _local_photo_path(obj):
-    if not obj.foto:
-        return None
+    if hasattr(obj, "foto") and obj.foto:
+        path = os.path.join(settings.MEDIA_ROOT, str(obj.foto))
+        if os.path.exists(path):
+            return path
 
-    path = os.path.join(settings.MEDIA_ROOT, str(obj.foto))
-    return path if os.path.exists(path) else None
+    if hasattr(obj, "imagens"):
+        primeira = obj.imagens.first()
+        if primeira and getattr(primeira, "imagem", None):
+            path = os.path.join(settings.MEDIA_ROOT, str(primeira.imagem))
+            if os.path.exists(path):
+                return path
+
+    return None
 
 
 def _crop_centering(obj):
@@ -173,16 +181,22 @@ def _story_font(size):
     return ImageFont.load_default()
 
 
-def _story_photo_path(animal):
-    """Gera a arte vertical de Story com a chamada de adoção no topo."""
-    source_path = _local_photo_path(animal)
+def _story_photo_path(obj, prefixo="animal", header_text=None):
+    """Gera a arte vertical de Story (1080x1920, 9:16) com a chamada no topo."""
+    source_path = _local_photo_path(obj)
     if not source_path:
         return None
 
     source = Path(source_path)
     framed_dir = Path(settings.MEDIA_ROOT) / "social_frames"
     framed_dir.mkdir(parents=True, exist_ok=True)
-    story_path = framed_dir / f"animal_{animal.pk}_{source.stem}_story_v3.jpg"
+    story_path = framed_dir / f"{prefixo}_{obj.pk}_{source.stem}_story_v3.jpg"
+
+    if not header_text:
+        if hasattr(obj, "get_categoria_display"):
+            header_text = obj.get_categoria_display().upper()
+        else:
+            header_text = STORY_HEADER_TEXT
 
     logo_candidates = [
         Path(settings.BASE_DIR) / "media" / "social_assets" / "acapra-logo-com-texto.png",
@@ -204,12 +218,12 @@ def _story_photo_path(animal):
         draw.rectangle((0, 0, canvas.width, STORY_HEADER_HEIGHT), fill=STORY_HEADER_COLOR)
 
         font = _story_font(54)
-        text_box = draw.textbbox((0, 0), STORY_HEADER_TEXT, font=font)
+        text_box = draw.textbbox((0, 0), header_text, font=font)
         text_width = text_box[2] - text_box[0]
         text_height = text_box[3] - text_box[1]
         draw.text(
             ((canvas.width - text_width) // 2, (STORY_HEADER_HEIGHT - text_height) // 2 - text_box[1]),
-            STORY_HEADER_TEXT,
+            header_text,
             fill="white",
             font=font,
         )
@@ -219,7 +233,7 @@ def _story_photo_path(animal):
             image,
             (canvas.width, available_height),
             method=Image.Resampling.LANCZOS,
-            centering=_crop_centering(animal),
+            centering=_crop_centering(obj),
         )
         canvas.paste(photo, (0, STORY_HEADER_HEIGHT))
 
@@ -264,26 +278,28 @@ def _mime_type(file_path):
 # CHAMADAS DE BAIXO NÍVEL (Graph API)
 # =========================================================
 
-def _esperar_container_pronto(connection, creation_id, tentativas=15, intervalo=2):
+def _esperar_container_pronto(connection, creation_id, tentativas=30, intervalo=3):
     """
-    O Instagram processa o container de mídia de forma ASSÍNCRONA. Publicar
-    antes de o processamento terminar falha de forma intermitente. Aqui
-    consultamos o status_code até virar FINISHED (ou erro/timeout).
+    O Instagram processa o container de mídia de forma ASSÍNCRONA. A Meta baixa
+    a imagem do nosso servidor e a processa antes de permitir o publish.
+    Consultamos o status_code até virar FINISHED (ou erro/timeout).
     """
     for _ in range(tentativas):
         resp = requests.get(
             f"{GRAPH_API_BASE}/{creation_id}",
-            params={"fields": "status_code", "access_token": connection.page_access_token},
-            timeout=15,
+            params={"fields": "status_code,status", "access_token": connection.page_access_token},
+            timeout=30,
         )
         resp.raise_for_status()
-        status = resp.json().get("status_code")
-        if status == "FINISHED":
+        data = resp.json()
+        status_code = data.get("status_code")
+        if status_code == "FINISHED":
             return
-        if status in ("ERROR", "EXPIRED"):
-            raise RuntimeError(f"Container do Instagram não pôde ser processado (status={status}).")
+        if status_code in ("ERROR", "EXPIRED"):
+            status_msg = data.get("status") or "erro no processamento do container"
+            raise RuntimeError(f"Container do Instagram não pôde ser processado (status_code={status_code}, status={status_msg}).")
         time.sleep(intervalo)
-    raise TimeoutError("Container do Instagram não ficou pronto (FINISHED) a tempo.")
+    raise TimeoutError("Container do Instagram não ficou pronto (FINISHED) a tempo após aguardar o processamento.")
 
 
 def _fb_feed_photo(connection, message, local_file):
@@ -300,7 +316,7 @@ def _fb_feed_photo(connection, message, local_file):
         response = requests.post(
             f"{GRAPH_API_BASE}/{connection.page_id}/feed",
             data={'message': message, 'access_token': connection.page_access_token},
-            timeout=15,
+            timeout=30,
         )
     response.raise_for_status()
     return response.json()
@@ -340,7 +356,7 @@ def _ig_container(connection, image_url, caption=None, media_type=None):
         data['caption'] = caption
     if media_type:
         data['media_type'] = media_type
-    resp = requests.post(f"{GRAPH_API_BASE}/{connection.instagram_id}/media", data=data, timeout=15)
+    resp = requests.post(f"{GRAPH_API_BASE}/{connection.instagram_id}/media", data=data, timeout=30)
     resp.raise_for_status()
     return resp.json()['id']
 
@@ -349,7 +365,7 @@ def _ig_publish(connection, creation_id):
     resp = requests.post(
         f"{GRAPH_API_BASE}/{connection.instagram_id}/media_publish",
         data={'creation_id': creation_id, 'access_token': connection.page_access_token},
-        timeout=15,
+        timeout=30,
     )
     resp.raise_for_status()
     return resp.json()
@@ -516,10 +532,14 @@ def _publicar(objeto, prefixo, nome_log, message, caption, feed=True, story=True
         else:
             resultado["instagram"]["tentativas"] += 1
             resultado["instagram"]["falhas"] += 1
+            motivos = []
+            if not connection.instagram_id:
+                motivos.append("Instagram não vinculado à Página do Facebook (sem instagram_id)")
+            if not image_url:
+                motivos.append("sem URL pública da foto (verifique se SITE_URL aponta para o domínio público com HTTPS e se há imagem cadastrada)")
             _registrar_falha_meta(
                 obj_id, nome_log, "instagram",
-                "Pulado: Instagram não configurado (sem instagram_id) ou sem URL "
-                "pública da foto (verifique SITE_URL).",
+                f"Pulado: {'; '.join(motivos)}.",
             )
 
     return resultado
@@ -539,4 +559,5 @@ def auto_post_publicacao(publicacao, feed=True, story=True):
     return _publicar(
         publicacao, prefixo="pub", nome_log=publicacao.titulo,
         message=mensagem, caption=mensagem, feed=feed, story=story,
+        story_path=lambda pub: _story_photo_path(pub, prefixo="pub"),
     )

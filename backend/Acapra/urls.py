@@ -28,13 +28,24 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-elif settings.SERVE_MEDIA:
-    # Produção no cPanel/Passenger: o Apache não mapeia /media para o app root,
-    # então o próprio Django serve os uploads (dinâmico, lê o arquivo do disco a
-    # cada request). Ligado via SERVE_MEDIA no .env.
     urlpatterns += [
         re_path(
             r"^api/media/(?P<path>.*)$",
+            serve_media,
+            {"document_root": settings.MEDIA_ROOT},
+        ),
+    ]
+elif settings.SERVE_MEDIA:
+    # Produção no cPanel/Passenger: o próprio Django serve os uploads (dinâmico).
+    # Suporta tanto /media/ quanto /api/media/ para compatibilidade com qualquer cliente/bot.
+    urlpatterns += [
+        re_path(
+            r"^api/media/(?P<path>.*)$",
+            serve_media,
+            {"document_root": settings.MEDIA_ROOT},
+        ),
+        re_path(
+            r"^media/(?P<path>.*)$",
             serve_media,
             {"document_root": settings.MEDIA_ROOT},
         ),

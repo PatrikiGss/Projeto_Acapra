@@ -442,3 +442,177 @@ class MetaConnectionUnicaECompartilhadaTests(MetaBaseTestCase):
         caminho = services._local_photo_path(publicacao)
         self.assertIsNotNone(caminho)
         self.assertTrue(caminho.endswith(".webp") or caminho.endswith(".jpg"))
+
+
+class MetaSaveConnectionTests(TestCase):
+    """Salvar a conexão: única para a ONG e com fallbacks para achar o Instagram."""
+
+    client_class = APIClient
+
+    def setUp(self):
+        from meta_integration.models import MetaOAuthState
+
+        User = get_user_model()
+        self.admin = User.objects.create_user(
+            email="admin_save@test.com", password="Senha123!", nome="Admin Save"
+        )
+        self.outro_admin = User.objects.create_user(
+            email="outro_save@test.com", password="Senha123!", nome="Outro Admin"
+        )
+        self.client.force_authenticate(user=self.admin)
+        self.state = MetaOAuthState.objects.create(user=self.admin, user_access_token="user-token")
+
+    def salvar(self, pagina=None, fallback=None, page_id="PAGE_NOVA"):
+        """Chama /api/meta/save/ simulando a Graph API.
+
+        `pagina` é o JSON de GET /{page_id}; `fallback` é a lista de GET
+        /me/accounts com `fields` (usado quando a página não traz o Instagram).
+        """
+        def fake_get(url, params=None, timeout=None):
+            params = params or {}
+            if url.endswith("/me/accounts") and "fields" in params:
+                resp = fake_response({"data": fallback or []})
+            elif url.endswith("/me/accounts"):
+                resp = fake_response({"data": [
+                    {"id": page_id, "name": "ACAPRA Nova", "access_token": "page-token-novo"},
+                ]})
+            else:
+                resp = fake_response(pagina or {})
+            resp.ok = True
+            return resp
+
+        with mock.patch("meta_integration.views.requests.get", side_effect=fake_get) as get:
+            resposta = self.client.post(
+                "/api/meta/save/",
+                {"state": str(self.state.state), "page_id": page_id, "page_name": "ACAPRA Nova"},
+                format="json",
+            )
+        return resposta, get
+
+    def test_nova_conexao_substitui_a_de_outro_admin(self):
+        MetaConnection.objects.create(
+            user=self.outro_admin, page_id="PAGE_ANTIGA", page_name="Antiga",
+            page_access_token="token-antigo", is_active=True,
+        )
+
+        resposta, _ = self.salvar(pagina={"instagram_business_account": {"id": "IG_BUSINESS"}})
+
+        self.assertEqual(resposta.status_code, 201)
+        conexao = MetaConnection.objects.get()
+        self.assertEqual(conexao.page_id, "PAGE_NOVA")
+        self.assertEqual(conexao.user, self.admin)
+        self.assertEqual(conexao.page_access_token, "page-token-novo")
+        self.assertEqual(conexao.instagram_id, "IG_BUSINESS")
+        self.assertTrue(resposta.data["instagram_connected"])
+
+    def test_reconectar_a_mesma_pagina_atualiza_sem_duplicar(self):
+        MetaConnection.objects.create(
+            user=self.outro_admin, page_id="PAGE_NOVA", page_name="ACAPRA Nova",
+            page_access_token="token-antigo", is_active=True,
+        )
+
+        resposta, _ = self.salvar(pagina={"instagram_business_account": {"id": "IG_BUSINESS"}})
+
+        self.assertEqual(resposta.status_code, 200)
+        conexao = MetaConnection.objects.get()
+        self.assertEqual(conexao.user, self.admin)
+        self.assertEqual(conexao.page_access_token, "page-token-novo")
+
+    def test_aceita_conta_de_criador_via_connected_instagram_account(self):
+        resposta, _ = self.salvar(pagina={"connected_instagram_account": {"id": "IG_CRIADOR"}})
+
+        self.assertEqual(MetaConnection.objects.get().instagram_id, "IG_CRIADOR")
+        self.assertTrue(resposta.data["instagram_connected"])
+
+    def test_busca_instagram_em_me_accounts_quando_a_pagina_nao_informa(self):
+        resposta, get = self.salvar(
+            pagina={},
+            fallback=[
+                {"id": "OUTRA_PAGINA", "instagram_business_account": {"id": "IG_ERRADO"}},
+                {"id": "PAGE_NOVA", "instagram_business_account": {"id": "IG_FALLBACK"}},
+            ],
+        )
+
+        self.assertEqual(MetaConnection.objects.get().instagram_id, "IG_FALLBACK")
+        self.assertTrue(resposta.data["instagram_connected"])
+        self.assertEqual(get.call_count, 3)
+
+    def test_sem_instagram_salva_so_o_facebook(self):
+        resposta, _ = self.salvar(pagina={}, fallback=[{"id": "PAGE_NOVA"}])
+
+        self.assertEqual(resposta.status_code, 201)
+        self.assertEqual(MetaConnection.objects.get().instagram_id, "")
+        self.assertFalse(resposta.data["instagram_connected"])
+
+    def test_state_e_consumido_apos_salvar(self):
+        from meta_integration.models import MetaOAuthState
+
+        self.salvar(pagina={})
+
+        self.assertFalse(MetaOAuthState.objects.filter(pk=self.state.pk).exists())
+
+
+class EsperaDoContainerInstagramTests(MetaBaseTestCase):
+    """O publish só acontece depois que o Instagram termina de processar a mídia."""
+
+    def test_espera_ate_finished(self):
+        respostas = [
+            fake_response({"status_code": "IN_PROGRESS"}),
+            fake_response({"status_code": "FINISHED"}),
+        ]
+        with mock.patch("meta_integration.services.requests.get", side_effect=respostas) as get:
+            services._esperar_container_pronto(self.connection, "CONTAINER1", intervalo=0)
+
+        self.assertEqual(get.call_count, 2)
+
+    def test_erro_de_processamento_traz_o_motivo_da_meta(self):
+        resposta = fake_response({"status_code": "ERROR", "status": "Error: formato de imagem inválido"})
+
+        with mock.patch("meta_integration.services.requests.get", return_value=resposta):
+            with self.assertRaisesMessage(RuntimeError, "formato de imagem inválido"):
+                services._esperar_container_pronto(self.connection, "CONTAINER1", intervalo=0)
+
+    def test_desiste_depois_das_tentativas(self):
+        resposta = fake_response({"status_code": "IN_PROGRESS"})
+
+        with mock.patch("meta_integration.services.requests.get", return_value=resposta) as get:
+            with self.assertRaises(TimeoutError):
+                services._esperar_container_pronto(
+                    self.connection, "CONTAINER1", tentativas=3, intervalo=0
+                )
+
+        self.assertEqual(get.call_count, 3)
+
+
+class MotivoDoInstagramPuladoTests(MetaBaseTestCase):
+    """O log diz exatamente por que o Instagram foi pulado."""
+
+    def publicar(self):
+        publicacao = self.criar_publicacao()
+        with mock.patch.object(services, "_fb_feed_photo"), \
+             mock.patch.object(services, "_fb_story"), \
+             mock.patch.object(services, "_ig_feed") as ig_feed, \
+             mock.patch.object(services, "_ig_story"):
+            services.auto_post_publicacao(publicacao)
+
+        ig_feed.assert_not_called()
+        return MetaPostLog.objects.get(rede="instagram").detalhe
+
+    @override_settings(SITE_URL="https://acapra.org.br")
+    def test_sem_instagram_vinculado(self):
+        MetaConnection.objects.update(instagram_id="")
+
+        detalhe = self.publicar()
+
+        self.assertIn("Instagram não vinculado", detalhe)
+        self.assertNotIn("sem URL pública", detalhe)
+
+    @override_settings(
+        SITE_URL="http://localhost:8000",
+        MEDIA_PUBLIC_URL="http://localhost:8000/api/media/",
+    )
+    def test_sem_url_publica_da_foto(self):
+        detalhe = self.publicar()
+
+        self.assertIn("sem URL pública", detalhe)
+        self.assertNotIn("Instagram não vinculado", detalhe)

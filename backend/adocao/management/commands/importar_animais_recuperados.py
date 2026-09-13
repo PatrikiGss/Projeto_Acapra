@@ -48,9 +48,11 @@ class Command(BaseCommand):
         self.stdout.write(f"Registros unicos: {len(registros)}")
 
         for indice, registro in enumerate(registros, start=1):
-            chave = self._chave(registro["nome"], registro["telefone"])
+            # O model guarda só 30 caracteres: a busca usa o nome já truncado,
+            # senão rodar o comando de novo duplicaria animais de nome longo.
+            nome = registro["nome"][:30]
             if Animal.objects.filter(
-                nome_animal__iexact=registro["nome"],
+                nome_animal__iexact=nome,
                 telefone=registro["telefone"],
             ).exists():
                 self.stdout.write(f"{indice:02d}. IGNORADO (ja existe): {registro['nome']} | {registro['telefone']}")

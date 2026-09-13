@@ -34,7 +34,9 @@ class Publicacao(CompressImageOnSaveMixin, models.Model):
     class Meta:
         verbose_name = "Publicação"
         verbose_name_plural = "Publicações"
-        ordering = ["-created_at"]
+        # Desempate por id garante ordem determinística quando duas publicações
+        # compartilham o mesmo created_at (criadas no mesmo instante).
+        ordering = ["-created_at", "-id"]
 
     def __str__(self):
         return f"{self.titulo} ({self.get_categoria_display()})"

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 /**
  * Paginação no cliente.
@@ -16,9 +16,13 @@ export function usePaginacao(itens, porPagina = 12) {
 
   const totalPaginas = Math.max(1, Math.ceil(itens.length / porPagina));
 
-  useEffect(() => {
+  // Reset durante o render (padrão recomendado pelo React para ajustar estado
+  // quando uma prop muda) — evita o render extra de um useEffect.
+  const [itensAnteriores, setItensAnteriores] = useState(itens);
+  if (itens !== itensAnteriores) {
+    setItensAnteriores(itens);
     setPagina(1);
-  }, [itens]);
+  }
 
   // Protege contra página fora do intervalo (ex.: a lista encolheu).
   const paginaAtual = Math.min(pagina, totalPaginas);

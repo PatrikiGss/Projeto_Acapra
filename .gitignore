@@ -24,6 +24,10 @@ staticfiles/
 
 .DS_Store
 Thumbs.db
-acapra-backend-deploy.zip
-acapra-frontend-deploy.zip
-acapra-frontend-deploy-planB.zip
+
+context.md
+
+# Backups, dumps e pacotes de deploy nunca vão para o repositório
+# (costumam carregar .env e bancos com dados reais).
+*.zip
+*.sqlite3

@@ -15,6 +15,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from PIL import Image
+from rest_framework.test import APIClient
 
 from adocao.models import Animal
 from meta_integration import services
@@ -393,6 +394,10 @@ class MetaPostLogTests(TestCase):
 
 class MetaConnectionUnicaECompartilhadaTests(MetaBaseTestCase):
     """A conexão com o Facebook/Instagram deve ser única para a ONG e visível a todos os admins."""
+
+    # A API autentica só por JWT: `force_authenticate` é do APIClient do DRF
+    # (o Client padrão do Django não tem esse método).
+    client_class = APIClient
 
     def test_status_retorna_conexao_para_outro_administrador(self):
         User = get_user_model()

@@ -68,4 +68,18 @@ describe("Home — renderização de imagens de notícias", () => {
     expect(newsImg).toBeInTheDocument();
     expect(newsImg.getAttribute("src")).toBe("/carousel-voluntariado.jpg");
   });
+
+  it("busca apenas animais disponíveis para a vitrine de adoção", async () => {
+    const api = (await import("../../../services/api")).default;
+
+    render(
+      <MemoryRouter>
+        <Home />
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledWith("/api/adocao/animais/?disponivel=true");
+    });
+  });
 });

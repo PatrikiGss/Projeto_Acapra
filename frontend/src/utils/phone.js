@@ -34,6 +34,16 @@ export function toBrazilianPhoneE164(value) {
 }
 
 /**
+ * Link `wa.me` que abre a conversa direto no WhatsApp. Aceita o número em
+ * qualquer formato (E.164 vindo da API, com máscara ou só dígitos) e garante
+ * o DDI 55. Retorna null quando não há número.
+ */
+export function toWhatsAppHref(value) {
+  const digits = getBrazilianPhoneDigits(String(value ?? ""));
+  return digits ? `https://wa.me/${BR_COUNTRY_CODE}${digits}` : null;
+}
+
+/**
  * Validação leve de telefone brasileiro (espelha o que a lib phonenumbers
  * aceita no backend): celular com 11 dígitos (DDD + 9 + 8, 3º dígito = 9) ou
  * fixo com 10 dígitos (DDD + 8). O backend faz a validação definitiva.

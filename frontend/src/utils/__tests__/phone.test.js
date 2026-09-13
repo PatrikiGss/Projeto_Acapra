@@ -3,6 +3,7 @@ import {
   formatBrazilianPhone,
   toBrazilianPhoneE164,
   isValidBrazilianPhone,
+  toWhatsAppHref,
 } from "../phone";
 
 describe("phone utils", () => {
@@ -26,5 +27,14 @@ describe("phone utils", () => {
     expect(isValidBrazilianPhone("abc")).toBe(false);
     // 11 dígitos mas 3º não é 9 (celular inválido)
     expect(isValidBrazilianPhone("(49) 88888-0000")).toBe(false);
+  });
+
+  it("gera link do WhatsApp com DDI 55 a partir de qualquer formato", () => {
+    expect(toWhatsAppHref("+5549999990000")).toBe("https://wa.me/5549999990000");
+    expect(toWhatsAppHref("(49) 99999-0000")).toBe("https://wa.me/5549999990000");
+    // DDD 55 (RS) não pode ser confundido com o DDI.
+    expect(toWhatsAppHref("(55) 99999-0000")).toBe("https://wa.me/5555999990000");
+    expect(toWhatsAppHref("")).toBeNull();
+    expect(toWhatsAppHref(null)).toBeNull();
   });
 });

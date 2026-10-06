@@ -186,8 +186,18 @@ export function getMediaURL(path) {
         ["localhost", "127.0.0.1", "[::1]"].includes(parsed.hostname) ||
         parsed.port === "8000";
 
-      if (!isLocalBackend) {
+      // URLs absolutas no proprio site apontando para /media/ nao sao roteadas
+      // para o Django em producao (erro 500). Remonta a partir do caminho.
+      const isSameOriginMedia =
+        parsed.origin === window.location.origin &&
+        parsed.pathname.startsWith("/media/");
+
+      if (!isLocalBackend && !isSameOriginMedia) {
         return path;
+      }
+
+      if (isSameOriginMedia) {
+        return getMediaURL(parsed.pathname);
       }
 
       const cleanPath = parsed.pathname.startsWith("/")

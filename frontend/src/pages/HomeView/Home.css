@@ -575,10 +575,6 @@
   max-height: 400px;
   object-fit: contain;
   margin: 0 auto;
-  border-radius: var(--radius-sm);
-  background: var(--bg-base);
-  padding: 1rem;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
 }
 
 /* =====================

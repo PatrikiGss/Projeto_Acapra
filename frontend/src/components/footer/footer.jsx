@@ -14,6 +14,7 @@ const DESENVOLVEDORES = [
   "kauekluska@gmail.com",
   "patrikigss321@gmail.com",
   "iagoamaral607@gmail.com",
+  "mateuscorreiacoelho706@gmail.com",
 ];
 
 function Footer() {

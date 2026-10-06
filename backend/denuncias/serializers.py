@@ -26,6 +26,14 @@ class DenunciaAdminSerializer(serializers.ModelSerializer):
 
     gravidade_display = serializers.CharField(source="get_gravidade_display", read_only=True)
     status_display = serializers.CharField(source="get_status_display", read_only=True)
+    foto = serializers.SerializerMethodField()
+
+    def get_foto(self, obj):
+        # Caminho relativo (ex.: /media/fotos/x.jpg), como nos demais apps.
+        # O ImageField padrao do DRF devolveria URL absoluta no host do site,
+        # que em producao nao e roteada para o Django (erro 500); o front monta
+        # a URL final a partir do caminho relativo.
+        return obj.foto.url if obj.foto else None
 
     class Meta:
         model = Denuncia

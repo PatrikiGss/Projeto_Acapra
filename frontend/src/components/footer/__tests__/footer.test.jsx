@@ -24,19 +24,21 @@ describe("Footer — créditos de desenvolvimento", () => {
     vi.clearAllMocks();
   });
 
-  it("mostra apenas Kaue, Patriki e Iago", () => {
+  it("mostra Kaue, Patriki, Iago e Mateus", () => {
     renderFooter();
 
     expect(screen.getByText("kauekluska@gmail.com")).toBeInTheDocument();
     expect(screen.getByText("patrikigss321@gmail.com")).toBeInTheDocument();
     expect(screen.getByText("iagoamaral607@gmail.com")).toBeInTheDocument();
+    expect(
+      screen.getByText("mateuscorreiacoelho706@gmail.com")
+    ).toBeInTheDocument();
   });
 
   it("não mostra os desenvolvedores removidos", () => {
     renderFooter();
 
     const removidos = [
-      "mateuscorreiacoelho706@gmail.com",
       "anderson.bolduan@gmail.com",
       "vanderlei.junior1993@gmail.com",
       "tonetto.irai@gmail.com",
@@ -47,9 +49,9 @@ describe("Footer — créditos de desenvolvimento", () => {
     });
   });
 
-  it("lista exatamente 3 créditos", () => {
+  it("lista exatamente 4 créditos", () => {
     const { container } = renderFooter();
     const itens = container.querySelectorAll(".footer-credits-list li");
-    expect(itens).toHaveLength(3);
+    expect(itens).toHaveLength(4);
   });
 });
